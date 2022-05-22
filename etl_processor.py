@@ -6,11 +6,14 @@ import pandas as pd
 import datetime as dt
 from tqdm.notebook import tqdm
 from bs4 import BeautifulSoup as bs
+import investpy
 import yfinance as yf
 import pandas_datareader.data as web
 from constants import *
 
 # 티커가 바뀔 수 있으니, 마스터를 add 방식으로 수집하고 drop duplicates?
+# price, date 결측치 보간하기
+
 
 class EtlProcessor:
     def __init__(self):
@@ -31,6 +34,7 @@ class EtlProcessor:
         self.cols_etf_master = COLS_MASTER_ETF
         self.dict_cols_etf_info = DICT_COLS_ETF_INFO
         self.dict_cols_etf_profile = DICT_COLS_ETF_PROFILE
+        self.dict_cols_recession = DICT_COLS_RECESSION
         self.list_dict_symbols_fred = LIST_DICT_SYMBOLS_FRED
 
         os.makedirs(self.dir_download, exist_ok=True)
@@ -129,7 +133,7 @@ class EtlProcessor:
             df_indices.columns = df_indices.columns.str.lower().to_list()
             dfs.append(df_indices)
 
-        df_yahoo = pd.concat(dfs).reset_index(drop=True)
+        df_yahoo = pd.concat(dfs).reset_index(drop=True)[COLS_MASTER_OTHERS]
         df_yahoo.to_csv(os.path.join(self.dir_download, self.fname_master_indices_yahoo), index=False)
 
         return df_yahoo
@@ -140,8 +144,7 @@ class EtlProcessor:
         df_indices = df_indices[df_indices['country'].isin(countries)].reset_index(drop=True)
         df_indices['symbol'] = '^' + df_indices['symbol']
         df_indices['category'] = 'index'
-        cols = ['symbol', 'name', 'full_name', 'country', 'currency', 'category']
-        df_indices = df_indices[cols]
+        df_indices = df_indices[COLS_MASTER_OTHERS]
         
         df_indices.to_csv(os.path.join(self.dir_download, self.fname_master_indices_investpy), index=False)
         return df_indices
@@ -162,34 +165,86 @@ class EtlProcessor:
                 symbol = f'{base_cur}{second_cur}=X'
             return symbol
         currencies['symbol'] = currencies['name'].apply(_encode_symbol)
-        currencies = currencies[['symbol', 'name', 'full_name', 'country', 'currency', 'category']]
+        currencies = currencies[COLS_MASTER_OTHERS]
         
         currencies.to_csv(os.path.join(self.dir_download, self.fname_master_currencies), index=False)
         return currencies
 
     def get_master_indices_fred(self):
-        df = pd.DataFrame(self.list_dict_symbols_fred)
+        df = pd.DataFrame(self.list_dict_symbols_fred)[COLS_MASTER_OTHERS]
         df.to_csv(os.path.join(self.dir_download,self.fname_master_indices_fred), index=False)
         return df
+
+    def integrate_master():
+        master_etf = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_etf))
+        master_indices_yahoo = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_indices_yahoo))
+        master_indices_investpy = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_indices_investpy))
+        master_currencies = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_currencies))
+        master_indices_fred = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_indices_fred))
+        pass
 
     def get_recession(self):
         start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
         recession = web.DataReader('USREC', 'fred', start, end)
         recession = recession.reset_index(drop=False)
         recession['yyyy-mm'] = recession['DATE'].dt.to_period('M').astype('str')
+        recession.rename(columns=self.dict_cols_recession, inplace=True)
         recession.to_csv(os.path.join(self.dir_download, self.fname_recession), index=False)
         return recession
 
-    def integrate_master():
+    def _preprocess_history():
         pass
 
-    def get_history():
-        # for yahoo finance
+    def _join_recession(self, history):
+        recession = pd.read_csv(os.path.join(self.dir_download, self.fname_recession))
+        #print(recession)
+        history['yyyy-mm'] = history['date'].dt.to_period('M').astype('str')
+        #print(history)
+        history = history.merge(recession, how='left', on='yyyy-mm', suffixes=(None,"_y"))
+        history['recession'].fillna(0, inplace=True)
+        return history
 
-        # for fred
+    def get_history_from_yf(self, master_df):
+        for row in tqdm(master_df.itertuples(), total=len(master_df), mininterval=0.5):
+            i = getattr(row, 'Index')
+            symbol = getattr(row, 'symbol')
+            try:
+                header = pd.DataFrame(columns=COLS_HISTORY)
+                history = yf.Ticker(symbol).history(period='max').reset_index()
+                history.columns = history.columns.str.lower()
+                history.rename(columns={'stock splits':'stock_splits'}, inplace=True)
+                history['country'] = getattr(row, 'country')
+                history['symbol'] = getattr(row, 'symbol')
+                history['full_name'] = getattr(row, 'full_name')
+                
+                history = self._join_recession(history)
+                history = pd.concat([header, history])[COLS_HISTORY]
+                history.to_csv(os.path.join(DIRNAME_DOWNLOAD, SUBDIRNAME_HISTORY_INDICES, f'history_{symbol}.csv'),  index=False)
+            except:
+               print(f'Error Occured at Loop {i}: {symbol}')
 
 
-        pass
+    def get_history_from_fred(self, master_df):
+        start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
+        for row in tqdm(master_df.itertuples(), total=len(master_df)):
+            i = getattr(row, 'Index')
+            symbol = getattr(row, 'symbol')
+            try:
+                header = pd.DataFrame(columns=COLS_HISTORY)
+                history = web.DataReader(symbol, 'fred', start, end).reset_index(drop=False)
+                history['country'] = getattr(row, 'country')
+                history['symbol'] = getattr(row, 'symbol')
+                history['full_name'] = getattr(row, 'full_name')
+                history.rename(columns={f'{symbol}':'close'}, inplace=True)
+                history.rename(columns={'DATE':'date'}, inplace=True)
 
-    def summarize_history():
+                history = self._join_recession(history)
+                history = pd.concat([header, history])[COLS_HISTORY]
+                history.to_csv(os.path.join(DIRNAME_DOWNLOAD, SUBDIRNAME_HISTORY_INDICES, f'history_{symbol}.csv'),  index=False)
+            except:
+                print(f'Error Occured at Loop {i}: {symbol}')
+
+    
+    
+    def summarize_history(): # 중간에 끼워넣기 # recession과 겨랗ㅂ
         pass
