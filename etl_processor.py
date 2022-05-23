@@ -42,16 +42,17 @@ class EtlProcessor:
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_indices), exist_ok=True)
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_currencies), exist_ok=True)
 
-    def _get_meta_etf(self):
+    def get_meta_etf(self):
         etf_meta = investpy.etfs.get_etfs(country='united states')
         etf_meta.to_csv(os.path.join(self.dir_download, self.fname_meta_etf), index=False)
         return etf_meta
 
-    def _get_info_etf(self):
+    #  에러난거 재시도 하는 방법 찾아보기
+    def get_info_etf(self): # takes about an hour
         etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))
+        etf_names = etf_meta['name']
         header = investpy.etfs.get_etf_information(etf_names[0], country='united states').columns.to_list()
         rows = []
-        etf_names = etf_meta['name']
 
         for i, name in enumerate(tqdm((etf_names[:]), mininterval=0.5)):
             try:
@@ -65,7 +66,7 @@ class EtlProcessor:
         etf_info.to_csv(os.path.join(self.dir_download, self.fname_info_etf), index=False)
         return etf_info
     
-    def _get_profile_etf(self):
+    def get_profile_etf(self):
         etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))
         header = self.cols_etf_profile
         rows = []
@@ -82,7 +83,7 @@ class EtlProcessor:
                 temp_df['Symbol'] = symbol
                 temp_df['Fund Family'] = etf.info.get('fundFamily')
 
-                row = temp_df[COLS_ETF_PROFILE].iloc[0].to_list()
+                row = temp_df[COLS_PROFILE_ETF].iloc[0].to_list()
                 rows.append(row)
             except:
                 print(f'Loop No.{i} | Error Ocurred While Getting Profile of: {symbol}')
@@ -181,7 +182,15 @@ class EtlProcessor:
         master_indices_investpy = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_indices_investpy))
         master_currencies = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_currencies))
         master_indices_fred = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_indices_fred))
-        pass
+        
+        integrated_df = pd.concat([
+            master_etf,
+            master_indices_yahoo,
+            master_indices_investpy,
+            master_currencies,
+            master_indices_fred
+        ]).reset_index(drop=True)
+        return integrated_df
 
     def get_recession(self):
         start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
@@ -192,9 +201,6 @@ class EtlProcessor:
         recession.to_csv(os.path.join(self.dir_download, self.fname_recession), index=False)
         return recession
 
-    def _preprocess_history():
-        pass
-
     def _join_recession(self, history):
         recession = pd.read_csv(os.path.join(self.dir_download, self.fname_recession))
         #print(recession)
@@ -204,8 +210,12 @@ class EtlProcessor:
         history['recession'].fillna(0, inplace=True)
         return history
 
+    def _preprocess_history():
+        pass
+
     def get_history_from_yf(self, master_df):
         for row in tqdm(master_df.itertuples(), total=len(master_df), mininterval=0.5):
+            time.sleep(0.1)
             i = getattr(row, 'Index')
             symbol = getattr(row, 'symbol')
             try:
@@ -219,7 +229,8 @@ class EtlProcessor:
                 
                 history = self._join_recession(history)
                 history = pd.concat([header, history])[COLS_HISTORY]
-                history.to_csv(os.path.join(DIRNAME_DOWNLOAD, SUBDIRNAME_HISTORY_INDICES, f'history_{symbol}.csv'),  index=False)
+                if len(history) >= 2:
+                    history.to_csv(os.path.join(DIRNAME_DOWNLOAD, SUBDIRNAME_HISTORY_INDICES, f'history_{symbol}.csv'),  index=False)
             except:
                print(f'Error Occured at Loop {i}: {symbol}')
 

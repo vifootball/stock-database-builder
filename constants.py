@@ -40,6 +40,7 @@ COLS_HISTORY = [
     'open', 'high', 'low', 'close', 'volume', 
     'dividends', 'stock_splits', 'recession'
 ] # + recession
+
 DICT_COLS_ETF_INFO = {
     'ETF Name': 'etf_name',
     '52 wk Range': '52_week_range',
@@ -73,21 +74,6 @@ DICT_COLS_HISTORY = {
 DICT_COLS_RECESSION = {
     'DATE': 'date',
     'USREC': 'recession'
-}
-DICT_SYMBOLS_FRED = {
-    'CPIAUCSL': 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average',
-    'EFFR': 'Effective Federal Funds Rate',
-    'T10Y2Y': '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity',
-    'T10Y3M': '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity',
-    'T10YIE': '10-Year Breakeven Inflation Rate',
-    'USREC': 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough',
-    'USRECM': 'NBER based Recession Indicators for the United States from the Peak through the Trough',
-    'USRECP': 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough',
-    'USAREC': 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough',
-    'USARECM': 'OECD based Recession Indicators for the United States from the Peak through the Trough',
-    'DEXKOUS': 'South Korean Won to U.S. Dollar Spot Exchange Rate',
-    'INTDSRKRM193N': 'Interest Rates, Discount Rate for Republic of Korea',
-    'KORCPIALLMINMEI': 'Consumer Price Index: All Items for Korea'
 }
 
 LIST_DICT_SYMBOLS_FRED = [
@@ -196,23 +182,3 @@ LIST_DICT_SYMBOLS_FRED = [
      'category' : 'index'
     }
 ]
-# {
-#     'CPIAUCSL': {
-#         'symbol': 'CPIAUCSL',
-        
-#     }
-
-#     'CPIAUCSL': 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average',
-#     'EFFR': 'Effective Federal Funds Rate',
-#     'T10Y2Y': '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity',
-#     'T10Y3M': '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity',
-#     'T10YIE': '10-Year Breakeven Inflation Rate',
-#     'USREC': 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough',
-#     'USRECM': 'NBER based Recession Indicators for the United States from the Peak through the Trough',
-#     'USRECP': 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough',
-#     'USAREC': 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough',
-#     'USARECM': 'OECD based Recession Indicators for the United States from the Peak through the Trough',
-#     'DEXKOUS': 'South Korean Won to U.S. Dollar Spot Exchange Rate',
-#     'INTDSRKRM193N': 'Interest Rates, Discount Rate for Republic of Korea',
-#     'KORCPIALLMINMEI': 'Consumer Price Index: All Items for Korea'
-# }
