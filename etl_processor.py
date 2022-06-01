@@ -21,6 +21,7 @@ class EtlProcessor:
         self.subdir_history_etf = SUBDIRNAME_HISTORY_ETF
         self.subdir_history_indices = SUBDIRNAME_HISTORY_INDICES
         self.subdir_history_currencies = SUBDIRNAME_HISTORY_CURRENCIES
+        self.subdir_summary = SUBDIRNAME_SUMMARY
         self.fname_meta_etf = FNAME_META_ETF
         self.fname_info_etf = FNAME_INFO_ETF
         self.fname_profile_etf = FNAME_PROFILE_ETF
@@ -30,6 +31,9 @@ class EtlProcessor:
         self.fname_master_currencies = FNAME_MASTER_CURRENCIES
         self.fname_master_indices_fred = FNAME_MASTER_INDICES_FRED
         self.fname_recession = FNAME_RECESSION
+        self.fname_summary_etf = FNAME_SUMMARY_ETF
+        self.fname_summary_indices = FNAME_SUMMARY_INDICES
+        self.fname_summary_currencies = FNAME_SUMMARY_CURRENCIES
         self.cols_etf_profile = COLS_PROFILE_ETF
         self.cols_etf_master = COLS_MASTER_ETF
         self.dict_cols_etf_info = DICT_COLS_ETF_INFO
@@ -210,16 +214,80 @@ class EtlProcessor:
         history['recession'].fillna(0, inplace=True)
         return history
 
-    def _preprocess_history():
+    def _join_exchange_rate(self, history):
         pass
 
-    def get_history_from_yf(self, master_df):
+    def _preprocess_history(self, df):
+        df['date'] = pd.to_datetime(df['date'])
+
+        # dividends
+        df['dividends_paid'] = np.sign(df['dividends'])
+        df['dividends_count_12m'] = df.set_index('date')['dividends_paid'].rolling(window='365d').sum().to_numpy() # tonumpy 안하며 nan 반환..
+        df['dividends_trailing_12m'] = df.set_index('date')['dividends'].rolling(window='365d').sum().to_numpy()
+        df['dividends_trailing_6m'] = (df.set_index('date')['dividends'].rolling(window='183d').sum().to_numpy())*2
+        df['dividends_rate_trailing_12m'] = df['dividends_trailing_12m']/df['close']
+        df['dividends_rate_trailing_6m'] = df['dividends_trailing_6m']/df['close']
+
+        # prices
+        df['change'] = df['close'].diff().fillna(0)
+        df['change_rate'] = df['change']/df['close']
+        df['change_sign'] = np.sign(df['change'])
+        df['all_time_high'] = df['close'].cummax()
+        df['drawdown'] = (df['close']/df['all_time_high']) - 1
+        # try except null -> 나중에 list comprehension?
+        try:
+            df['close_rolling_1y'] = df.set_index('date')['close'].rolling(window='365d').mean().to_numpy()
+            df['momentum_rolling_1y'] = df['close'] / df['close_rolling_1y']
+        except:
+            df['close_rolling_1y'] = None
+            df['momentum_rolling_1y'] = None
+        try:
+            df['close_rolling_6m'] = df.set_index('date')['close'].rolling(window='180d').mean().to_numpy()
+        except:
+            df['close_rolling_6m'] = None
+        try:
+            df['close_rolling_3m'] = df.set_index('date')['close'].rolling(window='90d').mean().to_numpy()
+        except:
+            df['close_rolling_3m'] = None
+        try:
+            df['close_rolling_1m'] = df.set_index('date')['close'].rolling(window='30d').mean().to_numpy()
+        except:
+            df['close_rolling_1m'] = None
+
+        # momentum 1년 이평선 가격과 비교
+        # momentum 1년전 가격과 비교 <- 정의상은 이게 맞지만 노이즈가 많이 껴서 이평선과 비교하는게 맞는 것 같음
+        # or 30일 정도 기준 정해서 이동평균 구하기?
+        df['momentum_rolling_1y'] = df['close'] / df['close_rolling_1y']
+        df['momentum_rolling_6m'] = df['close'] / df['close_rolling_6m']
+
+        #df['momentum_score_rolling_1y'] = np.sign(df['momentum_rolling_1y'])
+        #df['momentum_score_rolling_6m'] = np.sign(df['momentum_rolling_6m'])
+
+
+        # df['bull_bear'] = df['change_rate']
+        # df['bull_bear'] = df['drawdown'].apply(lambda x: 'bear' if x>=-0.03 else 'bull') # 일주일 이동평균 이용해도 괜찮을듯 # B_B_w, B_B_m
+        # df['all_time_drawdown'] = df['drawdown'].cummin()
+        # df['drawdown_max'] = df['drawdown'].max()
+        
+        # momentum
+
+        # df['drawdown_00']
+        # df['drawdown_08']
+        # df['drawdown_20']
+        # df['drawdown_22']
+
+        return df
+
+    def get_history_from_yf(self, master_df, category):
+        assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
+        
         for row in tqdm(master_df.itertuples(), total=len(master_df), mininterval=0.5):
             time.sleep(0.1)
             i = getattr(row, 'Index')
             symbol = getattr(row, 'symbol')
             try:
                 header = pd.DataFrame(columns=COLS_HISTORY)
+                header = pd.DataFrame()
                 history = yf.Ticker(symbol).history(period='max').reset_index()
                 history.columns = history.columns.str.lower()
                 history.rename(columns={'stock splits':'stock_splits'}, inplace=True)
@@ -228,9 +296,16 @@ class EtlProcessor:
                 history['full_name'] = getattr(row, 'full_name')
                 
                 history = self._join_recession(history)
-                history = pd.concat([header, history])[COLS_HISTORY]
+                history = self._preprocess_history(history)
+                # history = self._preprocess_history(history)
+                history = pd.concat([header, history])#[COLS_HISTORY]
                 if len(history) >= 2:
-                    history.to_csv(os.path.join(DIRNAME_DOWNLOAD, SUBDIRNAME_HISTORY_INDICES, f'history_{symbol}.csv'),  index=False)
+                    if category == "index":
+                        history.to_csv(os.path.join(self.dir_download, self.subdir_history_indices, f'history_{symbol}.csv'),  index=False)
+                    elif category == "etf":
+                        history.to_csv(os.path.join(self.dir_download, self.subdir_history_etf, f'history_{symbol}.csv'),  index=False)
+                    elif category == "currency":
+                        history.to_csv(os.path.join(self.dir_download, self.subdir_history_currencies, f'history_{symbol}.csv'),  index=False)
             except:
                print(f'Error Occured at Loop {i}: {symbol}')
 
@@ -254,8 +329,40 @@ class EtlProcessor:
                 history.to_csv(os.path.join(DIRNAME_DOWNLOAD, SUBDIRNAME_HISTORY_INDICES, f'history_{symbol}.csv'),  index=False)
             except:
                 print(f'Error Occured at Loop {i}: {symbol}')
+    
+    
+    def _summarize_history(self, df):
+        summary = {}
+        summary['symbol'] = df['symbol'][0]
+        summary['all_time_High'] = df['close'].max()
+        summary['maximal_drawdown'] = df['drawdown'].min()
 
-    
-    
-    def summarize_history(): # 중간에 끼워넣기 # recession과 겨랗ㅂ
-        pass
+        recent = df[df['date']==df['date'].max()]
+        summary['recent_close'] = recent['close'].values[0]
+        summary['recent_div_trailing_12m'] = recent['dividends_trailing_12m'].values[0]
+        summary['recent_div_rate_trailing_12m'] = recent['dividends_rate_trailing_12m'].values[0]
+        summary['recent_volume'] = recent['volume'].values[0]
+        summary['drawdown'] = recent['drawdown'].values[0]
+
+        recent_30d_close = df[df['date'] > df['date'].max() - pd.to_timedelta("30day")]['close']
+        summary['close_1m_high'] = recent_30d_close.max()
+        summary['close_1m_low'] = recent_30d_close.min()
+        summary['close_1m_avg'] = recent_30d_close.mean()
+        summary['volume_1m_avg'] = recent_30d_close.mean()
+        
+        summary = pd.DataFrame([summary])
+        return summary
+
+    def get_summary_from_history(self, category): # 중간에 끼워넣기 # recession과 겨랗ㅂ
+        assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
+            
+        dir_summary = os.path.join(self.dir_download, self.subdir_summary)
+        if category == "etf":
+            dir_history = os.path.join(self.dir_download, self.subdir_history_etf)
+            fname_summary = self.fname_summary_etf
+        elif category == "index":
+            dir_hisotry = os.path.join(self.dir_download, self.subdir_history_indices)
+            fname_summary = self.fname_summary_indices
+        elif category == "currency":
+            dir_history = os.path.join(self.dir_download, self.subdir_history_currencies)
+            fname_summary =self.fname_summary_currencies
