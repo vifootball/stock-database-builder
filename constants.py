@@ -1,8 +1,8 @@
 DIRNAME_DOWNLOAD = 'download'  # mac
-DIRNAME_DOWNLOAD = 'download' # window
 SUBDIRNAME_HISTORY_ETF = 'history_etf'
 SUBDIRNAME_HISTORY_CURRENCIES = 'history_currencies'
 SUBDIRNAME_HISTORY_INDICES = 'history_indices'
+SUBDIRNAME_SUMMARY = 'summary'
 FNAME_META_ETF = 'meta_etf.csv'
 FNAME_INFO_ETF = 'info_etf.csv'
 FNAME_PROFILE_ETF = 'profile_etf.csv'
@@ -11,7 +11,11 @@ FNAME_MASTER_ETF = 'master_etf.csv'
 FNAME_MASTER_INDICES_YAHOO = 'master_indices_yahoo.csv'
 FNAME_MASTER_INDICES_INVESTPY = 'master_indices_investpy.csv'
 FNAME_MASTER_INDICES_FRED = 'master_indices_fred.csv'
-FNAME_MASTER_CURRENCIES = 'master_indices_currencies.csv'
+FNAME_MASTER_CURRENCIES = 'master_currencies.csv'
+FNAME_SUMMARY_ETF = 'summary_etf.csv'
+FNAME_SUMMARY_CURRENCIES = 'summary_currencies.csv'
+FNAME_SUMMARY_INDICES = 'summary_indices.csv'
+
 FNAME_RECESSION = 'recession.csv'
 
 COLS_META_ETF = [
