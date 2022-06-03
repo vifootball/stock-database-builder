@@ -15,8 +15,7 @@ FNAME_MASTER_CURRENCIES = 'master_currencies.csv'
 FNAME_SUMMARY_ETF = 'summary_etf.csv'
 FNAME_SUMMARY_CURRENCIES = 'summary_currencies.csv'
 FNAME_SUMMARY_INDICES = 'summary_indices.csv'
-
-FNAME_RECESSION = 'recession.csv'
+FNAME_BENCHMARK = 'benchmark.csv'
 
 COLS_META_ETF = [
     'coutry', 'symbol', 'name', 'full_name', 'currency' 'asset_class',
