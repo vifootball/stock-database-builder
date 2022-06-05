@@ -26,6 +26,7 @@ class EtlProcessor:
         self.subdir_summary = SUBDIRNAME_SUMMARY
         self.fname_meta_etf = FNAME_META_ETF
         self.fname_info_etf = FNAME_INFO_ETF
+        self.fname_profile_etf = FNAME_PROFILE_ETF
         self.fname_master_etf = FNAME_MASTER_ETF
         self.fname_master_indices_yahoo = FNAME_MASTER_INDICES_YAHOO
         self.fname_master_indices_investpy = FNAME_MASTER_INDICES_INVESTPY

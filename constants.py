@@ -7,6 +7,7 @@ SUBDIRNAME_HISTORY_INDICES = 'history_indices'
 SUBDIRNAME_SUMMARY = 'summary'
 FNAME_META_ETF = 'meta_etf.csv'
 FNAME_INFO_ETF = 'info_etf.csv'
+FNAME_PROFILE_ETF = 'profile_etf.csv'
 FNAME_HISTORY_ETF = 'history_etf.csv'
 FNAME_MASTER_ETF = 'master_etf.csv'
 FNAME_MASTER_INDICES_YAHOO = 'master_indices_yahoo.csv'
@@ -39,8 +40,9 @@ COLS_ETF_PROFILE_TO_MASTER =[
 COLS_MASTER_ETF = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'asset_class', 'category',
     'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 'nav',
-    'isin', 'stock_exchange', 'dividends_ttm', 'volume', 'market_cap'
+    'isin', 'stock_exchange', 'market_cap'
 ]
+
 COLS_MASTER_OTHERS = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
 ]

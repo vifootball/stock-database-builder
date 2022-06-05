@@ -1,4 +1,6 @@
+import os
 import pandas as pd
+from tqdm.notebook import tqdm
 
 def get_memory_usage(df):
     # compare with df.info(memory_usage='deep')
@@ -7,6 +9,7 @@ def get_memory_usage(df):
     elif isinstance(df, pd.Series):
         mem = df.memory_usage(deep=True)/(1024**2)
     return(str(round(mem,3))+" MB" )
+
 
 def downcast_df(df, apply_int=True, apply_float=True, apply_string=False, print_size=True):
     before = get_memory_usage(df)
@@ -25,9 +28,11 @@ def downcast_df(df, apply_int=True, apply_float=True, apply_string=False, print_
         print(f"DataFrame Downcasted: {before} -> {after}")
     return df_copied
 
-# def concat_csv_files_in_dir(dirname):
-#     files = [x for x in os.listdir(dirname) if x.endswith('.csv')]
-#     with open():
-        
-    
-#     pass
+def concat_csv_files_in_dir(load_dir, save_dir, save_fname):
+    fnames_in_dir = [x for x in os.listdir(load_dir) if x.endswith('.csv')]
+    df = []
+    for fname_in_dir in tqdm(fnames_in_dir[:], mininterval=0.5):
+        temp = pd.read_csv(os.path.join(load_dir, fname_in_dir))
+        df.append(temp)
+    df = pd.concat(df)
+    df.to_csv(os.path.join(save_dir, save_fname), index=False, encoding='utf-8-sig')
