@@ -19,12 +19,13 @@ class EtlProcessor:
     def __init__(self):
         self.dir_download = DIRNAME_DOWNLOAD
         self.subdir_history_etf = SUBDIRNAME_HISTORY_ETF
+        self.subdir_profile_etf = SUBDIRNAME_PROFILE_ETF
+        self.subdir_info_etf = SUBDIRNAME_INFO_ETF
         self.subdir_history_indices = SUBDIRNAME_HISTORY_INDICES
         self.subdir_history_currencies = SUBDIRNAME_HISTORY_CURRENCIES
         self.subdir_summary = SUBDIRNAME_SUMMARY
         self.fname_meta_etf = FNAME_META_ETF
         self.fname_info_etf = FNAME_INFO_ETF
-        self.fname_profile_etf = FNAME_PROFILE_ETF
         self.fname_master_etf = FNAME_MASTER_ETF
         self.fname_master_indices_yahoo = FNAME_MASTER_INDICES_YAHOO
         self.fname_master_indices_investpy = FNAME_MASTER_INDICES_INVESTPY
@@ -34,7 +35,9 @@ class EtlProcessor:
         self.fname_summary_etf = FNAME_SUMMARY_ETF
         self.fname_summary_indices = FNAME_SUMMARY_INDICES
         self.fname_summary_currencies = FNAME_SUMMARY_CURRENCIES
-        self.cols_etf_profile = COLS_PROFILE_ETF
+        # self.cols_etf_profile = COLS_PROFILE_ETF
+        self.cols_etf_info_to_master = COLS_ETF_INFO_TO_MASTER
+        self.cols_etf_profile_to_master = COLS_ETF_PROFILE_TO_MASTER
         self.cols_etf_master = COLS_MASTER_ETF
         self.dict_cols_etf_info = DICT_COLS_ETF_INFO
         self.dict_cols_etf_profile = DICT_COLS_ETF_PROFILE
@@ -42,6 +45,8 @@ class EtlProcessor:
         self.list_dict_symbols_fred = LIST_DICT_SYMBOLS_FRED
 
         os.makedirs(self.dir_download, exist_ok=True)
+        os.makedirs(os.path.join(self.dir_download, self.subdir_info_etf), exist_ok=True)
+        os.makedirs(os.path.join(self.dir_download, self.subdir_profile_etf), exist_ok=True)
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_etf), exist_ok=True)
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_indices), exist_ok=True)
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_currencies), exist_ok=True)
@@ -50,70 +55,86 @@ class EtlProcessor:
 
     def get_meta_etf(self):
         etf_meta = investpy.etfs.get_etfs(country='united states')
+        etf_meta['category'] = 'etf'
         etf_meta.to_csv(os.path.join(self.dir_download, self.fname_meta_etf), index=False)
         return etf_meta
 
-    #  에러난거 재시도 하는 방법 찾아보기
     def get_info_etf(self): # takes about an hour
-        etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))
-        etf_names = etf_meta['name']
-        header = investpy.etfs.get_etf_information(etf_names[0], country='united states').columns.to_list()
-        rows = []
-
-        for i, name in enumerate(tqdm((etf_names[:]), mininterval=0.5)):
-            try:
-                time.sleep(0.5)
-                row = investpy.etfs.get_etf_information(name, country='united states').iloc[0].to_list()
-                rows.append(row)
-            except:
-                print(f'Loop No.{i} | Error Ocurred While Getting Information of: {name}')
+        etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))#[:20]
+        fnames_info = sorted(os.listdir(os.path.join(self.dir_download, self.subdir_info_etf)))
         
-        etf_info = pd.DataFrame(rows, columns=header) 
-        etf_info.to_csv(os.path.join(self.dir_download, self.fname_info_etf), index=False)
-        return etf_info
-    
-    def get_profile_etf(self):
-        etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))
-        header = self.cols_etf_profile
-        rows = []
-        symbols = etf_meta['symbol']
-
-        for i, symbol in enumerate(tqdm((symbols[:]), mininterval=0.5)):
-            try:
+        etf_symbols = [x for x in etf_meta['symbol']]
+        etf_symbols_already_have = [x.lstrip('info_').rstrip('.csv') for x in fnames_info if x.endswith('.csv')]        
+        etf_symbols_to_get = [x for x in etf_symbols if x not in etf_symbols_already_have] # refresh mode, 이어서 모드
+        
+        etf_names = [x for x in etf_meta['name']]
+        for i, etf_name in enumerate(tqdm(etf_names, mininterval=0.5)):
+            symbol = etf_meta.loc[etf_meta['name']==etf_name]['symbol'].values[0]
+            if symbol in etf_symbols_to_get:
                 time.sleep(0.5)
-                etf = yf.Ticker(symbol)
-                temp_df = etf.get_institutional_holders().T
-                temp_df.columns = temp_df.iloc[0]
-                temp_df = temp_df[1:]
+                #if etf_name in etf_names_to_get:
+                try:
+                    etf_info = investpy.etfs.get_etf_information(etf_name, country='united states')
+                except:
+                    print(f'Loop No.{i} | Error Ocurred While Getting Profile of: {symbol}')
+                    continue
+                symbol = etf_meta.loc[etf_meta['name']==etf_name]['symbol'].values[0]
+                etf_info['symbol'] = symbol
+                
+                etf_info.rename(columns=self.dict_cols_etf_info, inplace=True)
+                etf_info['dividend_yield_rate'] = etf_info['dividend_yield_rate'].str.replace('%','').astype('float32')/100
+                etf_info['1_year_change_rate'] = etf_info['1_year_change_rate'].str.replace('[ %]','', regex=True).astype('float32') /100 # 공백과 %기호 제거
+                
+                etf_info.to_csv(os.path.join(
+                    self.dir_download, self.subdir_info_etf, f'info_{symbol}.csv'
+                ), index=False)
 
-                temp_df['Symbol'] = symbol
-                temp_df['Fund Family'] = etf.info.get('fundFamily')
+    def get_profile_etf(self):
+        etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))#[:15]
+        fnames_profile = sorted(os.listdir(os.path.join(self.dir_download, self.subdir_profile_etf)))
+        
+        symbols = sorted([x for x in etf_meta['symbol']])
+        symbols_already_have = sorted([x.lstrip('profile_').rstrip('.csv') for x in fnames_profile if x.endswith('.csv')])        
+        symbols_to_get = sorted([x for x in symbols if x not in symbols_already_have]) # refresh mode, 이어서 모드
 
-                row = temp_df[COLS_PROFILE_ETF].iloc[0].to_list()
-                rows.append(row)
+        for i, symbol in enumerate(tqdm(symbols_to_get, mininterval=0.5)): # test 후  try except
+            time.sleep(0.5)
+            #print(symbol)
+            etf = yf.Ticker(symbol)
+            try: # Noneype 일때
+                profile = etf.get_institutional_holders().T
             except:
                 print(f'Loop No.{i} | Error Ocurred While Getting Profile of: {symbol}')
+                continue
+            profile.columns = profile.iloc[0]
+            profile = profile[1:]
+            profile['symbol'] = symbol
+            profile['fund_family'] = etf.info.get('fundFamily')
+
+            try: # ETF가 아닐때
+                profile.rename(columns=self.dict_cols_etf_profile, inplace=True)
+                profile = profile[self.dict_cols_etf_profile.values()]
+            except:
+                print(f'Loop No.{i} | Error Ocurred While Getting Profile of: {symbol}')
+                continue
             
-        etf_profile = pd.DataFrame(rows, columns=header)
-        etf_profile.to_csv(os.path.join(self.dir_download, self.fname_profile_etf), index=False)
-        return etf_profile
+            profile['expense_ratio'] = profile['expense_ratio'].str.replace('%','').astype('float')/100
+            profile.rename(columns={'net_assets': 'net_assets_original'}, inplace=True)
+            profile['net_assets_original'] = profile["net_assets_original"].fillna("0")
+            profile['multiplier_mil'] = (profile["net_assets_original"].str.endswith('M').astype('int') * (1000_000-1)) + 1
+            profile['multiplier_bil'] = (profile["net_assets_original"].str.endswith('B').astype('int') * (1000_000_000-1)) + 1
+            profile['net_assets'] = profile['net_assets_original'].str.extract('([0-9.]*)').astype('float')
+            profile['net_assets'] *= profile['multiplier_mil'] * profile['multiplier_bil']
+
+            profile.to_csv(os.path.join(
+                self.dir_download, self.subdir_profile_etf, f'profile_{symbol}.csv'
+            ), index=False)
 
     def construct_master_etf(self):
         etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))
-        etf_info = pd.read_csv(os.path.join(self.dir_download, self.fname_info_etf))
-        etf_profile = pd.read_csv(os.path.join(self.dir_download, self.fname_profile_etf))
-        
-        etf_meta.rename(columns={'asset_class': 'category'}, inplace=True)
-        
-        etf_info = etf_info[self.dict_cols_etf_info.keys()]
-        etf_info.rename(columns=self.dict_cols_etf_info, inplace=True)
-        etf_info['dividend_yield_rate'] = etf_info['dividend_yield_rate'].str.replace('%','').astype('float32')/100
-        etf_info['1_year_change_rate'] = etf_info['1_year_change_rate'].str.replace('[ %]','', regex=True).astype('float32') /100 # 공백과 %기호 제거
-
-        etf_profile = etf_profile[self.dict_cols_etf_profile.keys()]
-        etf_profile.rename(columns=self.dict_cols_etf_profile, inplace=True)
-        etf_profile['expense_ratio'] = etf_profile['expense_ratio'].str.replace('%','').astype('float32')
-
+        etf_info = pd.read_csv(os.path.join(self.dir_download, self.fname_info_etf))[self.cols_etf_info_to_master]
+        etf_profile = pd.read_csv(os.path.join(self.dir_download, self.fname_profile_etf))[self.cols_etf_profile_to_master]
+                
         etf_master = etf_meta.merge(etf_info, how='left', left_on='name', right_on='etf_name')
         etf_master = etf_master.merge(etf_profile, how='left', left_on='symbol', right_on='symbol')
         etf_master = etf_master[self.cols_etf_master]
@@ -226,15 +247,29 @@ class EtlProcessor:
         df['dividends_count_12m'] = df.set_index('date')['dividends_paid'].rolling(window='365d').sum().to_numpy() # tonumpy 안하며 nan 반환..
         df['dividends_trailing_12m'] = df.set_index('date')['dividends'].rolling(window='365d').sum().to_numpy()
         df['dividends_trailing_6m'] = (df.set_index('date')['dividends'].rolling(window='183d').sum().to_numpy())*2
-        df['dividends_rate_trailing_12m'] = df['dividends_trailing_12m']/df['close']
-        df['dividends_rate_trailing_6m'] = df['dividends_trailing_6m']/df['close']
-
-        # prices
+         # prices
         df['change'] = df['close'].diff().fillna(0)
-        df['change_rate'] = df['change']/df['close']
         df['change_sign'] = np.sign(df['change'])
         df['all_time_high'] = df['close'].cummax()
-        df['drawdown'] = (df['close']/df['all_time_high']) - 1
+        
+        # derived variables
+        try:
+            df['drawdown'] = (df['close']/df['all_time_high']) - 1    
+            df['dividends_rate_trailing_12m'] = df['dividends_trailing_12m']/df['close']
+            df['dividends_rate_trailing_6m'] = df['dividends_trailing_6m']/df['close']
+            df['change_rate'] = df['change']/df['close']
+        except ZeroDivisionError:
+            df['drawdown'] = None
+            df['dividends_rate_trailing_12m'] = None
+            df['dividends_rate_trailing_6m'] = None
+            df['change_rate'] = None
+
+        try:
+            df['momentum_rolling_1y'] = df['close'] / df['close_rolling_1y']
+            df['momentum_rolling_6m'] = df['close'] / df['close_rolling_6m']
+        except:
+            df['momentum_rolling_1y'] = None
+            df['momentum_rolling_6m'] = None
         # try except null -> 나중에 list comprehension?
         try:
             df['close_rolling_1y'] = df.set_index('date')['close'].rolling(window='365d').mean().to_numpy()
@@ -258,8 +293,7 @@ class EtlProcessor:
         # momentum 1년 이평선 가격과 비교
         # momentum 1년전 가격과 비교 <- 정의상은 이게 맞지만 노이즈가 많이 껴서 이평선과 비교하는게 맞는 것 같음
         # or 30일 정도 기준 정해서 이동평균 구하기?
-        df['momentum_rolling_1y'] = df['close'] / df['close_rolling_1y']
-        df['momentum_rolling_6m'] = df['close'] / df['close_rolling_6m']
+
 
         #df['momentum_score_rolling_1y'] = np.sign(df['momentum_rolling_1y'])
         #df['momentum_score_rolling_6m'] = np.sign(df['momentum_rolling_6m'])
@@ -277,6 +311,8 @@ class EtlProcessor:
         # df['drawdown_20']
         # df['drawdown_22']
 
+        # df['change_1year']
+        # df['change_month']
         return df
 
     def get_history_from_yf(self, master_df, category):
@@ -290,9 +326,8 @@ class EtlProcessor:
 
         for row in tqdm(master_df.itertuples(), total=len(master_df), mininterval=0.5):
             time.sleep(0.1)
-            i = getattr(row, 'Index')
+            # i = getattr(row, 'Index')
             symbol = getattr(row, 'symbol')
-
             history = yf.Ticker(symbol).history(period='max').asfreq(freq = "1d").reset_index()
             history.columns = history.columns.str.lower()
             history.rename(columns={'stock splits':'stock_splits'}, inplace=True)
@@ -309,29 +344,28 @@ class EtlProcessor:
             else:
                 print(f'Empty DataFrame at Loop {i}: {symbol}')
 
-
-
     def get_history_from_fred(self, master_df):
         start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
         for row in tqdm(master_df.itertuples(), total=len(master_df)):
-            i = getattr(row, 'Index')
+            # i = getattr(row, 'Index')
             symbol = getattr(row, 'symbol')
-            try:
-                # header = pd.DataFrame(columns=COLS_HISTORY)
-                history = web.DataReader(symbol, 'fred', start, end).reset_index(drop=False)
-                history['country'] = getattr(row, 'country')
-                history['symbol'] = getattr(row, 'symbol')
-                history['full_name'] = getattr(row, 'full_name')
-                history.rename(columns={f'{symbol}':'close'}, inplace=True)
-                history.rename(columns={'DATE':'date'}, inplace=True)
+            history = web.DataReader(symbol, 'fred', start, end).asfreq(freq='1d', method='ffill').reset_index(drop=False)
+            history['country'] = getattr(row, 'country')
+            history['symbol'] = getattr(row, 'symbol')
+            history['full_name'] = getattr(row, 'full_name')
+            history.rename(columns={f'{symbol}':'close'}, inplace=True)
+            history.rename(columns={'DATE':'date'}, inplace=True)
+            history['date'] = history['date'].astype('str')
 
-                history = self._join_benchmark(history)
-                history = self._preprocess_history(history)
-                # history = pd.concat([header, history])[COLS_HISTORY]
-                history.to_csv(os.path.join(DIRNAME_DOWNLOAD, SUBDIRNAME_HISTORY_INDICES, f'history_{symbol}.csv'),  index=False)
-            except:
-                print(f'Error Occured at Loop {i}: {symbol}')
-    
+            header = pd.DataFrame(columns=COLS_HISTORY_STAGE_1)
+            history = pd.concat([header, history])
+            #history.loc[:, ['dividends', 'volume', 'stock_splits']] = 0
+
+            history = self._join_benchmark(history)
+            # history = self._preprocess_history(history) #-> 다른 히스토리컬럼이랑 구조 맞추기: FRED 지수는 굳이?
+
+            history.to_csv(os.path.join(self.dir_download, self.subdir_history_indices, f'history_{symbol}.csv'),  index=False)
+            # print(f'Error Occured at Loop {i}: {symbol}')
     
     def _summarize_history(self, df):
         df['date'] = pd.to_datetime(df['date'])
