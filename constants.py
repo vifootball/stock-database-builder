@@ -1,9 +1,15 @@
 DIRNAME_DOWNLOAD = 'download'  # mac
 SUBDIRNAME_INFO_ETF = 'info_etf'
 SUBDIRNAME_PROFILE_ETF = 'profile_etf'
-SUBDIRNAME_HISTORY_ETF = 'history_etf'
-SUBDIRNAME_HISTORY_CURRENCIES = 'history_currencies'
-SUBDIRNAME_HISTORY_INDICES = 'history_indices'
+
+SUBDIRNAME_HISTORY_ETF_RAW = 'history_etf_raw'
+SUBDIRNAME_HISTORY_CURRENCIES_RAW = 'history_currencies_raw'
+SUBDIRNAME_HISTORY_INDICES_RAW = 'history_indices_raw'
+
+SUBDIRNAME_HISTORY_ETF_PP = 'history_etf_pp'
+SUBDIRNAME_HISTORY_CURRENCIES_PP = 'history_currencies_pp'
+SUBDIRNAME_HISTORY_INDICES_PP = 'history_indices_pp'
+
 SUBDIRNAME_SUMMARY = 'summary'
 FNAME_META_ETF = 'meta_etf.csv'
 FNAME_INFO_ETF = 'info_etf.csv'
@@ -39,14 +45,15 @@ COLS_ETF_PROFILE_TO_MASTER =[
 ]
 COLS_MASTER_ETF = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'asset_class', 'category',
-    'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 'nav',
-    'isin', 'stock_exchange', 'market_cap'
+    'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 'nav', 'shares_outstanding',
+    'market_cap', 'isin', 'stock_exchange',
 ]
-
 COLS_MASTER_OTHERS = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
 ]
-COLS_HISTORY_STAGE_1 = [
+
+
+COLS_HISTORY_RAW = [
  'date', 'symbol', 'full_name', 'open', 'high', 'low', 'close', 'volume', 'dividends', 'stock_splits'
 ] 
 
@@ -75,7 +82,7 @@ DICT_COLS_ETF_PROFILE = {
     'Net Assets': 'net_assets',
     'NAV': 'nav'
 }
-DICT_COLS_HISTORY = {
+DICT_COLS_HISTORY_RAW = {
     'Date': 'date',
     'Open': 'open',
     'High': 'high',
@@ -167,6 +174,14 @@ LIST_DICT_SYMBOLS_FRED = [
      'symbol'   : 'USARECM',
      'name'     : 'OECD based Recession Indicators for the United States from the Peak through the Trough',
      'full_name': 'OECD based Recession Indicators for the United States from the Peak through the Trough', 
+     'country'  : 'united states', 
+     'currency' : None, 
+     'category' : 'index'
+    },
+    {
+     'symbol'   : 'T10YIE',
+     'name'     : '10-Year Breakeven Inflation Rate',
+     'full_name': '10-Year Breakeven Inflation Rate', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
