@@ -231,103 +231,6 @@ class EtlProcessor:
         integrated_df.to_csv(os.path.join(self.dir_download, 'master.csv'), index=False, encoding='utf-8-sig')
         return integrated_df
 
-    def get_benchmark(self):
-        # recession
-        rec_start, rec_end = (dt.datetime(1800, 1, 1), dt.datetime.today())
-        recession = web.DataReader('USREC', 'fred', rec_start, rec_end).asfreq(freq = "1d", method = 'ffill')
-        # cpi = web.DataReader('CPIAUCSL', '')
-        # others
-        snp_500 = yf.Ticker('^GSPC').history(period='max')['Close']
-        kospi = yf.Ticker('^ks11').history(period='max')['Close']
-        usd_krw = yf.Ticker('krw=x').history(period='max')['Close']
-        usd_idx = yf.Ticker('DX-Y.NYB').history(period='max')['Close']
-        # 모두 인덱스가 날짜라서 공통인덱스를 이용하여 컬럼방향 conccat
-        benchmark = pd.concat([recession, snp_500, kospi, usd_krw, usd_idx], axis = 'columns').reset_index(drop=False)
-        benchmark.columns = ['date', 'recession', 'snp_500', 'kospi', 'usd_krw', 'usd_idx']
-        benchmark.to_csv(os.path.join(self.dir_download, self.fname_benchmark), index=False)
-        return benchmark
-
-    def _join_benchmark(self, history):
-        benchmark = pd.read_csv(os.path.join(self.dir_download, self.fname_benchmark))
-        history = history.merge(benchmark, how='left', on='date', suffixes=[None, '_y'])
-        return history
-
-    def _preprocess_history(self, df):
-        df['date'] = pd.to_datetime(df['date'])
-
-        # dividends
-        df['dividends_paid'] = np.sign(df['dividends'])
-        df['dividends_count_12m'] = df.set_index('date')['dividends_paid'].rolling(window='365d').sum().to_numpy() # tonumpy 안하며 nan 반환..
-        df['dividends_trailing_12m'] = df.set_index('date')['dividends'].rolling(window='365d').sum().to_numpy()
-        df['dividends_trailing_6m'] = (df.set_index('date')['dividends'].rolling(window='183d').sum().to_numpy())*2
-         # prices
-        df['change'] = df['close'].diff().fillna(0)
-        df['change_sign'] = np.sign(df['change'])
-        df['all_time_high'] = df['close'].cummax()
-        
-        # derived variables
-        try:
-            df['drawdown'] = (df['close']/df['all_time_high']) - 1    
-            df['dividends_rate_trailing_12m'] = df['dividends_trailing_12m']/df['close']
-            df['dividends_rate_trailing_6m'] = df['dividends_trailing_6m']/df['close']
-            df['change_rate'] = df['change']/df['close']
-        except ZeroDivisionError:
-            df['drawdown'] = None
-            df['dividends_rate_trailing_12m'] = None
-            df['dividends_rate_trailing_6m'] = None
-            df['change_rate'] = None
-
-        try:
-            df['momentum_rolling_1y'] = df['close'] / df['close_rolling_1y']
-            df['momentum_rolling_6m'] = df['close'] / df['close_rolling_6m']
-        except:
-            df['momentum_rolling_1y'] = None
-            df['momentum_rolling_6m'] = None
-        # try except null -> 나중에 list comprehension?
-        try:
-            df['close_rolling_1y'] = df.set_index('date')['close'].rolling(window='365d').mean().to_numpy()
-            df['momentum_rolling_1y'] = df['close'] / df['close_rolling_1y']
-        except:
-            df['close_rolling_1y'] = None
-            df['momentum_rolling_1y'] = None
-        try:
-            df['close_rolling_6m'] = df.set_index('date')['close'].rolling(window='180d').mean().to_numpy()
-        except:
-            df['close_rolling_6m'] = None
-        try:
-            df['close_rolling_3m'] = df.set_index('date')['close'].rolling(window='90d').mean().to_numpy()
-        except:
-            df['close_rolling_3m'] = None
-        try:
-            df['close_rolling_1m'] = df.set_index('date')['close'].rolling(window='30d').mean().to_numpy()
-        except:
-            df['close_rolling_1m'] = None
-
-        # momentum 1년 이평선 가격과 비교
-        # momentum 1년전 가격과 비교 <- 정의상은 이게 맞지만 노이즈가 많이 껴서 이평선과 비교하는게 맞는 것 같음
-        # or 30일 정도 기준 정해서 이동평균 구하기?
-
-
-        #df['momentum_score_rolling_1y'] = np.sign(df['momentum_rolling_1y'])
-        #df['momentum_score_rolling_6m'] = np.sign(df['momentum_rolling_6m'])
-
-
-        # df['bull_bear'] = df['change_rate']
-        # df['bull_bear'] = df['drawdown'].apply(lambda x: 'bear' if x>=-0.03 else 'bull') # 일주일 이동평균 이용해도 괜찮을듯 # B_B_w, B_B_m
-        # df['all_time_drawdown'] = df['drawdown'].cummin()
-        # df['drawdown_max'] = df['drawdown'].max()
-        
-        # momentum
-
-        # df['drawdown_00']
-        # df['drawdown_08']
-        # df['drawdown_20']
-        # df['drawdown_22']
-
-        # df['change_1year']
-        # df['change_month']
-        return df
-
     def get_history_from_yf(self, master_df, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
@@ -339,14 +242,14 @@ class EtlProcessor:
 
         #있으면 하고 없으면 말기 # os.path.exists()
         for row in tqdm(master_df.itertuples(), total=len(master_df), mininterval=0.5):
+            symbol = getattr(row, 'symbol')
             fpath = os.path.join(dir_history_raw, f'history_raw_{symbol}.csv')
             if not os.path.exists(fpath):
                 time.sleep(0.1)
                 i = getattr(row, 'Index') # enumerate i 의 용도
-                symbol = getattr(row, 'symbol')
                 history = yf.Ticker(symbol).history(period='max')#
-                if len(history) >= 2:
-                    history = history.asfreq(freq = "1d").reset_index()
+                if len(history) >= 10:
+                    # history = history.asfreq(freq = "1d").reset_index()
                     history.rename(columns=self.dict_cols_history_raw, inplace=True)
                     history['date'] = history['date'].astype('str')
                     history['country'] = getattr(row, 'country')
@@ -361,7 +264,7 @@ class EtlProcessor:
         for row in tqdm(master_df.itertuples(), total=len(master_df)):
             i = getattr(row, 'Index')
             symbol = getattr(row, 'symbol')
-            history = web.DataReader(symbol, 'fred', start, end).asfreq(freq='1d', method='ffill').reset_index(drop=False)
+            history = web.DataReader(symbol, 'fred', start, end)#.asfreq(freq='1d', method='ffill').reset_index(drop=False)
             history['country'] = getattr(row, 'country')
             history['symbol'] = getattr(row, 'symbol')
             history['full_name'] = getattr(row, 'full_name')
@@ -373,53 +276,119 @@ class EtlProcessor:
             history = pd.concat([header, history])
             #history.loc[:, ['dividends', 'volume', 'stock_splits']] = 0
 
-            history.to_csv(os.path.join(self.dir_download, self.subdir_history_indices_raw, f'history_{symbol}.csv'),  index=False)
+            history.to_csv(os.path.join(self.dir_download, self.subdir_history_indices_raw, f'history_raw_{symbol}.csv'), index=False)
             # print(f'Error Occured at Loop {i}: {symbol}')
-    
-    def _summarize_history(self, df):
-        df['date'] = pd.to_datetime(df['date'])
 
-        summary = {}
-        summary['symbol'] = df['symbol'][0]
-        summary['all_time_High'] = df['close'].max()
-        summary['maximal_drawdown'] = df['drawdown'].min()
+    def get_benchmark(self): 
+        # recession
+        fred_start, fred_end = (dt.datetime(1800, 1, 1), dt.datetime.today())
+        recession = web.DataReader('USREC', 'fred', fred_start, fred_end).asfreq(freq = "1d", method = 'ffill')
+        cpi = web.DataReader('CPIAUCSL', 'fred', fred_start, fred_end).asfreq(freq = "1d", method = 'ffill')
+        # others
+        snp_500 = yf.Ticker('^GSPC').history(period='max')['Close']
+        kospi = yf.Ticker('^ks11').history(period='max')['Close']
+        usd_krw = yf.Ticker('krw=x').history(period='max')['Close']
+        usd_idx = yf.Ticker('DX-Y.NYB').history(period='max')['Close']
+        # 모두 인덱스가 날짜라서 공통인덱스를 이용하여 컬럼방향 conccat
+        benchmark = pd.concat([recession, snp_500, kospi, usd_krw, usd_idx], axis = 'columns').reset_index(drop=False)
+        benchmark.columns = ['date', 'recession', 'cpi', 'snp_500', 'kospi', 'usd_krw', 'usd_idx']
+        benchmark.to_csv(os.path.join(self.dir_download, self.fname_benchmark), index=False)
+        return benchmark
 
-        recent = df[df['date']==df['date'].max()]
-        summary['recent_close'] = recent['close'].values[0]
-        summary['recent_div_trailing_12m'] = recent['dividends_trailing_12m'].values[0]
-        summary['recent_div_rate_trailing_12m'] = recent['dividends_rate_trailing_12m'].values[0]
-        summary['recent_volume'] = recent['volume'].values[0]
-        summary['drawdown'] = recent['drawdown'].values[0]
+    def _join_benchmark(self, history):
+        benchmark = pd.read_csv(os.path.join(self.dir_download, self.fname_benchmark))
+        history = history.merge(benchmark, how='left', on='date', suffixes=[None, '_y'])
+        return history
 
-        recent_30d = df[df['date'] > df['date'].max() - pd.to_timedelta("30day")]
-        summary['close_1m_high'] = recent_30d['close'].max()
-        summary['close_1m_low'] = recent_30d['close'].min()
-        summary['close_1m_avg'] = recent_30d['close'].mean()
-        summary['volume_1m_avg'] = recent_30d['volume'].mean()
-        
-        summary = pd.DataFrame([summary])
-        return summary
+    def _calculate_features(self, history):
+        history['date'] = pd.to_datetime(history['date'])
 
-    def get_summary_from_history(self, category): # 중간에 끼워넣기 # recession과 겨랗ㅂ
-        assert category in ['etf', 'index', 'currency'], 'category must be one of ("etf", "index", "currency")'
-            
-        dir_summary = os.path.join(self.dir_download, self.subdir_summary)
-        if category == "etf":
-            dir_history = os.path.join(self.dir_download, self.subdir_history_etf)
-            fname_summary = self.fname_summary_etf
-        elif category == "index":
-            dir_history = os.path.join(self.dir_download, self.subdir_history_indices)
-            fname_summary = self.fname_summary_indices
+        # dividends
+        history['dividends_paid'] = np.sign(history['dividends'])
+        history['dividends_paid_count_12m'] = history.set_index('date')['dividends_paid'].rolling(window='365d').sum().to_numpy() # tonumpy 안하며 nan 반환..
+        history['dividends_trailing_12m'] = history.set_index('date')['dividends'].rolling(window='365d').sum().to_numpy()
+        history['dividends_trailing_6m'] = (history.set_index('date')['dividends'].rolling(window='183d').sum().to_numpy())*2
+        history['dividends_rate_trailing_12m'] = history['dividends_trailing_12m']/history['close']
+        history['dividends_rate_trailing_6m'] = history['dividends_trailing_6m']/history['close']
+
+        # prices
+        history['change'] = history['close'].diff().fillna(0)
+        history['change_sign'] = np.sign(history['change'])
+        history['all_time_high'] = history['close'].cummax()
+        history['drawdown'] = (history['close']/history['all_time_high']) - 1
+        history['max_drawdown'] = history['drawdown'].cummin()
+        history['change_rate'] = history['change']/history['close']
+
+        history['close_avg_1y'] = history.set_index('date')['close'].rolling(window='365d').mean().to_numpy()
+        history['close_max_1y'] = history.set_index('date')['close'].rolling(window='365d').max().to_numpy()
+        history['close_min_1y'] = history.set_index('date')['close'].rolling(window='365d').min().to_numpy()
+
+        # volumes
+        history['volume_avg_1y'] = history.set_index('date')['volume'].rolling(window='365d').mean().to_numpy()
+        history['volume_avg_6m'] = history.set_index('date')['volume'].rolling(window='180d').mean().to_numpy()
+        history['volume_avg_3m'] = history.set_index('date')['volume'].rolling(window='90d').mean().to_numpy()
+
+        # df['drawdown_00']
+        # df['drawdown_08']
+        # df['drawdown_20']
+        # df['drawdown_22']
+
+        # df['change_1year']
+        # df['change_month']
+
+        # df['momentum_score_rolling_1y'] = np.sign(df['momentum_rolling_1y'])
+        # df['momentum_score_rolling_6m'] = np.sign(df['momentum_rolling_6m'])
+        # df['bull_bear'] = df['change_rate']
+        # df['bull_bear'] = df['drawdown'].apply(lambda x: 'bear' if x>=-0.03 else 'bull') # 일주일 이동평균 이용해도 괜찮을듯 # B_B_w, B_B_m
+
+
+        history = history.set_index('date').asfreq(freq = "1d").reset_index()
+        return history
+
+    def preprocess_history(self, category):
+        assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
+        if category == "index":
+            dir_history_raw = os.path.join(self.dir_download, self.subdir_history_indices_raw)
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_indices_pp)
+        elif category == "etf":
+            dir_history_raw = os.path.join(self.dir_download, self.subdir_history_etf_raw)
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_etf_pp)
         elif category == "currency":
-            dir_history = os.path.join(self.dir_download, self.subdir_history_currencies)
-            fname_summary =self.fname_summary_currencies
+            dir_history_raw = os.path.join(self.dir_download, self.subdir_history_currencies_raw)
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_currencies_pp)
         
-        fnames_history = [x for x in os.listdir(dir_history) if x.endswith('.csv')]
-        summary = []
-        for fname_history in tqdm(fnames_history, mininterval=0.5):
-            df = pd.read_csv(os.path.join(dir_history, fname_history))
-            summary.append(self._summarize_history(df))
-        summary = pd.concat(summary)
+        fnames_history_raw = [x for x in os.listdir(dir_history_raw) if x.endswith('.csv')]
+        for fname_history_raw in fnames_history_raw:
+            history = pd.read_csv(os.path.join(dir_history_raw, fname_history_raw))
+            symbol = history['symbol'].iat[0]
+            
+            history = self._calculate_features(history)
+            history = self._join_benchmark
+            history.to_csv(os.path.join(self.dir_history_pp, f'history_pp_{symbol}.csv'), index=False)
 
-        summary.to_csv(os.path.join(dir_summary, fname_summary), index=False)
+
+    def get_summary_from_history(self, category):
+        assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
+        if category == "index":
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_indices_pp)
+            dir_summary = os.path.join(self.dir_download, self.subdir_summary)
+            fname_summary = self.fname_summary_indices
+        elif category == "etf":
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_etf_pp)
+            dir_summary = os.path.join(self.dir_download, self.subdir_summary)
+            fname_summary = self.fname_summary_etf
+        elif category == "currency":
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_currencies_pp)
+            dir_summary = os.path.join(self.dir_download, self.subdir_summary)
+            fname_summary = self.fname_summary_currencies
+
+        summary = []
+        for fanme_history_pp in fnames_history_pp:
+            history = pd.read_csv()
+            history = history.loc[history['close'].notnull()]
+            recent = history.iloc[-1]
+            summary.append(recent)
+        summary = pd.DataFrame(summary).reset_index(drop=True)
+        summary.to_csv(os.path.join(dir_summary, fname_summary))
         return summary
+    
