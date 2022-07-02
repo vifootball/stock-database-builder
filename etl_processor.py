@@ -4,7 +4,8 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime as dt
-from tqdm.notebook import tqdm
+#from tqdm.notebook import tqdm
+from tqdm import tqdm
 from bs4 import BeautifulSoup as bs
 import investpy
 import yfinance as yf
@@ -26,7 +27,7 @@ class EtlProcessor:
         self.subdir_history_indices_pp = SUBDIRNAME_HISTORY_INDICES_PP
         self.subdir_history_currencies_raw = SUBDIRNAME_HISTORY_CURRENCIES_RAW
         self.subdir_history_currencies_pp = SUBDIRNAME_HISTORY_CURRENCIES_PP
-        self.subdir_summary = SUBDIRNAME_SUMMARY
+        self.subdir_recent = SUBDIRNAME_SUMMARY
         
         self.fname_meta_etf = FNAME_META_ETF
         self.fname_info_etf = FNAME_INFO_ETF
@@ -36,11 +37,12 @@ class EtlProcessor:
         self.fname_master_indices_investpy = FNAME_MASTER_INDICES_INVESTPY
         self.fname_master_currencies = FNAME_MASTER_CURRENCIES
         self.fname_master_indices_fred = FNAME_MASTER_INDICES_FRED
+        self.fname_recent_etf = FNAME_SUMMARY_ETF
+        self.fname_recent_indices = FNAME_SUMMARY_INDICES
+        self.fname_recent_currencies = FNAME_SUMMARY_CURRENCIES
         self.fname_benchmark = FNAME_BENCHMARK
-        self.fname_summary_etf = FNAME_SUMMARY_ETF
-        self.fname_summary_indices = FNAME_SUMMARY_INDICES
-        self.fname_summary_currencies = FNAME_SUMMARY_CURRENCIES
-        
+
+
         # self.cols_etf_profile = COLS_PROFILE_ETF
         self.cols_etf_info_to_master = COLS_ETF_INFO_TO_MASTER
         self.cols_etf_profile_to_master = COLS_ETF_PROFILE_TO_MASTER
@@ -358,37 +360,41 @@ class EtlProcessor:
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_currencies_pp)
         
         fnames_history_raw = [x for x in os.listdir(dir_history_raw) if x.endswith('.csv')]
-        for fname_history_raw in fnames_history_raw:
+        for fname_history_raw in tqdm(fnames_history_raw):
             history = pd.read_csv(os.path.join(dir_history_raw, fname_history_raw))
             symbol = history['symbol'].iat[0]
             
             history = self._calculate_features(history)
-            history = self._join_benchmark
-            history.to_csv(os.path.join(self.dir_history_pp, f'history_pp_{symbol}.csv'), index=False)
+            #history = self._join_benchmark
+            history.to_csv(os.path.join(dir_history_pp, f'history_pp_{symbol}.csv'), index=False)
+        
+        print(f"Finished Preprocessing History: {category}")
 
 
-    def get_summary_from_history(self, category):
+    def get_recent_from_history(self, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_indices_pp)
-            dir_summary = os.path.join(self.dir_download, self.subdir_summary)
-            fname_summary = self.fname_summary_indices
+            dir_recent = os.path.join(self.dir_download, self.subdir_recent)
+            fname_summary = self.fname_recent_indices
         elif category == "etf":
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_etf_pp)
-            dir_summary = os.path.join(self.dir_download, self.subdir_summary)
-            fname_summary = self.fname_summary_etf
+            dir_recent = os.path.join(self.dir_download, self.subdir_recent)
+            fname_summary = self.fname_recent_etf
         elif category == "currency":
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_currencies_pp)
-            dir_summary = os.path.join(self.dir_download, self.subdir_summary)
-            fname_summary = self.fname_summary_currencies
+            dir_recent = os.path.join(self.dir_download, self.subdir_recent)
+            fname_summary = self.fname_recent_currencies
 
         summary = []
-        for fanme_history_pp in fnames_history_pp:
-            history = pd.read_csv()
-            history = history.loc[history['close'].notnull()]
+        fnames_history_pp = [x for x in os.listdir(dir_history_pp) if x.endswith('.csv')]
+        for fname_history_pp in tqdm(fnames_history_pp, mininterval=0.5):
+            history = pd.read_csv(os.path.join(dir_history_pp, fname_history_pp))
+            history = history.loc[history['close'].notnull()] # 휴장일 제외 최근
             recent = history.iloc[-1]
             summary.append(recent)
         summary = pd.DataFrame(summary).reset_index(drop=True)
-        summary.to_csv(os.path.join(dir_summary, fname_summary))
+        summary.to_csv(os.path.join(dir_recent, fname_summary), index=False)
+        print(f"Finished Summarizing Histories: {category}")
         return summary
     

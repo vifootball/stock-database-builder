@@ -28,11 +28,11 @@ def downcast_df(df, apply_int=True, apply_float=True, apply_string=False, print_
         print(f"DataFrame Downcasted: {before} -> {after}")
     return df_copied
 
-def concat_csv_files_in_dir(load_dir, save_dir, save_fname):
-    fnames_in_dir = [x for x in os.listdir(load_dir) if x.endswith('.csv')]
+def concat_csv_files_in_dir(get_dir, put_dir, fname):
+    fnames_in_dir = [x for x in os.listdir(get_dir) if x.endswith('.csv')]
     df = []
     for fname_in_dir in tqdm(fnames_in_dir[:], mininterval=0.5):
-        temp = pd.read_csv(os.path.join(load_dir, fname_in_dir))
+        temp = pd.read_csv(os.path.join(get_dir, fname_in_dir))
         df.append(temp)
     df = pd.concat(df)
-    df.to_csv(os.path.join(save_dir, save_fname), index=False, encoding='utf-8-sig')
+    df.to_csv(os.path.join(put_dir, fname), index=False, encoding='utf-8-sig')
