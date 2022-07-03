@@ -1,6 +1,8 @@
 import os
 import pandas as pd
-from tqdm.notebook import tqdm
+# from tqdm.notebook import tqdm
+from tqdm import tqdm
+
 
 def get_memory_usage(df):
     # compare with df.info(memory_usage='deep')
