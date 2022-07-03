@@ -11,6 +11,7 @@ import investpy
 import yfinance as yf
 import pandas_datareader.data as web
 from constants import *
+from utils import *
 
 # 티커가 바뀔 수 있으니, 마스터를 add 방식으로 수집하고 drop duplicates?
 # price, date 결측치 보간하기
@@ -21,27 +22,36 @@ class EtlProcessor:
         self.dir_download = DIRNAME_DOWNLOAD
         self.subdir_profile_etf = SUBDIRNAME_PROFILE_ETF
         self.subdir_info_etf = SUBDIRNAME_INFO_ETF
+        self.subdir_master_indices = SUBDIRNAME_MASTER_INDICES
         self.subdir_history_etf_raw = SUBDIRNAME_HISTORY_ETF_RAW
         self.subdir_history_etf_pp = SUBDIRNAME_HISTORY_ETF_PP
         self.subdir_history_indices_raw = SUBDIRNAME_HISTORY_INDICES_RAW
         self.subdir_history_indices_pp = SUBDIRNAME_HISTORY_INDICES_PP
         self.subdir_history_currencies_raw = SUBDIRNAME_HISTORY_CURRENCIES_RAW
         self.subdir_history_currencies_pp = SUBDIRNAME_HISTORY_CURRENCIES_PP
-        self.subdir_recent = SUBDIRNAME_SUMMARY
+        self.subdir_recent = SUBDIRNAME_RECENT
         
         self.fname_meta_etf = FNAME_META_ETF
         self.fname_info_etf = FNAME_INFO_ETF
         self.fname_profile_etf = FNAME_PROFILE_ETF
         self.fname_master_etf = FNAME_MASTER_ETF
+        
         self.fname_master_indices_yahoo = FNAME_MASTER_INDICES_YAHOO
         self.fname_master_indices_investpy = FNAME_MASTER_INDICES_INVESTPY
-        self.fname_master_currencies = FNAME_MASTER_CURRENCIES
         self.fname_master_indices_fred = FNAME_MASTER_INDICES_FRED
-        self.fname_recent_etf = FNAME_SUMMARY_ETF
-        self.fname_recent_indices = FNAME_SUMMARY_INDICES
-        self.fname_recent_currencies = FNAME_SUMMARY_CURRENCIES
+        self.fname_master_indices = FNAME_MASTER_INDICES
+        
+        self.fname_master_currencies = FNAME_MASTER_CURRENCIES
+        
+        self.fname_recent_etf = FNAME_RECENT_ETF
+        self.fname_recent_indices = FNAME_RECENT_INDICES
+        self.fname_recent_currencies = FNAME_RECENT_CURRENCIES
+        
         self.fname_benchmark = FNAME_BENCHMARK
-
+        
+        self.fname_summary_etf = FNAME_SUMMARY_ETF
+        self.fname_summary_indices = FNAME_SUMMARY_INDICES
+        self.fname_summary_currencies = FNAME_SUMMARY_CURRENCIES
 
         # self.cols_etf_profile = COLS_PROFILE_ETF
         self.cols_etf_info_to_master = COLS_ETF_INFO_TO_MASTER
@@ -62,7 +72,8 @@ class EtlProcessor:
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_indices_pp), exist_ok=True)
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_currencies_raw), exist_ok=True)
         os.makedirs(os.path.join(self.dir_download, self.subdir_history_currencies_pp), exist_ok=True)
-        os.makedirs(os.path.join(self.dir_download, self.subdir_summary), exist_ok=True)
+        os.makedirs(os.path.join(self.dir_download, self.subdir_recent), exist_ok=True)
+        os.makedirs(os.path.join(self.dir_download, self.subdir_master_indices), exist_ok=True)
 
 
     def get_meta_etf(self):
@@ -143,6 +154,20 @@ class EtlProcessor:
                 
                 profile.to_csv(fpath, index=False)
 
+    def concat_info_etf(self):
+        concat_csv_files_in_dir(
+            get_dir=os.path.join(self.dir_download, self.subdir_info_etf),
+            put_dir=self.dir_download,
+            fname='info_etf.csv'
+        )   
+
+    def concat_profile_etf(self):
+        concat_csv_files_in_dir(
+            get_dir=os.path.join(self.dir_download, self.subdir_profile_etf),
+            put_dir=self.dir_download,
+            fname='profile_etf.csv'
+        )
+
     def construct_master_etf(self):
         etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))
         etf_info = pd.read_csv(os.path.join(self.dir_download, self.fname_info_etf))[self.cols_etf_info_to_master]
@@ -175,7 +200,8 @@ class EtlProcessor:
             dfs.append(df_indices)
 
         df_yahoo = pd.concat(dfs).reset_index(drop=True)[COLS_MASTER_OTHERS]
-        df_yahoo.to_csv(os.path.join(self.dir_download, self.fname_master_indices_yahoo), index=False)
+        fpath = os.path.join(self.dir_download, self.subdir_master_indices, self.fname_master_indices_yahoo)
+        df_yahoo.to_csv(fpath, index=False)
 
         return df_yahoo
 
@@ -187,7 +213,8 @@ class EtlProcessor:
         df_indices['category'] = 'index'
         df_indices = df_indices[COLS_MASTER_OTHERS]
         
-        df_indices.to_csv(os.path.join(self.dir_download, self.fname_master_indices_investpy), index=False)
+        fpath = os.path.join(self.dir_download, self.subdir_master_indices, self.fname_master_indices_investpy)
+        df_indices.to_csv(fpath, index=False)
         return df_indices
 
     def get_master_currencies(self):
@@ -213,7 +240,9 @@ class EtlProcessor:
 
     def get_master_indices_fred(self):
         df = pd.DataFrame(self.list_dict_symbols_fred)[COLS_MASTER_OTHERS]
-        df.to_csv(os.path.join(self.dir_download,self.fname_master_indices_fred), index=False)
+
+        fpath = os.path.join(self.dir_download, self.subdir_master_indices, self.fname_master_indices_fred)
+        df.to_csv(fpath, index=False)
         return df
 
     def integrate_master(self):
@@ -254,7 +283,7 @@ class EtlProcessor:
                     # history = history.asfreq(freq = "1d").reset_index()
                     history.rename(columns=self.dict_cols_history_raw, inplace=True)
                     history['date'] = history['date'].astype('str')
-                    history['country'] = getattr(row, 'country')
+                    # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
                     history['symbol'] = getattr(row, 'symbol')
                     history['full_name'] = getattr(row, 'full_name')
                     history.to_csv(fpath, index=False)
@@ -267,7 +296,7 @@ class EtlProcessor:
             i = getattr(row, 'Index')
             symbol = getattr(row, 'symbol')
             history = web.DataReader(symbol, 'fred', start, end)#.asfreq(freq='1d', method='ffill').reset_index(drop=False)
-            history['country'] = getattr(row, 'country')
+            # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
             history['symbol'] = getattr(row, 'symbol')
             history['full_name'] = getattr(row, 'full_name')
             history.rename(columns={f'{symbol}':'close'}, inplace=True)
@@ -370,31 +399,78 @@ class EtlProcessor:
         
         print(f"Finished Preprocessing History: {category}")
 
-
     def get_recent_from_history(self, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_indices_pp)
             dir_recent = os.path.join(self.dir_download, self.subdir_recent)
-            fname_summary = self.fname_recent_indices
+            fname_recents = self.fname_recent_indices
         elif category == "etf":
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_etf_pp)
             dir_recent = os.path.join(self.dir_download, self.subdir_recent)
-            fname_summary = self.fname_recent_etf
+            fname_recents = self.fname_recent_etf
         elif category == "currency":
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_currencies_pp)
             dir_recent = os.path.join(self.dir_download, self.subdir_recent)
-            fname_summary = self.fname_recent_currencies
+            fname_recents = self.fname_recent_currencies
 
-        summary = []
+        recents = []
         fnames_history_pp = [x for x in os.listdir(dir_history_pp) if x.endswith('.csv')]
         for fname_history_pp in tqdm(fnames_history_pp, mininterval=0.5):
             history = pd.read_csv(os.path.join(dir_history_pp, fname_history_pp))
             history = history.loc[history['close'].notnull()] # 휴장일 제외 최근
             recent = history.iloc[-1]
-            summary.append(recent)
-        summary = pd.DataFrame(summary).reset_index(drop=True)
-        summary.to_csv(os.path.join(dir_recent, fname_summary), index=False)
-        print(f"Finished Summarizing Histories: {category}")
-        return summary
+            recents.append(recent)
+        recents = pd.DataFrame(recents).reset_index(drop=True)
+        recents.to_csv(os.path.join(dir_recent, fname_recents), index=False)
+        print(f"Finished Extracting Recent Data of Histories: {category}")
+        return recents
     
+    def concat_master_indices(self):
+        concat_csv_files_in_dir(
+            get_dir = os.path.join(self.dir_download, self.subdir_master_indices),
+            put_dir = self.dir_download,
+            fname = self.fname_master_indices
+        )
+    
+    def concat_history(self, category):
+        assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
+        if category == "index":
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_indices_pp)
+        elif category == "etf":
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_etf_pp)
+        elif category == "currency":
+            dir_history_pp = os.path.join(self.dir_download, self.subdir_history_currencies_pp)
+        
+        put_dir = self.dir_download
+        fname = f"history_{category}_pp.csv"
+
+        concat_csv_files_in_dir(
+            get_dir=dir_history_pp,
+            put_dir=put_dir,
+            fname=fname
+        )
+    
+    # 오늘은 여기까지... 하루하루 꾸준히ㅣ...
+    def construct_summary(self, category): # Master + Recent
+        assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
+        if category == "index":
+            master = pd.read_csv(os.path.join(self.dir_download, self.fname_master_indices))
+            recent = pd.read_csv(os.path.join(self.dir_download, self.subdir_recent, self.fname_recent_indices))
+            fpath_summary = os.path.join(self.dir_download, self.fname_summary_indices)
+        elif category == "etf":
+            master = pd.read_csv(os.path.join(self.dir_download, self.fname_master_etf))
+            recent = pd.read_csv(os.path.join(self.dir_download, self.subdir_recent, self.fname_recent_etf))
+            fpath_summary = os.path.join(self.dir_download, self.fname_summary_etf)
+        elif category == "currency":
+            master = pd.read_csv(os.path.join(self.dir_download, self.fname_master_currencies))
+            recent = pd.read_csv(os.path.join(self.dir_download, self.subdir_recent, self.fname_recent_currencies))
+            fpath_summary = os.path.join(self.dir_download, self.fname_summary_currencies)
+
+        # recent의 date가 오늘과1달(?) 이상 차이나면 제거
+        summary = pd.merge(master, recent, how='inner', on=['symbol', 'full_name'])
+        
+        summary.to_csv(fpath_summary, index=False)
+        return summary
+    # 데이터 확인
+    # 즐겨야 되는데 스트레스를 받는다..?
