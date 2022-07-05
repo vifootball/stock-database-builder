@@ -28,35 +28,38 @@ if __name__ == '__main__':
     processor = etl_processor.EtlProcessor()
 
     ### ETF ###
-    # processor.get_meta_etf()
-    # processor.get_info_etf()
-    # processor.get_profile_etf()
+    # processor.get_meta_etf()                                 # complete
+    # processor.get_info_etf()                                 # complete
+    # processor.get_profile_etf()                              # complete
+    
     # processor.concat_info_etf()                              # complete
     # processor.concat_profile_etf()                           # complete
     # processor.construct_master_etf()                         # complete
 
     ### Indices ###
-    # processor.get_master_indices_investpy()
-    # processor.get_master_indices_yahoo()
-    # processor.get_master_indices_fred()
+    # processor.get_master_indices_investpy()                  # complete
+    # processor.get_master_indices_yahoo()                     # complete
+    # processor.get_master_indices_fred()                      # complete
     # processor.concat_master_indices()                        # complete
 
-
-
     ### Currencies ###
-    #processor.get_master_currencies()
+    # processor.get_master_currencies()                        # complete                       
     
     ### Get Hisotries ###
     # master_etf = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_etf))
+    # processor.get_history_from_yf(master_etf, category='etf')
+
     # master_currencies = pd.read_csv(os.path.join(processor.dir_download, processor.fname_master_currencies))
+    # processor.get_history_from_yf(master_currencies, category='currency')
+    
     # master_indices_yahoo = pd.read_csv(os.path.join(processor.dir_download, processor.subdir_master_indices, processor.fname_master_indices_yahoo))
+    # processor.get_history_from_yf(master_indices_yahoo, category='index')
+    
     # master_indices_investpy = pd.read_csv(os.path.join(processor.dir_download, processor.subdir_master_indices, processor.fname_master_indices_investpy))
+    # processor.get_history_from_yf(master_indices_investpy, category='index')
+    
     # master_indices_fred = pd.read_csv(os.path.join(processor.dir_download, processor.subdir_master_indices, processor.fname_master_indices_fred))
-    #processor.get_history_from_yf(master_etf, category='etf')
-    #processor.get_history_from_yf(master_currencies, category='currency')
-    #processor.get_history_from_yf(master_indices_yahoo, category='index')
-    #processor.get_history_from_yf(master_indices_investpy, category='index')
-    #processor.get_history_from_fred(master_indices_fred)
+    # processor.get_history_from_fred(master_indices_fred)
 
     ### Preprocess Hisotries ###
     # processor.preprocess_history(category='etf')             # complete
@@ -64,17 +67,17 @@ if __name__ == '__main__':
     # processor.preprocess_history(category='index')           # complete
 
     ### Get Recent Data from Hisotires ###
-    processor.get_recent_from_history(category='etf')        # complete
-    processor.get_recent_from_history(category='currency')   # complete
-    processor.get_recent_from_history(category='index')      # complete
+    # processor.get_recent_from_history(category='etf')        # complete
+    # processor.get_recent_from_history(category='currency')   # complete
+    # processor.get_recent_from_history(category='index')      # complete
 
     # processor.concat_history(category='etf')                 # complete
     # processor.concat_history(category='index')               # complete
     # processor.concat_history(category='currency')            # complete
 
     # 히스토리 다시 구하고 df 형태 학인하기  suffix
-    # processor.construct_summary(category='etf')              
-    # processor.construct_summary(category='index')            
-    # processor.construct_summary(category='currency')          
+    # processor.construct_summary(category='etf')              # complete    
+    # processor.construct_summary(category='index')            # complete
+    # processor.construct_summary(category='currency')         # complete
 
     print('bye')
