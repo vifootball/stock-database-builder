@@ -274,13 +274,16 @@ class EtlProcessor:
         return integrated_df
 
     @measure_time
-    def get_history_from_yf(self, master_df, category):
+    def get_history_from_yf(self, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
+            master_df = pd.read_csv(os.path.join(self.dir_download, self.fname_master_indices))
             dir_history_raw = os.path.join(self.dir_download, self.subdir_history_indices_raw)
         elif category == "etf":
+            master_df = pd.read_csv(os.path.join(self.dir_download, self.fname_master_etf))
             dir_history_raw = os.path.join(self.dir_download, self.subdir_history_etf_raw)
         elif category == "currency":
+            master_df = pd.read_csv(os.path.join(self.dir_download, self.fname_master_currencies))
             dir_history_raw = os.path.join(self.dir_download, self.subdir_history_currencies_raw)
 
         #있으면 하고 없으면 말기 # os.path.exists()
@@ -312,7 +315,6 @@ class EtlProcessor:
             i = getattr(row, 'Index')
             symbol = getattr(row, 'symbol')
             history = web.DataReader(symbol, 'fred', start, end)#.asfreq(freq='1d', method='ffill').reset_index(drop=False)
-            # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
             history = history.reset_index()
             history.rename(columns={f'{symbol}':'close'}, inplace=True)
             history.rename(columns={'DATE':'date'}, inplace=True)
@@ -322,10 +324,7 @@ class EtlProcessor:
 
             header = pd.DataFrame(columns=COLS_HISTORY_RAW)
             history = pd.concat([header, history])
-            #history.loc[:, ['dividends', 'volume', 'stock_splits']] = 0
-
             history.to_csv(os.path.join(self.dir_download, self.subdir_history_indices_raw, f'history_raw_{symbol}.csv'), index=False)
-            # print(f'Error Occured at Loop {i}: {symbol}')
 
     @measure_time
     def get_benchmark(self): 
@@ -390,7 +389,9 @@ class EtlProcessor:
         # df['bull_bear'] = df['change_rate']
         # df['bull_bear'] = df['drawdown'].apply(lambda x: 'bear' if x>=-0.03 else 'bull') # 일주일 이동평균 이용해도 괜찮을듯 # B_B_w, B_B_m
 
-
+        '''
+        '''
+        # 직전 거래일 기준으로 지표를 계산하는 경우가 있으므로 (change_sign 등) 1일주기로 데이터를 바꾸는 것은 맨 나중에 해줌
         history = history.set_index('date').asfreq(freq = "1d").reset_index()
         return history
 
@@ -471,8 +472,8 @@ class EtlProcessor:
             put_dir=put_dir,
             fname=fname
         )
-    
-    # 오늘은 여기까지... 하루하루 꾸준히ㅣ...
+
+    @measure_time
     def construct_summary(self, category): # Master + Recent
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
