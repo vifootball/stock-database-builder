@@ -75,13 +75,15 @@ class EtlProcessor:
         os.makedirs(os.path.join(self.dir_download, self.subdir_recent), exist_ok=True)
         os.makedirs(os.path.join(self.dir_download, self.subdir_master_indices), exist_ok=True)
 
-
+    @measure_time
     def get_meta_etf(self):
         etf_meta = investpy.etfs.get_etfs(country='united states')
         etf_meta['category'] = 'etf'
         etf_meta.to_csv(os.path.join(self.dir_download, self.fname_meta_etf), index=False)
+        print("Finished Getting Metadata of ETFs")
         return etf_meta
 
+    @measure_time
     def get_info_etf(self): # takes about an hour
         etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))#[:20]
         fnames_info = sorted(os.listdir(os.path.join(self.dir_download, self.subdir_info_etf)))
@@ -112,6 +114,7 @@ class EtlProcessor:
                     self.dir_download, self.subdir_info_etf, f'info_{symbol}.csv'
                 ), index=False)
 
+    @measure_time
     def get_profile_etf(self):
         etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))#[:15]
         # fnames_profile = sorted(os.listdir(os.path.join(self.dir_download, self.subdir_profile_etf)))
@@ -154,6 +157,7 @@ class EtlProcessor:
                 
                 profile.to_csv(fpath, index=False)
 
+    @measure_time
     def concat_info_etf(self):
         concat_csv_files_in_dir(
             get_dir=os.path.join(self.dir_download, self.subdir_info_etf),
@@ -161,6 +165,7 @@ class EtlProcessor:
             fname='info_etf.csv'
         )   
 
+    @measure_time
     def concat_profile_etf(self):
         concat_csv_files_in_dir(
             get_dir=os.path.join(self.dir_download, self.subdir_profile_etf),
@@ -168,6 +173,7 @@ class EtlProcessor:
             fname='profile_etf.csv'
         )
 
+    @measure_time
     def construct_master_etf(self):
         etf_meta = pd.read_csv(os.path.join(self.dir_download, self.fname_meta_etf))
         etf_info = pd.read_csv(os.path.join(self.dir_download, self.fname_info_etf))[self.cols_etf_info_to_master]
@@ -179,6 +185,7 @@ class EtlProcessor:
         etf_master.to_csv(os.path.join(self.dir_download, self.fname_master_etf), index=False)
         return etf_master
 
+    @measure_time
     def get_master_indices_yahoo(self):
         dfs = []
         urls = [
@@ -205,6 +212,7 @@ class EtlProcessor:
 
         return df_yahoo
 
+    @measure_time
     def get_master_indices_investpy(self):
         countries = ['united states', 'south korea']
         df_indices = investpy.indices.get_indices()
@@ -217,6 +225,7 @@ class EtlProcessor:
         df_indices.to_csv(fpath, index=False)
         return df_indices
 
+    @measure_time
     def get_master_currencies(self):
         currencies = investpy.currency_crosses.get_currency_crosses()
         base_cur = ['KRW', 'USD']
@@ -238,6 +247,7 @@ class EtlProcessor:
         currencies.to_csv(os.path.join(self.dir_download, self.fname_master_currencies), index=False)
         return currencies
 
+    @measure_time
     def get_master_indices_fred(self):
         df = pd.DataFrame(self.list_dict_symbols_fred)[COLS_MASTER_OTHERS]
 
@@ -245,6 +255,7 @@ class EtlProcessor:
         df.to_csv(fpath, index=False)
         return df
 
+    @measure_time
     def integrate_master(self):
         master_etf = pd.read_csv(os.path.join(self.dir_download, self.fname_master_etf))
         master_indices_yahoo = pd.read_csv(os.path.join(self.dir_download, self.fname_master_indices_yahoo))
@@ -262,6 +273,7 @@ class EtlProcessor:
         integrated_df.to_csv(os.path.join(self.dir_download, 'master.csv'), index=False, encoding='utf-8-sig')
         return integrated_df
 
+    @measure_time
     def get_history_from_yf(self, master_df, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
@@ -278,18 +290,22 @@ class EtlProcessor:
             if not os.path.exists(fpath):
                 time.sleep(0.1)
                 i = getattr(row, 'Index') # enumerate i 의 용도
-                history = yf.Ticker(symbol).history(period='max')#
-                if len(history) >= 10:
-                    # history = history.asfreq(freq = "1d").reset_index()
-                    history.rename(columns=self.dict_cols_history_raw, inplace=True)
-                    history['date'] = history['date'].astype('str')
-                    # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
-                    history['symbol'] = getattr(row, 'symbol')
-                    history['full_name'] = getattr(row, 'full_name')
-                    history.to_csv(fpath, index=False)
+                history = yf.Ticker(symbol).history(period='max')
+                history = history.reset_index()
+                history.rename(columns=self.dict_cols_history_raw, inplace=True)
+                if len(history) > 0:
+                    time_since_last_traded = dt.datetime.today() - history['date'].max()
+                    if time_since_last_traded < pd.Timedelta('30 days'):
+                        # history = history.asfreq(freq = "1d").reset_index()
+                        history['date'] = history['date'].astype('str')
+                        # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
+                        history['symbol'] = getattr(row, 'symbol')
+                        history['full_name'] = getattr(row, 'full_name')
+                        history.to_csv(fpath, index=False)
                 else:
                     print(f'Empty DataFrame at Loop {i}: {symbol}')
 
+    @measure_time
     def get_history_from_fred(self, master_df):
         start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
         for row in tqdm(master_df.itertuples(), total=len(master_df)):
@@ -297,10 +313,11 @@ class EtlProcessor:
             symbol = getattr(row, 'symbol')
             history = web.DataReader(symbol, 'fred', start, end)#.asfreq(freq='1d', method='ffill').reset_index(drop=False)
             # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
-            history['symbol'] = getattr(row, 'symbol')
-            history['full_name'] = getattr(row, 'full_name')
+            history = history.reset_index()
             history.rename(columns={f'{symbol}':'close'}, inplace=True)
             history.rename(columns={'DATE':'date'}, inplace=True)
+            history['symbol'] = getattr(row, 'symbol')
+            history['full_name'] = getattr(row, 'full_name')
             history['date'] = history['date'].astype('str')
 
             header = pd.DataFrame(columns=COLS_HISTORY_RAW)
@@ -310,6 +327,7 @@ class EtlProcessor:
             history.to_csv(os.path.join(self.dir_download, self.subdir_history_indices_raw, f'history_raw_{symbol}.csv'), index=False)
             # print(f'Error Occured at Loop {i}: {symbol}')
 
+    @measure_time
     def get_benchmark(self): 
         # recession
         fred_start, fred_end = (dt.datetime(1800, 1, 1), dt.datetime.today())
@@ -389,7 +407,7 @@ class EtlProcessor:
             dir_history_pp = os.path.join(self.dir_download, self.subdir_history_currencies_pp)
         
         fnames_history_raw = [x for x in os.listdir(dir_history_raw) if x.endswith('.csv')]
-        for fname_history_raw in tqdm(fnames_history_raw):
+        for fname_history_raw in tqdm(fnames_history_raw, mininterval=0.5):
             history = pd.read_csv(os.path.join(dir_history_raw, fname_history_raw))
             symbol = history['symbol'].iat[0]
             
@@ -399,6 +417,7 @@ class EtlProcessor:
         
         print(f"Finished Preprocessing History: {category}")
 
+    @measure_time
     def get_recent_from_history(self, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
@@ -426,6 +445,7 @@ class EtlProcessor:
         print(f"Finished Extracting Recent Data of Histories: {category}")
         return recents
     
+    @measure_time
     def concat_master_indices(self):
         concat_csv_files_in_dir(
             get_dir = os.path.join(self.dir_download, self.subdir_master_indices),
@@ -433,6 +453,7 @@ class EtlProcessor:
             fname = self.fname_master_indices
         )
     
+    @measure_time
     def concat_history(self, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
