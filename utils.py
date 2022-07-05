@@ -1,7 +1,10 @@
 import os
+import numpy as np
 import pandas as pd
 # from tqdm.notebook import tqdm
 from tqdm import tqdm
+from datetime import datetime
+
 
 
 def get_memory_usage(df):
@@ -38,3 +41,24 @@ def concat_csv_files_in_dir(get_dir, put_dir, fname):
         df.append(temp)
     df = pd.concat(df)
     df.to_csv(os.path.join(put_dir, fname), index=False, encoding='utf-8-sig')
+
+
+def measure_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = datetime.now()
+        str_start_time = start_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-4]
+        print(f"Process [{func.__name__}] Started at : {str_start_time}")
+
+        result = func(*args, **kwargs)
+        
+        end_time = datetime.now()
+        str_end_time = end_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-4]
+        interval = end_time - start_time
+        str_interval = str(np.round(interval.total_seconds(), 3))
+        print(f"Process [{func.__name__}] Ended at   : {str_end_time}")
+        print(f"Process [{func.__name__}] Runned for : {str_interval} sec")
+
+        return result
+    return wrapper
+
+# def 함수 실행의 시작과 끝을 알려주는 데코레이터
