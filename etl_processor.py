@@ -350,12 +350,13 @@ class EtlProcessor:
 
     def _calculate_features(self, history):
         history['date'] = pd.to_datetime(history['date'])
+        history = history.set_index('date')
 
         # dividends
         history['dividends_paid'] = np.sign(history['dividends'])
-        history['dividends_paid_count_12m'] = history.set_index('date')['dividends_paid'].rolling(window='365d').sum().to_numpy() # tonumpy 안하며 nan 반환..
-        history['dividends_trailing_12m'] = history.set_index('date')['dividends'].rolling(window='365d').sum().to_numpy()
-        history['dividends_trailing_6m'] = (history.set_index('date')['dividends'].rolling(window='183d').sum().to_numpy())*2
+        history['dividends_paid_count_12m'] = history['dividends_paid'].rolling(window='365d').sum().to_numpy() # tonumpy 안하며 nan 반환..
+        history['dividends_trailing_12m'] = history['dividends'].rolling(window='365d').sum().to_numpy()
+        history['dividends_trailing_6m'] = (history['dividends'].rolling(window='183d').sum().to_numpy())*2
         history['dividends_rate_trailing_12m'] = history['dividends_trailing_12m']/history['close']
         history['dividends_rate_trailing_6m'] = history['dividends_trailing_6m']/history['close']
 
@@ -363,18 +364,36 @@ class EtlProcessor:
         history['change'] = history['close'].diff().fillna(0)
         history['change_sign'] = np.sign(history['change'])
         history['all_time_high'] = history['close'].cummax()
-        history['drawdown'] = (history['close']/history['all_time_high']) - 1
-        history['max_drawdown'] = history['drawdown'].cummin()
+        history['drawdown'] = ((history['close']/history['all_time_high']) - 1).round(6)
+        history['max_drawdown'] =history['drawdown'].cummin().round(6)
         history['change_rate'] = history['change']/history['close']
 
-        history['close_avg_1y'] = history.set_index('date')['close'].rolling(window='365d').mean().to_numpy()
-        history['close_max_1y'] = history.set_index('date')['close'].rolling(window='365d').max().to_numpy()
-        history['close_min_1y'] = history.set_index('date')['close'].rolling(window='365d').min().to_numpy()
+        history['close_avg_1y'] = history['close'].rolling(window='365d').mean().to_numpy()
+        history['close_max_1y'] = history['close'].rolling(window='365d').max().to_numpy()
+        history['close_min_1y'] = history['close'].rolling(window='365d').min().to_numpy()
 
         # volumes
-        history['volume_avg_1y'] = history.set_index('date')['volume'].rolling(window='365d').mean().to_numpy()
-        history['volume_avg_6m'] = history.set_index('date')['volume'].rolling(window='180d').mean().to_numpy()
-        history['volume_avg_3m'] = history.set_index('date')['volume'].rolling(window='90d').mean().to_numpy()
+        history['volume_avg_1y'] = history['volume'].rolling(window='365d').mean().to_numpy().round(0)
+        history['volume_avg_6m'] = history['volume'].rolling(window='180d').mean().to_numpy().round(0)
+        history['volume_avg_3m'] = history['volume'].rolling(window='90d').mean().to_numpy().round(0)
+
+        # rounding
+        cols_round_0 = [
+            'volume', 'volume_avg_1y', 'volume_avg_6m', 'volume_avg_3m'
+        ]
+        cols_round_3 = [
+            'open', 'high', 'low', 'close',
+            'dividends_trailing_12m', 'dividends_trailing_6m',
+            'close_avg_1y', 'close_max_1y', 'close_min_1y',
+            'change', 'all_time_high'
+        ]
+        cols_round_6 = [
+            'dividends_rate_trailing_12m','dividends_rate_trailing_6m',
+            'drawdown', 'max_drawdown', 'change_rate'
+        ]
+        history[cols_round_0] = history[cols_round_0].round(0)
+        history[cols_round_3] = history[cols_round_3].round(3)
+        history[cols_round_6] = history[cols_round_6].round(6)
 
         # df['drawdown_00']
         # df['drawdown_08']
@@ -392,9 +411,10 @@ class EtlProcessor:
         '''
         '''
         # 직전 거래일 기준으로 지표를 계산하는 경우가 있으므로 (change_sign 등) 1일주기로 데이터를 바꾸는 것은 맨 나중에 해줌
-        history = history.set_index('date').asfreq(freq = "1d").reset_index()
+        history = history.asfreq(freq = "1d").reset_index()
         return history
-
+    
+    @measure_time
     def preprocess_history(self, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
@@ -491,7 +511,6 @@ class EtlProcessor:
 
         # recent의 date가 오늘과1달(?) 이상 차이나면 제거
         summary = pd.merge(master, recent, how='inner', on=['symbol', 'full_name'])
-        
         summary.to_csv(fpath_summary, index=False)
         return summary
     # 데이터 확인
