@@ -57,6 +57,7 @@ def measure_time(func):
         str_interval = str(np.round(interval.total_seconds(), 3))
         print(f"Process [{func.__name__}] Ended at   : {str_end_time}")
         print(f"Process [{func.__name__}] Runned for : {str_interval} sec")
+        print()
 
         return result
     return wrapper

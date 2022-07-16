@@ -36,36 +36,38 @@ if __name__ == '__main__':
     # processor.concat_profile_etf()                           # complete
     # processor.construct_master_etf()                         # complete
 
+    ### Get Master of Currencies ###
+    # processor.get_master_currencies()                        # complete  
+
     ### Get Master of Indices ###
     # processor.get_master_indices_investpy()                  # complete
     # processor.get_master_indices_yahoo()                     # complete
     # processor.get_master_indices_fred()                      # complete
     # processor.concat_master_indices()                        # complete
 
-    ### Get Master of Currencies ###
-    # processor.get_master_currencies()                        # complete                       
+                     
     
-    ### Get Hisotries ###
-    # processor.get_history_from_yf(category='etf')            # complete
-    # processor.get_history_from_yf(category='currency')       # complete
-    # processor.get_history_from_yf(category='index')          # complete
+    ### Get Histories ###
+    processor.get_history_from_yf(category='etf')            # complete
+    processor.get_history_from_yf(category='currency')       # complete
+    processor.get_history_from_yf(category='index')          # complete
 
-    ### Preprocess Hisotries ###
-    processor.preprocess_history(category='etf')             # complete
-    processor.preprocess_history(category='index')           # complete
-    processor.preprocess_history(category='currency')        # complete
+    ### Preprocess Histories ###
+    # processor.preprocess_history(category='etf')             # complete
+    # processor.preprocess_history(category='index')           # complete
+    # processor.preprocess_history(category='currency')        # complete
 
-    processor.concat_history(category='etf')                 # complete
-    processor.concat_history(category='index')               # complete
-    processor.concat_history(category='currency')            # complete
+    # processor.concat_history(category='etf')/                 # complete
+    # processor.concat_history(category='index')               # complete
+    # processor.concat_history(category='currency'  )            # complete
 
     ### Get Recent Data from Hisotires ###
-    processor.get_recent_from_history(category='etf')        # complete
-    processor.get_recent_from_history(category='index')      # complete
-    processor.get_recent_from_history(category='currency')   # complete
+    # processor.get_recent_from_history(category='etf')        # complete
+    # processor.get_recent_from_history(category='index')      # complete
+    # processor.get_recent_from_history(category='currency')   # complete
 
-    processor.construct_summary(category='etf')              # complete    
-    processor.construct_summary(category='index')            # complete
-    processor.construct_summary(category='currency')         # complete
+    # processor.construct_summary(category='etf')              # complete    
+    # processor.construct_summary(category='index')            # complete
+    # processor.construct_summary(category='currency')         # complete
 
     print('bye')

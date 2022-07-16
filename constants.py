@@ -1,19 +1,32 @@
-DIRNAME_DOWNLOAD = 'download'  # mac
+# bigquery
+BQ_PROJECT_ID = 'between-buy-and-sell'
+BQ_DATASET_ID = 'stock'
+BQ_TABLE_ID_SUMMARY = 'summary'
+BQ_TABLE_ID_HISTORY = 'history'
+
+# name of dir
+DIRNAME_DOWNLOAD = 'download'
+
+# name of subdir
 SUBDIRNAME_INFO_ETF = 'info_etf'
 SUBDIRNAME_PROFILE_ETF = 'profile_etf'
 
-SUBDIRNAME_HISTORY_ETF_RAW = 'history_etf_raw'
-SUBDIRNAME_HISTORY_CURRENCIES_RAW = 'history_currencies_raw'
-SUBDIRNAME_HISTORY_INDICES_RAW = 'history_indices_raw'
+SUBDIRNAME_HISTORY_RAW_ETF = 'history_raw_etf'
+SUBDIRNAME_HISTORY_RAW_CURRENCIES = 'history_raw_currencies'
+SUBDIRNAME_HISTORY_RAW_INDICES = 'history_raw_indices'
 
-SUBDIRNAME_HISTORY_ETF_PP = 'history_etf_pp'
-SUBDIRNAME_HISTORY_CURRENCIES_PP = 'history_currencies_pp'
-SUBDIRNAME_HISTORY_INDICES_PP = 'history_indices_pp'
+SUBDIRNAME_HISTORY_PP_ETF = 'history_pp_etf'
+SUBDIRNAME_HISTORY_PP_CURRENCIES = 'history_pp_currencies'
+SUBDIRNAME_HISTORY_PP_INDICES = 'history_pp_indices'
+SUBDIRNAME_HISTORY_PP_CONCATENATED = 'history_pp_concatenated'
 
+SUBDIRNAME_SUMMARY = 'summary'
 SUBDIRNAME_RECENT = 'recent'
 
+SUBDIRNAME_MASTER = 'master'
 SUBDIRNAME_MASTER_INDICES = 'master_indices'
 
+# name of file
 FNAME_META_ETF = 'meta_etf.csv'
 FNAME_INFO_ETF = 'info_etf.csv'
 FNAME_PROFILE_ETF = 'profile_etf.csv'
@@ -27,6 +40,9 @@ FNAME_MASTER_CURRENCIES = 'master_currencies.csv'
 FNAME_RECENT_ETF = 'recent_etf.csv'
 FNAME_RECENT_CURRENCIES = 'recent_currencies.csv'
 FNAME_RECENT_INDICES = 'recent_indices.csv'
+FNAME_HISTORY_PP_ETF = 'history_pp_etf.csv'
+FNAME_HISTORY_PP_CURRENCIES = 'history_pp_currencies.csv'
+FNAME_HISTORY_PP_INDICES = 'history_pp_indices.csv'
 FNAME_SUMMARY_ETF = 'summary_etf.csv'
 FNAME_SUMMARY_INDICES = 'summary_indices.csv'
 FNAME_SUMMARY_CURRENCIES = 'summary_currencies.csv'
@@ -50,14 +66,16 @@ COLS_ETF_INFO_TO_MASTER = [
 COLS_ETF_PROFILE_TO_MASTER =[
     'symbol', 'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 'nav'
 ]
-COLS_MASTER_ETF = [
-    'country', 'symbol', 'name', 'full_name', 'currency', 'asset_class', 'category',
+
+COLS_MASTER_BASIC = [
+    'country', 'symbol', 'name', 'full_name', 'currency', 'category'
+]
+COLS_MASTER_ENTIRE = [
+    'country', 'symbol', 'name', 'full_name', 'currency', 'category', 'asset_class', 
     'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 'nav', 'shares_outstanding',
     'market_cap', 'isin', 'stock_exchange',
 ]
-COLS_MASTER_OTHERS = [
-    'country', 'symbol', 'name', 'full_name', 'currency', 'category'
-]
+
 
 
 COLS_HISTORY_RAW = [
