@@ -48,18 +48,18 @@ if __name__ == '__main__':
                      
     
     ### Get Histories ###
-    processor.get_history_from_yf(category='etf')            # complete
-    processor.get_history_from_yf(category='currency')       # complete
-    processor.get_history_from_yf(category='index')          # complete
+    # processor.get_history_from_yf(category='etf')            # complete
+    # processor.get_history_from_yf(category='currency')       # complete
+    # processor.get_history_from_yf(category='index')          # complete
 
     ### Preprocess Histories ###
     # processor.preprocess_history(category='etf')             # complete
     # processor.preprocess_history(category='index')           # complete
     # processor.preprocess_history(category='currency')        # complete
 
-    # processor.concat_history(category='etf')/                 # complete
+    # processor.concat_history(category='etf')                 # complete
     # processor.concat_history(category='index')               # complete
-    # processor.concat_history(category='currency'  )            # complete
+    # processor.concat_history(category='currency'  )          # complete
 
     ### Get Recent Data from Hisotires ###
     # processor.get_recent_from_history(category='etf')        # complete
@@ -69,5 +69,8 @@ if __name__ == '__main__':
     # processor.construct_summary(category='etf')              # complete    
     # processor.construct_summary(category='index')            # complete
     # processor.construct_summary(category='currency')         # complete
+
+    # processor.load_summary_to_bq()
+    processor.load_history_to_bq()
 
     print('bye')

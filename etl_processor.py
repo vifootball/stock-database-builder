@@ -12,6 +12,8 @@ import yfinance as yf
 import pandas_datareader.data as web
 from constants import *
 from utils import *
+from google.cloud import bigquery
+
 
 # 티커가 바뀔 수 있으니, 마스터를 add 방식으로 수집하고 drop duplicates?
 # price, date 결측치 보간하기
@@ -303,13 +305,13 @@ class EtlProcessor:
     def get_history_from_yf(self, category):
         assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
         if category == "index":
-            master_df = pd.read_csv(os.path.join(self.dir_download, self.fname_master_indices))
+            master_df = pd.read_csv(os.path.join(self.dir_download, self.subdir_master, self.fname_master_indices))
             dir_history_raw = os.path.join(self.dir_download, self.subdir_history_raw_indices)
         elif category == "etf":
-            master_df = pd.read_csv(os.path.join(self.dir_download, self.fname_master_etf))
+            master_df = pd.read_csv(os.path.join(self.dir_download, self.subdir_master, self.fname_master_etf))
             dir_history_raw = os.path.join(self.dir_download, self.subdir_history_raw_etf)
         elif category == "currency":
-            master_df = pd.read_csv(os.path.join(self.dir_download, self.fname_master_currencies))
+            master_df = pd.read_csv(os.path.join(self.dir_download, self.subdir_master, self.fname_master_currencies))
             dir_history_raw = os.path.join(self.dir_download, self.subdir_history_raw_currencies)
 
         #있으면 하고 없으면 말기 # os.path.exists()
@@ -483,12 +485,20 @@ class EtlProcessor:
             fname_recents = self.fname_recent_currencies
 
         recents = []
-        fnames_history_pp = [x for x in os.listdir(dir_history_pp) if x.endswith('.csv')]
-        for fname_history_pp in tqdm(fnames_history_pp, mininterval=0.5):
-            history = pd.read_csv(os.path.join(dir_history_pp, fname_history_pp))
+        history_generator = (pd.read_csv(os.path.join(dir_history_pp, fname)) for fname in os.listdir(dir_history_pp) if fname.endswith('csv'))
+        for history in tqdm(history_generator, mininterval=0.5, total=len(os.listdir(dir_history_pp))):
             history = history.loc[history['close'].notnull()] # 휴장일 제외 최근
             recent = history.iloc[-1]
             recents.append(recent)
+
+        # recents = []
+        # fnames_history_pp = [x for x in os.listdir(dir_history_pp) if x.endswith('.csv')]
+        # for fname_history_pp in tqdm(fnames_history_pp, mininterval=0.5):
+        #     history = pd.read_csv(os.path.join(dir_history_pp, fname_history_pp))
+        #     history = history.loc[history['close'].notnull()] # 휴장일 제외 최근
+        #     recent = history.iloc[-1]
+        #     recents.append(recent)
+
         recents = pd.DataFrame(recents).reset_index(drop=True)
         recents.to_csv(os.path.join(dir_recent, fname_recents), index=False)
         print(f"Finished Extracting Recent Data of Histories: {category}")
@@ -516,7 +526,7 @@ class EtlProcessor:
             fname = self.fname_history_pp_currencies
 
         put_dir = os.path.join(self.dir_download, self.subdir_history_pp_concatenated)
-        
+
         concat_csv_files_in_dir(
             get_dir=dir_history_pp,
             put_dir=put_dir,
@@ -545,14 +555,49 @@ class EtlProcessor:
     # 데이터 확인
     # 즐겨야 되는데 스트레스를 받는다..?
 
+    @measure_time
     def load_summary_to_bq(self):
-        pass
+        client = bigquery.Client(project=self.bq_project_id)
+        table_id = f"{self.bq_project_id}.{self.bq_dataset_id}.{self.bq_table_id_summary}"
+        client.create_table(table_id, exists_ok=True)
 
+        dirpath = os.path.join(self.dir_download, self.subdir_summary)
+        summary_generator = (pd.read_csv(os.path.join(dirpath, x)) for x in os.listdir(dirpath) if x.endswith('csv'))
+        for i, summary in enumerate(summary_generator):
+            print(summary.shape)
+            print(write_disposition := 'WRITE_TRUNCATE' if i == 0 else 'WRITE_APPEND')
+
+            job_config = bigquery.LoadJobConfig(
+                schema=[
+                    bigquery.SchemaField("fund_family", bigquery.enums.SqlTypeNames.STRING),
+                    bigquery.SchemaField("inception_date", bigquery.enums.SqlTypeNames.STRING),
+                    bigquery.SchemaField("isin", bigquery.enums.SqlTypeNames.STRING),
+                    bigquery.SchemaField("stock_exchange", bigquery.enums.SqlTypeNames.STRING),
+                    bigquery.SchemaField("asset_class", bigquery.enums.SqlTypeNames.STRING)
+                ],
+                write_disposition=write_disposition
+                )
+            job = client.load_table_from_dataframe(summary, table_id, job_config=job_config)
+            job.result()  # Wait for the job to complete.
+            table = client.get_table(table_id)  # Make an API request.
+            print(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
+
+    @measure_time
     def load_history_to_bq(self):
-        pass
+        client = bigquery.Client(project=self.bq_project_id)
+        table_id = f"{self.bq_project_id}.{self.bq_dataset_id}.{self.bq_table_id_history}"
+        client.create_table(table_id, exists_ok=True)
 
-    def load_summary_from_bq(self):
-        pass
+        dirpath = os.path.join(self.dir_download, self.subdir_history_pp_concatenated)
+        history_generator = (pd.read_csv(os.path.join(dirpath, x)) for x in os.listdir(dirpath) if x.endswith('csv'))
+        for i, summary in enumerate(history_generator):
+            print(summary.shape)
+            print(write_disposition := 'WRITE_TRUNCATE' if i == 0 else 'WRITE_APPEND')
 
-    def load_history_from_bq(self):
-        pass
+            job_config = bigquery.LoadJobConfig(
+                write_disposition=write_disposition
+                )
+            job = client.load_table_from_dataframe(summary, table_id, job_config=job_config)
+            job.result()  # Wait for the job to complete.
+            table = client.get_table(table_id)  # Make an API request.
+            print(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
