@@ -34,11 +34,10 @@ def downcast_df(df, apply_int=True, apply_float=True, apply_string=False, print_
     return df_copied
 
 def concat_csv_files_in_dir(get_dir, put_dir, fname):
-    fnames_in_dir = [x for x in os.listdir(get_dir) if x.endswith('.csv')]
     df = []
-    for fname_in_dir in tqdm(fnames_in_dir[:], mininterval=0.5):
-        temp = pd.read_csv(os.path.join(get_dir, fname_in_dir))
-        df.append(temp)
+    csv_file_generator = (pd.read_csv(os.path.join(get_dir, csv_fname)) for csv_fname in os.listdir(get_dir) if csv_fname.endswith('csv'))
+    for csv_file in csv_file_generator:
+        df.append(csv_file)
     df = pd.concat(df)
     df.to_csv(os.path.join(put_dir, fname), index=False, encoding='utf-8-sig')
 
