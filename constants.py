@@ -5,26 +5,26 @@ BQ_TABLE_ID_SUMMARY = 'summary'
 BQ_TABLE_ID_HISTORY = 'history'
 
 # name of dir
-DIRNAME_DOWNLOAD = 'download'
+DIR_DOWNLOAD = 'download'
 
 # name of subdir
-SUBDIRNAME_INFO_ETF = 'info_etf'
-SUBDIRNAME_PROFILE_ETF = 'profile_etf'
+SUBDIR_INFO_ETF = 'info_etf'
+SUBDIR_PROFILE_ETF = 'profile_etf'
 
-SUBDIRNAME_HISTORY_RAW_ETF = 'history_raw_etf'
-SUBDIRNAME_HISTORY_RAW_CURRENCIES = 'history_raw_currencies'
-SUBDIRNAME_HISTORY_RAW_INDICES = 'history_raw_indices'
+SUBDIR_HISTORY_RAW_ETF = 'history_raw_etf'
+SUBDIR_HISTORY_RAW_CURRENCIES = 'history_raw_currencies'
+SUBDIR_HISTORY_RAW_INDICES = 'history_raw_indices'
 
-SUBDIRNAME_HISTORY_PP_ETF = 'history_pp_etf'
-SUBDIRNAME_HISTORY_PP_CURRENCIES = 'history_pp_currencies'
-SUBDIRNAME_HISTORY_PP_INDICES = 'history_pp_indices'
-SUBDIRNAME_HISTORY_PP_CONCATENATED = 'history_pp_concatenated'
+SUBDIR_HISTORY_PP_ETF = 'history_pp_etf'
+SUBDIR_HISTORY_PP_CURRENCIES = 'history_pp_currencies'
+SUBDIR_HISTORY_PP_INDICES = 'history_pp_indices'
+SUBDIR_HISTORY_PP_CONCATENATED = 'history_pp_concatenated'
 
-SUBDIRNAME_SUMMARY = 'summary'
-SUBDIRNAME_RECENT = 'recent'
+SUBDIR_SUMMARY = 'summary'
+SUBDIR_RECENT = 'recent'
 
-SUBDIRNAME_MASTER = 'master'
-SUBDIRNAME_MASTER_INDICES = 'master_indices'
+SUBDIR_MASTER = 'master'
+SUBDIR_MASTER_INDICES = 'master_indices'
 
 # name of file
 FNAME_META_ETF = 'meta_etf.csv'

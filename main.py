@@ -71,6 +71,6 @@ if __name__ == '__main__':
     # processor.construct_summary(category='currency')         # complete
 
     # processor.load_summary_to_bq()
-    processor.load_history_to_bq()
+    # processor.load_history_to_bq()
 
     print('bye')
