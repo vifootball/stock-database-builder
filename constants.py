@@ -48,18 +48,65 @@ FNAME_SUMMARY_INDICES = 'summary_indices.csv'
 FNAME_SUMMARY_CURRENCIES = 'summary_currencies.csv'
 FNAME_BENCHMARK = 'benchmark.csv'
 
+# Meta ETF
 COLS_META_ETF = [
     'coutry', 'symbol', 'name', 'full_name', 'currency' 'asset_class',
-    'isin', 'stock_exchange', 
+    'isin', 'stock_exchange' 
 ]
-COLS_INFO_ETF = [
-    'ETF Name', 'ROI (TTM)', '52 wk Range', 'Dividends (TTM)', 'Volume', 
-    'Market Cap', 'Dividend Yield', 'Average Vol. (3m)', 'Total Assets',
-    '1-Year Change', 'Asset Class'
+_COLS_META_ETF = [
+    'def_stock_exchange', 'category'
 ]
+
+# Info ETF
+DICT_COLS_ETF_INFO = {
+    'ETF Name': 'name',
+    'Prev. Close': 'prev_close',
+    'Todays Range': 'todays_range',
+    'ROI (TTM)': 'roi_ttm',
+    'Open': 'open',
+    '52 wk Range': '52_week_range',
+    'Dividends (TTM)': 'dividend_ttm',
+    'Volume': 'volume',
+    'Market Cap': 'market_cap',
+    'Dividend Yield': 'dividend_yield_rate',
+    'Average Vol. (3m)': 'volume_3m_avg',
+    'Total Assets': 'total_assets',
+    'Beta': 'beta',
+    '1-Year Change': '1_year_change_rate',
+    'Shares Outstanding': 'shares_outstanding',
+    'Asset Class': 'asset_class'
+}
+COLS_ETF_INFO = [
+    'name', 'market_cap', 'shares_outstanding', 'asset_class'
+]
+_COLS_ETF_INFO =[
+    'prev_close', 'todays_range', 'roi_ttm', 'open', '52_week_range', 
+    'dividend_ttm', 'volume', 'dividend_yield_rate', 'volume_3m_avg', 'total_assets', 
+    'beta', '1_year_change_rate'
+]
+
+# Profile ETF
+DICT_COLS_ETF_PROFILE = {
+    'Net Assets': 'net_assets',
+    'NAV': 'nav',
+    'PE Ratio (TTM)': 'per_ttm',
+    'Yield': 'yield',
+    'YTD Daily Total Return': 'ytd_daily_total_return',
+    'Beta (5Y Monthly)': 'beta_5y-monthly',
+    'Expense Ratio (net)': 'expense_ratio',
+    'Inception Date': 'inception_date'
+}
 COLS_PROFILE_ETF = [
-    'Symbol','Fund Family', 'Yield', 'Expense Ratio (net)', 'Inception Date', 'Net Assets', 'NAV'
+    'symbol', 'fund_family',
+    'net_assets', 'per_ttm', 'expense_ratio', 'inception_date'
 ]
+_COLS_PROCILE_ETF = [
+    'nav', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 
+]
+
+
+
+
 COLS_ETF_INFO_TO_MASTER = [
     'etf_name', 'market_cap', 'total_assets', 'shares_outstanding'
 ]
@@ -82,31 +129,6 @@ COLS_HISTORY_RAW = [
  'date', 'symbol', 'full_name', 'open', 'high', 'low', 'close', 'volume', 'dividends', 'stock_splits'
 ] 
 
-DICT_COLS_ETF_INFO = {
-    'ETF Name': 'etf_name',
-    'Prev. Close': 'Prev. Close',
-    'Todays Range': 'todays_range',
-    'ROI (TTM)': 'roi_ttm',
-    'Open': 'open',
-    '52 wk Range': '52_week_range',
-    'Dividends (TTM)': 'dividends_ttm',
-    'Volume': 'volume',
-    'Market Cap': 'market_cap',
-    'Dividend Yield': 'dividend_yield_rate',
-    'Average Vol. (3m)': 'average_vol_3m',
-    'Total Assets': 'total_assets',
-    'Beta': 'beta',
-    '1-Year Change': '1_year_change_rate',
-    'Shares Outstanding': 'shares_outstanding'
-}
-DICT_COLS_ETF_PROFILE = {
-    'Symbol': 'symbol',
-    'Fund Family': 'fund_family',
-    'Expense Ratio (net)': 'expense_ratio',
-    'Inception Date': 'inception_date',
-    'Net Assets': 'net_assets',
-    'NAV': 'nav'
-}
 DICT_COLS_HISTORY_RAW = {
     'Date': 'date',
     'Open': 'open',
