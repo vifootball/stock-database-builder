@@ -58,7 +58,7 @@ _COLS_META_ETF = [
 ]
 
 # Info ETF
-DICT_COLS_ETF_INFO = {
+DICT_COLS_INFO_ETF = {
     'ETF Name': 'name',
     'Prev. Close': 'prev_close',
     'Todays Range': 'todays_range',
@@ -76,17 +76,17 @@ DICT_COLS_ETF_INFO = {
     'Shares Outstanding': 'shares_outstanding',
     'Asset Class': 'asset_class'
 }
-COLS_ETF_INFO = [
-    'name', 'market_cap', 'shares_outstanding', 'asset_class'
+COLS_INFO_ETF = [
+    'name', 'market_cap', 'shares_outstanding'
 ]
-_COLS_ETF_INFO =[
+_COLS_INFO_ETF =[
     'prev_close', 'todays_range', 'roi_ttm', 'open', '52_week_range', 
     'dividend_ttm', 'volume', 'dividend_yield_rate', 'volume_3m_avg', 'total_assets', 
-    'beta', '1_year_change_rate'
+    'beta', '1_year_change_rate', 'asset_class'
 ]
 
 # Profile ETF
-DICT_COLS_ETF_PROFILE = {
+DICT_COLS_PROFILE_ETF = {
     'Net Assets': 'net_assets',
     'NAV': 'nav',
     'PE Ratio (TTM)': 'per_ttm',
@@ -98,21 +98,13 @@ DICT_COLS_ETF_PROFILE = {
 }
 COLS_PROFILE_ETF = [
     'symbol', 'fund_family',
-    'net_assets', 'per_ttm', 'expense_ratio', 'inception_date'
+    'net_assets', 'nav', 'per_ttm', 'expense_ratio', 'inception_date'
 ]
-_COLS_PROCILE_ETF = [
-    'nav', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 
+_COLS_PROFILE_ETF = [
+    'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 
 ]
 
 
-
-
-COLS_ETF_INFO_TO_MASTER = [
-    'etf_name', 'market_cap', 'total_assets', 'shares_outstanding'
-]
-COLS_ETF_PROFILE_TO_MASTER =[
-    'symbol', 'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 'nav'
-]
 
 COLS_MASTER_BASIC = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
