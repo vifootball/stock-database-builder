@@ -1,5 +1,6 @@
 import os
 import time
+from unicodedata import category
 import requests
 import numpy as np
 import pandas as pd
@@ -23,7 +24,7 @@ class RawDataCollector:
         self.dirpath_master = os.path.join(self.dirpath_download, SUBDIR_MASTER)
         self.dirpath_master_indices = os.path.join(self.dirpath_download, SUBDIR_MASTER_INDICES)
         self.dirpath_history_raw_etf = os.path.join(self.dirpath_download, SUBDIR_HISTORY_RAW_ETF)
-        self.dirpath_history_raw_indices = os.path.join(self.dirpath_download, SUBDIR_HISTORY_RAW_ETF)
+        self.dirpath_history_raw_indices = os.path.join(self.dirpath_download, SUBDIR_HISTORY_RAW_INDICES)
         self.dirpath_history_raw_currencies = os.path.join(self.dirpath_download, SUBDIR_HISTORY_RAW_CURRENCIES)
         self.dirpath_history_pp_etf = os.path.join(self.dirpath_download, SUBDIR_HISTORY_PP_ETF)
         self.dirpath_history_pp_indices = os.path.join(self.dirpath_download, SUBDIR_HISTORY_PP_INDICES)
@@ -51,11 +52,11 @@ class RawDataCollector:
         self.fpath_info_etf = os.path.join(self.dirpath_download, FNAME_INFO_ETF)
         self.fpath_profile_etf = os.path.join(self.dirpath_download, FNAME_PROFILE_ETF)
         self.fpath_master_etf = os.path.join(self.dirpath_master, FNAME_MASTER_ETF)
-        self.fpath_master_currencies = os.path.join(self.dirpath_master_indices, FNAME_MASTER_CURRENCIES)
+        self.fpath_master_currencies = os.path.join(self.dirpath_master, FNAME_MASTER_CURRENCIES)
+        self.fpath_master_indices = os.path.join(self.dirpath_master, FNAME_MASTER_INDICES)
         self.fpath_master_indices_yahoo = os.path.join(self.dirpath_master_indices, FNAME_MASTER_INDICES_YAHOO)
         self.fpath_master_indices_investpy = os.path.join(self.dirpath_master_indices, FNAME_MASTER_INDICES_INVESTPY)
         self.fpath_master_indices_fred = os.path.join(self.dirpath_master_indices, FNAME_MASTER_INDICES_FRED)
-        self.fpath_master_indices = os.path.join(self.dirpath_master_indices, FNAME_MASTER_INDICES)
         self.fpath_recent_etf = os.path.join(self.dirpath_recent, FNAME_RECENT_ETF)
         self.fpath_recent_indices = os.path.join(self.dirpath_recent, FNAME_RECENT_INDICES)
         self.fpath_recent_currencies = os.path.join(self.dirpath_recent, FNAME_RECENT_CURRENCIES)
@@ -243,6 +244,62 @@ class RawDataCollector:
         currencies.to_csv(self.fpath_master_currencies, index=False)
         return currencies
 
+    @measure_time
+    def get_history_from_yf(self, category):
+        assert category in ['etf', 'index', 'currency'], 'category must be one of ["etf", "index", "currency"]'
+        if category == "index":
+            master_df = pd.read_csv(self.fpath_master_indices)
+            dir_history_raw = self.dirpath_history_raw_indices
+        elif category == "etf":
+            master_df = pd.read_csv(self.fpath_master_etf)
+            dir_history_raw = self.dirpath_history_raw_etf
+        elif category == "currency":
+            master_df = pd.read_csv(self.fpath_master_currencies)
+            dir_history_raw = self.dirpath_history_raw_currencies
+
+        #있으면 하고 없으면 말기 # os.path.exists()
+        for row in tqdm(master_df.itertuples(), total=len(master_df), mininterval=0.5):
+            symbol = getattr(row, 'symbol')
+            fpath = os.path.join(dir_history_raw, f'history_raw_{symbol}.csv')
+            if True:
+            # if not os.path.exists(fpath):
+                time.sleep(0.1)
+                i = getattr(row, 'Index') # enumerate i 의 용도
+                history = yf.Ticker(symbol).history(period='max')
+                history = history.reset_index()
+                history.rename(columns=self.dict_cols_history_raw, inplace=True)
+                if len(history) > 50:
+                    days_from_last_traded = dt.datetime.today() - history['date'].max()
+                    if days_from_last_traded < pd.Timedelta('100 days'):
+                        # history = history.asfreq(freq = "1d").reset_index()
+                        history['date'] = history['date'].astype('str')
+                        # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
+                        history['symbol'] = getattr(row, 'symbol')
+                        history['full_name'] = getattr(row, 'full_name')
+                        history.to_csv(fpath, index=False)
+                else:
+                    print(f'Empty DataFrame at Loop {i}: {symbol}')
+
+    @measure_time
+    def get_history_from_fred(self):
+        master_df = pd.read_csv(self.fpath_master_indices_fred)
+        start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
+        for row in tqdm(master_df.itertuples(), total=len(master_df)):
+            i = getattr(row, 'Index')
+            symbol = getattr(row, 'symbol')
+            history = web.DataReader(symbol, 'fred', start, end)#.asfreq(freq='1d', method='ffill').reset_index(drop=False)
+            history = history.reset_index()
+            history.rename(columns={f'{symbol}':'close'}, inplace=True)
+            history.rename(columns={'DATE':'date'}, inplace=True)
+            history['symbol'] = getattr(row, 'symbol')
+            history['full_name'] = getattr(row, 'full_name')
+            history['date'] = history['date'].astype('str')
+
+            header = pd.DataFrame(columns=COLS_HISTORY_RAW)
+            history = pd.concat([header, history])
+            history.to_csv(os.path.join(self.dirpath_history_raw_indices, f'history_raw_{symbol}.csv'), index=False)
+
+
 if __name__ == '__main__':
     print('hi')
 
@@ -267,3 +324,8 @@ if __name__ == '__main__':
     # collector.get_master_currencies()
 
     # History
+    # collector.get_history_from_yf(category='etf')
+    # collector.get_history_from_yf(category='index')
+    # collector.get_history_from_yf(category='currency')
+
+    # collector.get_history_from_fred()

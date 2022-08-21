@@ -98,10 +98,10 @@ DICT_COLS_PROFILE_ETF = {
 }
 COLS_PROFILE_ETF = [
     'symbol', 'fund_family',
-    'net_assets', 'nav', 'per_ttm', 'expense_ratio', 'inception_date'
+    'net_assets', 'nav', 'expense_ratio', 'inception_date'
 ]
 _COLS_PROFILE_ETF = [
-    'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 
+    'per_ttm', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 
 ]
 
 
@@ -110,13 +110,6 @@ COLS_MASTER_BASIC = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
 ]
 COLS_MASTER_ENTIRE = list(set(COLS_META_ETF + COLS_INFO_ETF + COLS_PROFILE_ETF))
-
-# COLS_MASTER_ENTIRE = [
-#     'country', 'symbol', 'name', 'full_name', 'currency', 'category', 
-#     'asset_class', 'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 
-#     'nav', 'shares_outstanding', 'market_cap', 'isin', 'stock_exchange'
-# ]
-
 
 
 COLS_HISTORY_RAW = [
@@ -130,9 +123,10 @@ DICT_COLS_HISTORY_RAW = {
     'Low': 'low',
     'Close': 'close',
     'Volume': 'volume',
-    'Dividends': 'dividends',
-    'Stock Splits': 'stock_splits'
+    'Dividends': 'dividend',
+    'Stock Splits': 'stock_split'
 }
+
 DICT_COLS_RECESSION = {
     'DATE': 'date',
     'USREC': 'recession'
