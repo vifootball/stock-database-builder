@@ -4,11 +4,14 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime as dt
-from constants import *
+
 import investpy
 import yfinance as yf
 import pandas_datareader.data as web
+from bs4 import BeautifulSoup as bs
+
 from utils import *
+from constants import *
 
 
 class RawDataCollector:
@@ -18,7 +21,7 @@ class RawDataCollector:
         self.dirpath_profile_etf = os.path.join(self.dirpath_download, SUBDIR_PROFILE_ETF)
         self.dirpath_info_etf = os.path.join(self.dirpath_download, SUBDIR_INFO_ETF)
         self.dirpath_master = os.path.join(self.dirpath_download, SUBDIR_MASTER)
-        self.dirpath_master_indices = os.path.join(self.dirpath_download, SUBDIR_MASTER_INDICES, FNAME_MASTER_INDICES)
+        self.dirpath_master_indices = os.path.join(self.dirpath_download, SUBDIR_MASTER_INDICES)
         self.dirpath_history_raw_etf = os.path.join(self.dirpath_download, SUBDIR_HISTORY_RAW_ETF)
         self.dirpath_history_raw_indices = os.path.join(self.dirpath_download, SUBDIR_HISTORY_RAW_ETF)
         self.dirpath_history_raw_currencies = os.path.join(self.dirpath_download, SUBDIR_HISTORY_RAW_CURRENCIES)
@@ -75,9 +78,6 @@ class RawDataCollector:
         self.dict_cols_recession = DICT_COLS_RECESSION
         self.list_dict_symbols_fred = LIST_DICT_SYMBOLS_FRED
 
-
-
-    
     @measure_time
     def get_meta_etf(self):
         meta_etf = investpy.etfs.get_etfs(country='united states')
@@ -167,7 +167,81 @@ class RawDataCollector:
         master_etf.to_csv(self.fpath_master_etf, index=False)
         return master_etf
 
+    @measure_time
+    def get_master_indices_yahoo(self):
+        dfs = []
+        urls = [
+            'https://finance.yahoo.com/world-indices',
+            'https://finance.yahoo.com/commodities'
+        ]
 
+        for url in urls:
+            response = requests.get(url)
+            html = bs(response.text, "lxml")
+            html_table = html.select("table")
+            table = pd.read_html(str(html_table))
+            df_indices = table[0][['Symbol','Name']]
+            df_indices['full_name'] = df_indices['Name']
+            df_indices['country'] = None
+            df_indices['currency'] = None
+            df_indices['category'] = 'index'
+            df_indices.columns = df_indices.columns.str.lower().to_list()
+            dfs.append(df_indices)
+
+        df_yahoo = pd.concat(dfs).reset_index(drop=True)[COLS_MASTER_BASIC]
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        df_yahoo = pd.concat([header, df_yahoo])
+        
+        df_yahoo.to_csv(self.fpath_master_indices_yahoo, index=False)
+        return df_yahoo
+
+    @measure_time
+    def get_master_indices_investpy(self):
+        countries = ['united states', 'south korea']
+
+        df_indices = investpy.indices.get_indices()
+        df_indices = df_indices[df_indices['country'].isin(countries)].reset_index(drop=True)
+        df_indices['symbol'] = '^' + df_indices['symbol']
+        df_indices['category'] = 'index'
+        df_indices = df_indices[COLS_MASTER_BASIC]
+
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        df_indices = pd.concat([header, df_indices])
+        
+        df_indices.to_csv(self.fpath_master_indices_investpy, index=False)
+        return df_indices
+
+    @measure_time
+    def get_master_indices_fred(self):
+        df = pd.DataFrame(self.list_dict_symbols_fred)[COLS_MASTER_BASIC]
+
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        df = pd.concat([header, df])
+        
+        df.to_csv(self.fpath_master_indices_fred, index=False)
+        return df
+
+    @measure_time
+    def get_master_currencies(self):
+        currencies = investpy.currency_crosses.get_currency_crosses()
+        base_cur = ['KRW', 'USD']
+        currencies = currencies[currencies['base'].isin(base_cur)].reset_index(drop=True)
+        currencies['currency'] = currencies['base']
+        currencies['category'] = 'currency'
+        currency_to_country = {'USD': 'united states', 'KRW': 'south Korea'}
+        currencies['country'] = currencies['currency'].map(currency_to_country)
+        def _encode_symbol(name):
+            base_cur, second_cur = name.split('/')
+            symbol = f'{second_cur}=X' if base_cur == 'USD' else f'{base_cur}{second_cur}=X'
+            return symbol
+        currencies['symbol'] = currencies['name'].apply(_encode_symbol)
+        currencies = currencies[COLS_MASTER_BASIC]
+        
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        currencies = pd.concat([header, currencies]) 
+
+        currencies.to_csv(self.fpath_master_currencies, index=False)
+        return currencies
 
 if __name__ == '__main__':
     print('hi')
@@ -184,4 +258,12 @@ if __name__ == '__main__':
     # collector.concat_profile_etf()
     # collector.construct_master_etf()
 
-    
+    # Indices
+    # collector.get_master_indices_yahoo()
+    # collector.get_master_indices_investpy()
+    # collector.get_master_indices_fred()
+
+    # Currencies
+    # collector.get_master_currencies()
+
+    # History

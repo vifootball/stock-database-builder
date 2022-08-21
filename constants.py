@@ -109,11 +109,13 @@ _COLS_PROFILE_ETF = [
 COLS_MASTER_BASIC = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
 ]
-COLS_MASTER_ENTIRE = [
-    'country', 'symbol', 'name', 'full_name', 'currency', 'category', 'asset_class', 
-    'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 'nav', 'shares_outstanding',
-    'market_cap', 'isin', 'stock_exchange',
-]
+COLS_MASTER_ENTIRE = list(set(COLS_META_ETF + COLS_INFO_ETF + COLS_PROFILE_ETF))
+
+# COLS_MASTER_ENTIRE = [
+#     'country', 'symbol', 'name', 'full_name', 'currency', 'category', 
+#     'asset_class', 'fund_family', 'expense_ratio', 'inception_date', 'net_assets', 
+#     'nav', 'shares_outstanding', 'market_cap', 'isin', 'stock_exchange'
+# ]
 
 
 
