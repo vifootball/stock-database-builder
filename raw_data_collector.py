@@ -14,6 +14,8 @@ from utils import *
 from constants import *
 from directory_builder import DirectoryBuilder
 
+pd.options.mode.chained_assignment = None
+
 
 class RawDataCollector(DirectoryBuilder):
     def __init__(self):
@@ -29,7 +31,6 @@ class RawDataCollector(DirectoryBuilder):
         self.cols_etf_entire = COLS_MASTER_ENTIRE
 
         self.dict_cols_history_raw = DICT_COLS_HISTORY_RAW
-        self.dict_cols_recession = DICT_COLS_RECESSION
         self.list_dict_symbols_fred = LIST_DICT_SYMBOLS_FRED
 
     @measure_time
@@ -228,20 +229,17 @@ if __name__ == '__main__':
 
     collector = RawDataCollector()
     # ETF
-    collector.get_meta_etf()
+    # collector.get_meta_etf()
     # collector.get_info_etf()
     # collector.get_profile_etf()
-    # collector.concat_info_etf()
-    # collector.concat_profile_etf()
-    # collector.construct_master_etf()
 
     # Indices
-    # collector.get_master_indices_yahoo()
-    # collector.get_master_indices_investpy()
-    # collector.get_master_indices_fred()
+    collector.get_master_indices_yahoo()
+    collector.get_master_indices_investpy()
+    collector.get_master_indices_fred()
 
     # Currencies
-    # collector.get_master_currencies()
+    collector.get_master_currencies()
 
     # History
     # collector.get_history_from_yf(category='etf')

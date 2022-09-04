@@ -33,15 +33,15 @@ def calc_drawdown_max(drawdown_current):
     return drawdown_max
 
 def calc_volume_of_dollar(price, volume_of_shares): # estimated by close price
-    volume_of_dollar = int((price * volume_of_shares).round(0))
+    volume_of_dollar = (price * volume_of_shares).round(0)
     return volume_of_dollar
 
 def calc_volume_of_share_3m_avg(volume_of_share):
-    volume_of_share_3m_avg = volume_of_share.rolling(window='90d').mean().to_numpy()
+    volume_of_share_3m_avg = volume_of_share.rolling(window='90d').mean().round(0).to_numpy()
     return volume_of_share_3m_avg
 
 def calc_volume_of_dollar_3m_avg(volume_of_dollar):
-    volume_of_dollar_3m_avg = volume_of_dollar.rolling(window='90d').mean().to_numpy()
+    volume_of_dollar_3m_avg = volume_of_dollar.rolling(window='90d').mean().round(0).to_numpy()
     return volume_of_dollar_3m_avg
 
 # dividend

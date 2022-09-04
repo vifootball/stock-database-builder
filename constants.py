@@ -50,7 +50,7 @@ FNAME_BENCHMARK = 'benchmark.csv'
 
 # Meta ETF
 COLS_META_ETF = [
-    'coutry', 'symbol', 'name', 'full_name', 'currency' 'asset_class',
+    'country', 'symbol', 'name', 'full_name', 'currency', 'asset_class',
     'isin', 'stock_exchange' 
 ]
 _COLS_META_ETF = [
@@ -109,11 +109,11 @@ _COLS_PROFILE_ETF = [
 COLS_MASTER_BASIC = [
     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
 ]
-COLS_MASTER_ENTIRE = list(set(COLS_META_ETF + COLS_INFO_ETF + COLS_PROFILE_ETF))
+COLS_MASTER_ENTIRE = sorted(list(set(COLS_MASTER_BASIC + COLS_META_ETF + COLS_INFO_ETF + COLS_PROFILE_ETF)))
 
 
 COLS_HISTORY_RAW = [
- 'date', 'symbol', 'full_name', 'open', 'high', 'low', 'close', 'volume', 'dividends', 'stock_splits'
+ 'date', 'symbol', 'full_name', 'open', 'high', 'low', 'close', 'volume', 'dividend', 'stock_split'
 ] 
 
 DICT_COLS_HISTORY_RAW = {

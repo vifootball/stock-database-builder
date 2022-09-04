@@ -1,4 +1,5 @@
 import os
+from unicodedata import category
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -11,7 +12,6 @@ from directory_builder import DirectoryBuilder
  
 class Preprocessor(DirectoryBuilder):
     def __init__(self):
-        ###
         super().__init__()
 
     @measure_time
@@ -36,8 +36,16 @@ class Preprocessor(DirectoryBuilder):
                 
         master_etf = meta_etf.merge(info_etf, how='left', on='name')
         master_etf = master_etf.merge(profile_etf, how='left', on='symbol')
+        master_etf = master_etf[COLS_MASTER_ENTIRE]
         master_etf.to_csv(self.fpath_master_etf, index=False)
         return master_etf
+
+    @measure_time
+    def concat_master_indices(self):
+        concat_csv_files_in_dir(
+            get_dirpath=self.dirpath_master_indices,
+            put_fpath=self.fpath_master_indices
+        )
 
     def preprocess_history(self, category):
         path_dict = self.get_path_dict_by_category(category)
@@ -80,3 +88,23 @@ class Preprocessor(DirectoryBuilder):
 
 
 
+if __name__ == '__main__':
+    if 'stock-database-builder' in os.listdir():
+        os.chdir('stock-database-builder')
+
+    preprocessor = Preprocessor()
+    preprocessor.construct_master_etf()
+
+    # preprocessor.concat_master_indices()
+
+    # preprocessor.preprocess_history(category='etf')
+    # preprocessor.preprocess_history(category='index')
+    # preprocessor.preprocess_history(category='currency')
+
+    # preprocessor.get_recent_from_history(category='etf')
+    # preprocessor.get_recent_from_history(category='index')
+    # preprocessor.get_recent_from_history(category='currency')
+
+    preprocessor.construct_summary(category='etf')
+    preprocessor.construct_summary(category='index')
+    preprocessor.construct_summary(category='currency')
