@@ -76,6 +76,25 @@ class Preprocessor(DirectoryBuilder):
         print(f"Finished Extracting Recent Data of Histories: {category}")
         return recents
     
+    def concat_history_pp(self,category): # 파일 50개씩 분할저장? n행이 넘어가면 저장후 다시시작
+        history_list = []
+        total_len = 0
+        chunk_num = 1
+        
+        for history_pp in history_pp_generator:
+            history_list.append(history_pp)
+            total_len += len(history_pp)
+
+            if total_len > 500_000:
+                fpath = os.path.join(self.dirpath_history_pp_concatenated, f'history_pp_{category}_{chunk_num}.csv')
+                df = pd.concat(history_list)
+                df.to_csv(fpath, index=False)
+
+                history_list = []
+                total_len = 0
+                chunk_num += 1
+
+
     def construct_summary(self, category):
         path_dict = self.get_path_dict_by_category(category)
         master = pd.read_csv(path_dict.get('fpath_master'))
