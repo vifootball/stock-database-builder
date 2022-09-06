@@ -98,7 +98,7 @@ DICT_COLS_PROFILE_ETF = {
 }
 COLS_PROFILE_ETF = [
     'symbol', 'fund_family',
-    'net_assets', 'nav', 'expense_ratio', 'inception_date'
+    'net_assets', 'nav', 'expense_ratio', 'inception_date', 'elapsed_day'
 ]
 _COLS_PROFILE_ETF = [
     'per_ttm', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 

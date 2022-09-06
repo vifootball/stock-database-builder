@@ -84,6 +84,7 @@ class RawDataCollector(DirectoryBuilder):
             profile['fund_family'] = etf.info.get('fundFamily')
 
             profile.rename(columns=self.dict_cols_profile_etf, inplace=True)
+            profile['elapsed_year'] = round((dt.datetime.today() - pd.to_datetime(profile['inception_date'])).dt.days/365, 1)
             profile['expense_ratio'] = profile['expense_ratio'].str.replace('%','').astype('float')/100
             profile.rename(columns={'net_assets': 'net_assets_original'}, inplace=True)
             profile['net_assets_original'] = profile["net_assets_original"].fillna("0")
@@ -231,15 +232,15 @@ if __name__ == '__main__':
     # ETF
     # collector.get_meta_etf()
     # collector.get_info_etf()
-    # collector.get_profile_etf()
+    collector.get_profile_etf()
 
     # Indices
-    collector.get_master_indices_yahoo()
-    collector.get_master_indices_investpy()
-    collector.get_master_indices_fred()
+    # collector.get_master_indices_yahoo()
+    # collector.get_master_indices_investpy()
+    # collector.get_master_indices_fred()
 
     # Currencies
-    collector.get_master_currencies()
+    # collector.get_master_currencies()
 
     # History
     # collector.get_history_from_yf(category='etf')
