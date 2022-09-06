@@ -76,23 +76,34 @@ class Preprocessor(DirectoryBuilder):
         print(f"Finished Extracting Recent Data of Histories: {category}")
         return recents
     
-    def concat_history_pp(self,category): # 파일 50개씩 분할저장? n행이 넘어가면 저장후 다시시작
+    def concat_history_pp(self,category): # n행씩 분할저장.. # 마지막거는 어케하지..?
         history_list = []
         total_len = 0
         chunk_num = 1
         
+        path_dict = self.get_path_dict_by_category(category)
+        dirpath_history_pp = path_dict.get('dirpath_history_pp')
+        
+        
+        history_pp_generator =  (pd.read_csv(os.path.join(dirpath_history_pp, fname)) for fname in os.listdir(dirpath_history_pp) if fname.endswith('csv'))
         for history_pp in history_pp_generator:
             history_list.append(history_pp)
             total_len += len(history_pp)
-
-            if total_len > 500_000:
-                fpath = os.path.join(self.dirpath_history_pp_concatenated, f'history_pp_{category}_{chunk_num}.csv')
+            
+            print(f'Concatenateing History of {category.capitalize()} | Chunk No.{chunk_num} | Total Length: {total_len}')
+            if total_len > 1000_000:
+                fpath_history_pp_concatenated = os.path.join(self.dirpath_history_pp_concatenated, f'history_pp_{category}_{chunk_num}.csv')
                 df = pd.concat(history_list)
-                df.to_csv(fpath, index=False)
+                df.to_csv(fpath_history_pp_concatenated, index=False)
 
                 history_list = []
                 total_len = 0
                 chunk_num += 1
+        
+        if total_len > 0: # 나눠 떨어지지 않은 마지막 사이클 저장
+            fpath_history_pp_concatenated = os.path.join(self.dirpath_history_pp_concatenated, f'history_pp_{category}_{chunk_num}.csv')
+            df = pd.concat(history_list)
+            df.to_csv(fpath_history_pp_concatenated, index=False)
 
 
     def construct_summary(self, category):
@@ -112,11 +123,11 @@ if __name__ == '__main__':
         os.chdir('stock-database-builder')
 
     preprocessor = Preprocessor()
-    preprocessor.construct_master_etf()
+    # preprocessor.construct_master_etf()
 
     # preprocessor.concat_master_indices()
 
-    # preprocessor.preprocess_history(category='etf')
+    preprocessor.preprocess_history(category='etf')
     # preprocessor.preprocess_history(category='index')
     # preprocessor.preprocess_history(category='currency')
 
@@ -124,6 +135,13 @@ if __name__ == '__main__':
     # preprocessor.get_recent_from_history(category='index')
     # preprocessor.get_recent_from_history(category='currency')
 
-    preprocessor.construct_summary(category='etf')
-    preprocessor.construct_summary(category='index')
-    preprocessor.construct_summary(category='currency')
+    # preprocessor.construct_summary(category='etf')
+    # preprocessor.construct_summary(category='index')
+    # preprocessor.construct_summary(category='currency')
+
+    # preprocessor.concat_history_pp(category='index')
+    # preprocessor.concat_history_pp(category='currency')
+    # preprocessor.concat_history_pp(category='etf')
+
+
+
