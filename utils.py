@@ -5,6 +5,13 @@ import pandas as pd
 from tqdm import tqdm
 from datetime import datetime
 
+def export_df_to_csv(df, fpath): # None 처리
+    if isinstance(df, pd.DataFrame) and (len(df) > 0):
+        os.makedirs(os.path.dirname(fpath), exist_ok=True)
+        df.to_csv(fpath, index=False)
+    else:
+        print("Export Nothing: arg 'df' is empty or not a pd.DataFrame")
+
 def concat_csv_files_in_dir(get_dirpath, put_fpath):
     df = []
     csv_file_generator = (pd.read_csv(os.path.join(get_dirpath, csv_fname)) for csv_fname in os.listdir(get_dirpath) if csv_fname.endswith('csv'))
