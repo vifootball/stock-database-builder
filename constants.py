@@ -49,16 +49,30 @@ FNAME_SUMMARY_CURRENCIES = 'summary_currencies.csv'
 FNAME_BENCHMARK = 'benchmark.csv'
 
 # Meta ETF
-COLS_META_ETF = [
-    'country', 'symbol', 'name', 'full_name', 'currency', 'asset_class',
-    'isin', 'stock_exchange' 
+DICT_COLS_RAW_META_ETF = { # for rename
+    'country': 'country', 
+    'name': 'name', 
+    'full_name': 'full_name', 
+    'symbol': 'symbol', 
+    'isin': 'isin', 
+    'asset_class': 'asset_class', 
+    'currency': 'currency', 
+    'stock_exchange': 'stock_exchange', 
+    'def_stock_exchange': 'def_stock_exchange'
+}
+COLS_META_ETF_INCLUDE = [
+    'country', 'name', 'full_name', 'symbol', 'isin',
+    'asset_class', 'currency', 'stock_exchange' 
 ]
-_COLS_META_ETF = [
-    'def_stock_exchange', 'category'
+COLS_META_ETF_EXCLUDE = [
+    'def_stock_exchange'
+]
+COLS_META_ETF_ADD = [
+    'category'
 ]
 
 # Info ETF
-DICT_COLS_INFO_ETF = {
+DICT_COLS_RAW_INFO_ETF = {
     'ETF Name': 'name',
     'Prev. Close': 'prev_close',
     'Todays Range': 'todays_range',
@@ -76,18 +90,18 @@ DICT_COLS_INFO_ETF = {
     'Shares Outstanding': 'shares_outstanding',
     'Asset Class': 'asset_class'
 }
-COLS_INFO_ETF = [
+INFO_ETF_INCLUDE = [
     'name', 'market_cap', 'shares_outstanding'
 ]
-_COLS_INFO_ETF =[
+INFO_ETF_EXCLUDE = [
     'prev_close', 'todays_range', 'roi_ttm', 'open', '52_week_range', 
     'dividend_ttm', 'volume', 'dividend_yield_rate', 'volume_3m_avg', 'total_assets', 
     'beta', '1_year_change_rate', 'asset_class'
 ]
 
 # Profile ETF
-DICT_COLS_PROFILE_ETF = {
-    'Net Assets': 'net_assets',
+DICT_COLS_RAW_PROFILE_ETF = {
+    'Net Assets': 'net_assets_abbv',
     'NAV': 'nav',
     'PE Ratio (TTM)': 'per_ttm',
     'Yield': 'yield',
@@ -96,20 +110,22 @@ DICT_COLS_PROFILE_ETF = {
     'Expense Ratio (net)': 'expense_ratio',
     'Inception Date': 'inception_date'
 }
-COLS_PROFILE_ETF = [
-    'symbol', 'fund_family',
-    'net_assets', 'nav', 'expense_ratio', 'inception_date', 'elapsed_day'
+PROFILE_ETF_INCLUDE = [
+    'net_assets_abbv', 'nav', 'expense_ratio', 'inception_date',
 ]
-_COLS_PROFILE_ETF = [
-    'per_ttm', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 
+PROFILE_ETF_EXCLUDE = [
+    'per_ttm', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 'net_assets_sig_figs',
+    'multiplier_mil', 'multiplier_bil', 'multiplier_tril'
+]
+PROFILE_ETF_ADD = [
+    'symbol', 'fun_family', 'elapsed_day', 'net_assets'
 ]
 
 
-
-COLS_MASTER_BASIC = [
-    'country', 'symbol', 'name', 'full_name', 'currency', 'category'
-]
-COLS_MASTER_ENTIRE = sorted(list(set(COLS_MASTER_BASIC + COLS_META_ETF + COLS_INFO_ETF + COLS_PROFILE_ETF)))
+# COLS_MASTER_BASIC = [
+#     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
+# ]
+# COLS_MASTER_ENTIRE = sorted(list(set(COLS_MASTER_BASIC + COLS_META_ETF + COLS_INFO_ETF + COLS_PROFILE_ETF)))
 
 
 COLS_HISTORY_RAW = [
