@@ -1,31 +1,56 @@
 import os
-from unicodedata import category
 import numpy as np
 import pandas as pd
+import datetime as dt
 from tqdm import tqdm
 
 from utils import *
 from constants import *
 from metric_calculator import *
-from directory_builder import DirectoryBuilder
+from directory_helper import DirectoryHelper
 
- 
-class Preprocessor(DirectoryBuilder):
-    def __init__(self):
-        super().__init__()
+class Preprocessor():
 
-    @measure_time
-    def concat_info_etf(self):
+    @staticmethod
+    def preprocess_meta_etf(meta_etf):
+        meta_etf['category'] = 'etf'
+        return meta_etf
+
+    @staticmethod
+    def preprocess_info_etf(info_etf): # None 처리
+        if info_etf is not None:
+            info_etf.rename(columns=DICT_COLS_RAW_INFO_ETF, inplace=True)
+        return info_etf
+
+    @staticmethod
+    def preprocess_profile_etf(profile_etf):
+        if profile_etf is not None:
+            profile_etf.rename(columns=DICT_COLS_RAW_PROFILE_ETF, inplace=True)
+            profile_etf['elapsed_year'] = round((dt.datetime.today() - pd.to_datetime(profile_etf['inception_date'])).dt.days/365, 1)
+            profile_etf['expense_ratio'] = profile_etf['expense_ratio'].str.replace('%','').astype('float')/100
+            profile_etf['net_assets_abbv'] = profile_etf['net_assets_abbv'].fillna("0")
+            profile_etf['net_assets_sig_figs'] = profile_etf['net_assets_abbv'].str.extract('([0-9.]*)').astype('float')
+            profile_etf['multiplier_mil'] = (profile_etf["net_assets_abbv"].str.endswith('M').astype('int') * (1000_000-1)) + 1
+            profile_etf['multiplier_bil'] = (profile_etf["net_assets_abbv"].str.endswith('B').astype('int') * (1000_000_000-1)) + 1
+            profile_etf['multiplier_tril'] = (profile_etf["net_assets_abbv"].str.endswith('T').astype('int') * (1000_000_000_000-1)) + 1
+            profile_etf['net_assets'] = profile_etf['net_assets_sig_figs'] \
+                                        * profile_etf['multiplier_mil'] \
+                                        * profile_etf['multiplier_bil'] \
+                                        * profile_etf['multiplier_tril']
+        return profile_etf
+
+    @staticmethod
+    def concat_info_etf():
+        concat_csv_files_in_dir( # 이게 하나의 실행단위가 될 수 있으므로 묶어놔도 괜찮을듯
+            get_dirpath=DirectoryHelper.get_path_dict(category='etf').get('dirpath_info_etf'),
+            put_fpath=DirectoryHelper.get_path_dict(category='etf').get('fpath_info_etf')
+        )  
+
+    @staticmethod
+    def concat_profile_etf():
         concat_csv_files_in_dir(
-            get_dirpath=self.dirpath_info_etf,
-            put_fpath=self.fpath_info_etf
-        )   
-
-    @measure_time
-    def concat_profile_etf(self):
-        concat_csv_files_in_dir(
-            get_dirpath=self.dirpath_profile_etf,
-            put_fpath=self.fpath_profile_etf
+            get_dirpath=DirectoryHelper.get_path_dict(category='etf').get('dirpath_profile_etf'),
+            put_fpath=DirectoryHelper.get_path_dict(category='etf').get('fpath_profile_etf')
         )
 
     @measure_time
@@ -122,12 +147,12 @@ if __name__ == '__main__':
     if 'stock-database-builder' in os.listdir():
         os.chdir('stock-database-builder')
 
-    preprocessor = Preprocessor()
+    # preprocessor = Preprocessor()
     # preprocessor.construct_master_etf()
 
     # preprocessor.concat_master_indices()
 
-    preprocessor.preprocess_history(category='etf')
+    # preprocessor.preprocess_history(category='etf')
     # preprocessor.preprocess_history(category='index')
     # preprocessor.preprocess_history(category='currency')
 
