@@ -17,83 +17,91 @@ from preprocessor import *
 pd.options.mode.chained_assignment = None
 
 
+
 class RawDataCollector():
+    @staticmethod
+    def get_raw_etf_metas():
+        raw_etf_metas = investpy.etfs.get_etfs(country='united states')
+        export_df_to_csv(
+            df=raw_etf_metas, 
+            fpath=os.path.join(
+                DIR_DOWNLOAD, 
+                SUBDIR_ETF_META, 
+                FNAME_RAW_ETF_METAS
+            )
+        )
+        return raw_etf_metas
 
     @staticmethod
-    def get_meta_etf():
-        meta_etf = investpy.etfs.get_etfs(country='united states')
-        return meta_etf
-    
+    def get_etf_names():
+        pp_etf_metas = pd.read_csv(os.path.join(
+            DIR_DOWNLOAD,
+            SUBDIR_ETF_META,
+            FNAME_PP_ETF_METAS
+        ))
+        etf_names = list(pp_etf_metas['name'])
+        return etf_names
+
     @staticmethod
-    def get_info_etf(etf_name):
+    def get_etf_symbols():
+        pp_etf_metas = pd.read_csv(os.path.join(
+            DIR_DOWNLOAD,
+            SUBDIR_ETF_META,
+            FNAME_PP_ETF_METAS
+        ))
+        etf_symbols = list(pp_etf_metas['symbol'])
+        return etf_symbols
+
+    @staticmethod
+    def get_raw_etf_info(etf_name):
         try:
-            info_etf = investpy.etfs.get_etf_information(etf_name, country='united states')
             time.sleep(0.5)
+            raw_etf_info = investpy.etfs.get_etf_information(etf_name, country='united states')
+            export_df_to_csv(
+                df=raw_etf_info,
+                fpath=os.path.join(
+                    DIR_DOWNLOAD,
+                    SUBDIR_ETF_INFO,
+                    SUBDIR_RAW_ETF_INFO,
+                    f'raw_etf_info_{etf_name}.csv'
+                )
+            )
         except:
-            info_etf = None
+            raw_etf_info = None
             print(f'Error Ocurred While Getting Information of: {etf_name}')
         finally:
-            return info_etf
+            return raw_etf_info
     
     @staticmethod
-    def get_profile_etf(symbol):
+    def get_raw_etf_profile(symbol):
         etf = yf.Ticker(symbol)
         try:
-            profile_etf = etf.get_institutional_holders().T
-            profile_etf.columns = profile_etf.iloc[0]
-            profile_etf = profile_etf[1:]
-            profile_etf['symbol'] = symbol
-            profile_etf['fund_family'] = etf.info.get('fundFamily')
-            if 'Expense Ratio (net)' not in profile_etf.columns: # 구해져도 ETF가 아닌 경우가 있음
-                profile_etf= None
+            raw_etf_profile = etf.get_institutional_holders().T
+            raw_etf_profile.columns = raw_etf_profile.iloc[0]
+            raw_etf_profile = raw_etf_profile[1:]
+            raw_etf_profile['symbol'] = symbol
+            raw_etf_profile['fund_family'] = etf.info.get('fundFamily')
+            if 'Expense Ratio (net)' not in raw_etf_profile.columns: # 구해져도 ETF가 아닌 경우가 있음
+                raw_etf_profile= None
                 print(f'Not ETF: {symbol}')
+            else:
+                export_df_to_csv(
+                    df=raw_etf_profile,
+                    fpath=os.path.join(
+                        DIR_DOWNLOAD,
+                        SUBDIR_ETF_PROFILE,
+                        SUBDIR_ETF_PROFILE,
+                        f'raw_etf_profile_{symbol}.csv'
+                    )
+                )
         except:
-            profile_etf = None
+            raw_etf_profile = None
             print(f'Error Ocurred While Getting Profile of: {symbol}')
 
         finally:
-            return profile_etf
+            return raw_etf_profile
 
 
-    @measure_time
-    def _get_profile_etf(self): # takes about 8-10 hours # recommended to run monthly in weekend
-        etf_meta = pd.read_csv(self.fpath_meta_etf)#[:5]
-        for row in tqdm(etf_meta.itertuples(), total=len(etf_meta), mininterval=0.5):
-            time.sleep(1)
-            i = getattr(row, 'Index')
-            symbol = getattr(row, 'symbol')
-            
-            etf = yf.Ticker(symbol)
-
-            try: 
-                profile = etf.get_institutional_holders().T
-                profile.columns = profile.iloc[0]
-                profile = profile[1:]
-            except: # return이 Noneype일때
-                print(f'Loop #{i} | Error Ocurred While Getting Profile of: {symbol}')
-                continue            
-
-            if 'Expense Ratio (net)' not in profile.columns: # ETF가 아닐때
-                print(f'Loop #{i} | Error Ocurred While Getting Profile of: {symbol}')
-                continue
-
-            profile['symbol'] = symbol
-            profile['fund_family'] = etf.info.get('fundFamily')
-
-            profile.rename(columns=self.dict_cols_profile_etf, inplace=True)
-            profile['elapsed_year'] = round((dt.datetime.today() - pd.to_datetime(profile['inception_date'])).dt.days/365, 1)
-            profile['expense_ratio'] = profile['expense_ratio'].str.replace('%','').astype('float')/100
-            profile.rename(columns={'net_assets': 'net_assets_original'}, inplace=True)
-            profile['net_assets_original'] = profile["net_assets_original"].fillna("0")
-            profile['multiplier_mil'] = (profile["net_assets_original"].str.endswith('M').astype('int') * (1000_000-1)) + 1
-            profile['multiplier_bil'] = (profile["net_assets_original"].str.endswith('B').astype('int') * (1000_000_000-1)) + 1
-            profile['multiplier_tril'] = (profile["net_assets_original"].str.endswith('T').astype('int') * (1000_000_000_000-1)) + 1
-            profile['net_assets'] = profile['net_assets_original'].str.extract('([0-9.]*)').astype('float')
-            profile['net_assets'] *= profile['multiplier_mil'] * profile['multiplier_bil'] * profile['multiplier_tril']
-
-            profile.rename(columns=self.dict_cols_profile_etf)
-            fpath = os.path.join(self.dirpath_profile_etf, f'profile_{symbol}.csv')    
-            profile.to_csv(fpath, index=False)
 
     # @measure_time
     # def get_master_indices_yahoo(self):
