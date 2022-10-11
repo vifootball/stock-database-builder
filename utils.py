@@ -5,20 +5,20 @@ import pandas as pd
 from tqdm import tqdm
 from datetime import datetime
 
-def export_df_to_csv(df, fpath): # None 처리
+def export_df_to_csv(df, fpath): # None 처리 # makedirs를 해주기 위해 만듬
     if isinstance(df, pd.DataFrame) and (len(df) > 0):
         os.makedirs(os.path.dirname(fpath), exist_ok=True)
-        df.to_csv(fpath, index=False)
+        df.to_csv(fpath, index=False, encoding='utf-8-sig')
     else:
         print("Export Nothing: arg 'df' is empty or not a pd.DataFrame")
 
-def concat_csv_files_in_dir(get_dirpath, put_fpath):
+def concat_csv_files_in_dir(get_dirpath):
     df = []
     csv_file_generator = (pd.read_csv(os.path.join(get_dirpath, csv_fname)) for csv_fname in os.listdir(get_dirpath) if csv_fname.endswith('csv'))
     for csv_file in csv_file_generator:
         df.append(csv_file)
     df = pd.concat(df)
-    df.to_csv(put_fpath, index=False, encoding='utf-8-sig')
+    return df
 
 def measure_time(func):
     def wrapper(*args, **kwargs):

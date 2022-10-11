@@ -8,9 +8,15 @@ BQ_TABLE_ID_HISTORY = 'history'
 DIR_DOWNLOAD = 'download'
 
 # name of subdir
-SUBDIR_INFO_ETF = 'info_etf'
-SUBDIR_PROFILE_ETF = 'profile_etf'
+SUBDIR_ETF_META = 'eff_meta'
 
+SUBDIR_ETF_INFO = 'etf_info'
+SUBDIR_RAW_ETF_INFO = 'raw_etf_info'
+
+SUBDIR_ETF_PROFILE = 'etf_profile'
+SUBDIR_RAW_ETF_PROFILE = 'raw_etf_profile'
+
+SUBDIR_PROFILE_ETF = 'profile_etf'
 SUBDIR_HISTORY_RAW_ETF = 'history_raw_etf'
 SUBDIR_HISTORY_RAW_CURRENCIES = 'history_raw_currencies'
 SUBDIR_HISTORY_RAW_INDICES = 'history_raw_indices'
@@ -27,8 +33,11 @@ SUBDIR_MASTER = 'master'
 SUBDIR_MASTER_INDICES = 'master_indices'
 
 # name of file
-FNAME_META_ETF = 'meta_etf.csv'
-FNAME_INFO_ETF = 'info_etf.csv'
+FNAME_RAW_ETF_METAS = 'raw_etf_metas.csv'
+FNAME_PP_ETF_METAS = 'pp_etf_metas.csv'
+
+FNAME_PP_ETF_INFOS = 'pp_etf_infos.csv'
+
 FNAME_PROFILE_ETF = 'profile_etf.csv'
 FNAME_HISTORY_ETF = 'history_etf.csv'
 FNAME_MASTER_ETF = 'master_etf.csv'
