@@ -16,7 +16,6 @@ SUBDIR_RAW_ETF_INFO = 'raw_etf_info'
 SUBDIR_ETF_PROFILE = 'etf_profile'
 SUBDIR_RAW_ETF_PROFILE = 'raw_etf_profile'
 
-SUBDIR_PROFILE_ETF = 'profile_etf'
 SUBDIR_HISTORY_RAW_ETF = 'history_raw_etf'
 SUBDIR_HISTORY_RAW_CURRENCIES = 'history_raw_currencies'
 SUBDIR_HISTORY_RAW_INDICES = 'history_raw_indices'
@@ -35,8 +34,8 @@ SUBDIR_MASTER_INDICES = 'master_indices'
 # name of file
 FNAME_RAW_ETF_METAS = 'raw_etf_metas.csv'
 FNAME_PP_ETF_METAS = 'pp_etf_metas.csv'
-
 FNAME_PP_ETF_INFOS = 'pp_etf_infos.csv'
+FNAME_PP_ETF_PROFILES = 'pp_etf_profiles.csv'
 
 FNAME_PROFILE_ETF = 'profile_etf.csv'
 FNAME_HISTORY_ETF = 'history_etf.csv'
@@ -58,7 +57,7 @@ FNAME_SUMMARY_CURRENCIES = 'summary_currencies.csv'
 FNAME_BENCHMARK = 'benchmark.csv'
 
 # Meta ETF
-DICT_COLS_RAW_META_ETF = { # for rename
+COL_MAPPER_RAW_ETF_META  = { # for rename
     'country': 'country', 
     'name': 'name', 
     'full_name': 'full_name', 
@@ -69,19 +68,22 @@ DICT_COLS_RAW_META_ETF = { # for rename
     'stock_exchange': 'stock_exchange', 
     'def_stock_exchange': 'def_stock_exchange'
 }
-COLS_META_ETF_INCLUDE = [
+COLS_PP_ETF_META_ORIG = [
     'country', 'name', 'full_name', 'symbol', 'isin',
-    'asset_class', 'currency', 'stock_exchange' 
+    'asset_class', 'currency', 'stock_exchange', 'def_stock_exchange'
 ]
-COLS_META_ETF_EXCLUDE = [
+COLS_PP_ETF_META_DROP = [
     'def_stock_exchange'
 ]
-COLS_META_ETF_ADD = [
+COLS_PP_ETF_META_ADD = [
     'category'
 ]
+COLS_PP_ETF_META = list(
+    set(COLS_PP_ETF_META_ORIG + COLS_PP_ETF_META_ADD) - set(COLS_PP_ETF_META_DROP)
+)
 
 # Info ETF
-DICT_COLS_RAW_INFO_ETF = {
+COL_MAPPER_RAW_ETF_INFO = {
     'ETF Name': 'name',
     'Prev. Close': 'prev_close',
     'Todays Range': 'todays_range',
@@ -99,17 +101,23 @@ DICT_COLS_RAW_INFO_ETF = {
     'Shares Outstanding': 'shares_outstanding',
     'Asset Class': 'asset_class'
 }
-INFO_ETF_INCLUDE = [
-    'name', 'market_cap', 'shares_outstanding'
-]
-INFO_ETF_EXCLUDE = [
+COLS_PP_ETF_INFO_ORIG = [
+    'name', 'market_cap', 'shares_outstanding',
     'prev_close', 'todays_range', 'roi_ttm', 'open', '52_week_range', 
     'dividend_ttm', 'volume', 'dividend_yield_rate', 'volume_3m_avg', 'total_assets', 
     'beta', '1_year_change_rate', 'asset_class'
 ]
+COLS_PP_ETF_INFO_DROP = [
+    'prev_close', 'todays_range', 'roi_ttm', 'open', '52_week_range', 
+    'dividend_ttm', 'volume', 'dividend_yield_rate', 'volume_3m_avg', 'total_assets', 
+    'beta', '1_year_change_rate', 'asset_class'
+]
+COLS_PP_ETF_INFO = list(
+    set(COLS_PP_ETF_INFO_ORIG) - set(COLS_PP_ETF_INFO_DROP)
+)
 
 # Profile ETF
-DICT_COLS_RAW_PROFILE_ETF = {
+COL_MAPPER_RAW_ETF_PROFILE = {
     'Net Assets': 'net_assets_abbv',
     'NAV': 'nav',
     'PE Ratio (TTM)': 'per_ttm',
@@ -119,22 +127,30 @@ DICT_COLS_RAW_PROFILE_ETF = {
     'Expense Ratio (net)': 'expense_ratio',
     'Inception Date': 'inception_date'
 }
-PROFILE_ETF_INCLUDE = [
+COLS_PP_ETF_PROFILE_ORIG = [
     'net_assets_abbv', 'nav', 'expense_ratio', 'inception_date',
-]
-PROFILE_ETF_EXCLUDE = [
     'per_ttm', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 'net_assets_sig_figs',
     'multiplier_mil', 'multiplier_bil', 'multiplier_tril'
 ]
-PROFILE_ETF_ADD = [
+COLS_PP_ETF_PROFILE_DROP = [
+    'per_ttm', 'yield', 'ytd_daily_total_return', 'beta_5y-monthly', 'net_assets_sig_figs',
+    'multiplier_mil', 'multiplier_bil', 'multiplier_tril'
+]
+COLS_PP_ETF_PROFILE_ADD = [
     'symbol', 'fun_family', 'elapsed_day', 'net_assets'
 ]
+COLS_PP_ETF_PROFILE = list(
+    set(COLS_PP_ETF_PROFILE_ORIG + COLS_PP_ETF_PROFILE_ADD) - set(COLS_PP_ETF_PROFILE_DROP)
+)
 
+# Master
+COLS_MASTER_COMMON = [
+    'country', 'symbol', 'name', 'full_name', 'currency', 'category'
+]
+COLS_MASTER_ENTIRE = sorted(list(
+    set(COLS_MASTER_COMMON + COLS_PP_ETF_META + COLS_PP_ETF_INFO + COLS_PP_ETF_PROFILE)
+))
 
-# COLS_MASTER_BASIC = [
-#     'country', 'symbol', 'name', 'full_name', 'currency', 'category'
-# ]
-# COLS_MASTER_ENTIRE = sorted(list(set(COLS_MASTER_BASIC + COLS_META_ETF + COLS_INFO_ETF + COLS_PROFILE_ETF)))
 
 
 COLS_HISTORY_RAW = [
