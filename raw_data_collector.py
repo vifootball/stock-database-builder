@@ -101,35 +101,46 @@ class RawDataCollector():
         finally:
             return raw_etf_profile
 
+    @staticmethod
+    def get_index_masters_from_yahoo():
+        dfs = []
+        urls = [
+            'https://finance.yahoo.com/world-indices',
+            'https://finance.yahoo.com/commodities'
+        ]
 
+        for url in urls:
+            response = requests.get(url)
+            html = bs(response.text, "lxml")
+            html_table = html.select("table")
+            table = pd.read_html(str(html_table))
+            df = table[0][['Symbol','Name']]
+            df['full_name'] = df['Name']
+            df['country'] = None
+            df['currency'] = None
+            df['category'] = 'index'
+            df.columns = df.columns.str.lower().to_list()
+            dfs.append(df)
 
-    # @measure_time
-    # def get_master_indices_yahoo(self):
-    #     dfs = []
-    #     urls = [
-    #         'https://finance.yahoo.com/world-indices',
-    #         'https://finance.yahoo.com/commodities'
-    #     ]
+        index_masters_yahoo = pd.concat(dfs).reset_index(drop=True)[COLS_MASTER_COMMON]
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        index_masters_yahoo = pd.concat([header, index_masters_yahoo])
+        return index_masters_yahoo
 
-    #     for url in urls:
-    #         response = requests.get(url)
-    #         html = bs(response.text, "lxml")
-    #         html_table = html.select("table")
-    #         table = pd.read_html(str(html_table))
-    #         df_indices = table[0][['Symbol','Name']]
-    #         df_indices['full_name'] = df_indices['Name']
-    #         df_indices['country'] = None
-    #         df_indices['currency'] = None
-    #         df_indices['category'] = 'index'
-    #         df_indices.columns = df_indices.columns.str.lower().to_list()
-    #         dfs.append(df_indices)
+    @staticmethod
+    def get_index_masters_from_investpy():
+        countries = ['united states', 'south korea']
 
-    #     df_yahoo = pd.concat(dfs).reset_index(drop=True)[COLS_MASTER_BASIC]
-    #     header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
-    #     df_yahoo = pd.concat([header, df_yahoo])
-        
-    #     df_yahoo.to_csv(self.fpath_master_indices_yahoo, index=False)
-    #     return df_yahoo
+        df = investpy.indices.get_indices()
+        df = df[df['country'].isin(countries)].reset_index(drop=True)
+        df['symbol'] = '^' + df['symbol']
+        df['category'] = 'index'
+        df = df[COLS_MASTER_COMMON]
+
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        index_masters_invespty = pd.concat([header, df])
+        return index_masters_invespty
+
 
     # @measure_time
     # def get_master_indices_investpy(self):
