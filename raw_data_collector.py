@@ -141,82 +141,51 @@ class RawDataCollector():
         index_masters_invespty = pd.concat([header, df])
         return index_masters_invespty
 
+    @staticmethod
+    def get_index_masters_from_fred():
+        df = pd.DataFrame(FRED_METAS)[COLS_MASTER_COMMON]
 
-    # @measure_time
-    # def get_master_indices_investpy(self):
-    #     countries = ['united states', 'south korea']
-
-    #     df_indices = investpy.indices.get_indices()
-    #     df_indices = df_indices[df_indices['country'].isin(countries)].reset_index(drop=True)
-    #     df_indices['symbol'] = '^' + df_indices['symbol']
-    #     df_indices['category'] = 'index'
-    #     df_indices = df_indices[COLS_MASTER_BASIC]
-
-    #     header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
-    #     df_indices = pd.concat([header, df_indices])
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        index_masters_fred = pd.concat([header, df])
         
-    #     df_indices.to_csv(self.fpath_master_indices_investpy, index=False)
-    #     return df_indices
+        return index_masters_fred
 
-    # @measure_time
-    # def get_master_indices_fred(self):
-    #     df = pd.DataFrame(self.list_dict_symbols_fred)[COLS_MASTER_BASIC]
-
-    #     header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
-    #     df = pd.concat([header, df])
+    @staticmethod
+    def get_currency_masters():
+        currencies = investpy.currency_crosses.get_currency_crosses()
+        base_cur = ['KRW', 'USD']
+        currencies = currencies[currencies['base'].isin(base_cur)].reset_index(drop=True)
+        currencies['currency'] = currencies['base']
+        currencies['category'] = 'currency'
+        currency_to_country = {'USD': 'united states', 'KRW': 'south Korea'}
+        currencies['country'] = currencies['currency'].map(currency_to_country)
+        def _encode_symbol(name):
+            base_cur, second_cur = name.split('/')
+            symbol = f'{second_cur}=X' if base_cur == 'USD' else f'{base_cur}{second_cur}=X'
+            return symbol
+        currencies['symbol'] = currencies['name'].apply(_encode_symbol)
+        currencies = currencies[COLS_MASTER_COMMON]
         
-    #     df.to_csv(self.fpath_master_indices_fred, index=False)
-    #     return df
+        header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
+        currency_masters = pd.concat([header, currencies]) 
+        return currency_masters
 
-    # @measure_time
-    # def get_master_currencies(self):
-    #     currencies = investpy.currency_crosses.get_currency_crosses()
-    #     base_cur = ['KRW', 'USD']
-    #     currencies = currencies[currencies['base'].isin(base_cur)].reset_index(drop=True)
-    #     currencies['currency'] = currencies['base']
-    #     currencies['category'] = 'currency'
-    #     currency_to_country = {'USD': 'united states', 'KRW': 'south Korea'}
-    #     currencies['country'] = currencies['currency'].map(currency_to_country)
-    #     def _encode_symbol(name):
-    #         base_cur, second_cur = name.split('/')
-    #         symbol = f'{second_cur}=X' if base_cur == 'USD' else f'{base_cur}{second_cur}=X'
-    #         return symbol
-    #     currencies['symbol'] = currencies['name'].apply(_encode_symbol)
-    #     currencies = currencies[COLS_MASTER_BASIC]
-        
-    #     header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
-    #     currencies = pd.concat([header, currencies]) 
+    @staticmethod
+    def get_history_from_yf(symbol):
+        history = yf.Ticker(symbol).history(period='max')
+        history = history.reset_index()
+        history.rename(columns=COLS_MAPPER_RAW_HISTORY, inplace=True)
 
-    #     currencies.to_csv(self.fpath_master_currencies, index=False)
-    #     return currencies
+        if (len(history) > 50):
+            if  (days_from_last_traded := dt.datetime.today() - history['date'].max()) < pd.Timedelta('50 days'):
+                history['date'] = history['date'].astype('str')
+                history['symbol'] = symbol
+                history = history[COLS_HISTORY_RAW]
+        else:
+            history = None
+         
+        return history
 
-    # @measure_time
-    # def get_history_from_yf(self, category):
-    #     path_dict = self.get_path_dict_by_category(category)
-    #     master = pd.read_csv(path_dict.get('fpath_master'))
-    #     dirpath_history_raw = path_dict.get('dirpath_history_raw')
-
-    #     for row in tqdm(master.itertuples(), total=len(master), mininterval=0.5):
-    #         symbol = getattr(row, 'symbol')
-    #         fpath = os.path.join(dirpath_history_raw, f'history_raw_{symbol}.csv')
-    #         if True:
-    #         # if not os.path.exists(fpath):
-    #             time.sleep(0.1)
-    #             i = getattr(row, 'Index') # enumerate i 의 용도
-    #             history = yf.Ticker(symbol).history(period='max')
-    #             history = history.reset_index()
-    #             history.rename(columns=self.dict_cols_history_raw, inplace=True)
-    #             if len(history) > 50:
-    #                 days_from_last_traded = dt.datetime.today() - history['date'].max()
-    #                 if days_from_last_traded < pd.Timedelta('100 days'):
-    #                     # history = history.asfreq(freq = "1d").reset_index()
-    #                     history['date'] = history['date'].astype('str')
-    #                     # history['country'] = getattr(row, 'country') # 마스터에 있어서 필요 없음
-    #                     history['symbol'] = getattr(row, 'symbol')
-    #                     history['full_name'] = getattr(row, 'full_name')
-    #                     history.to_csv(fpath, index=False)
-    #             else:
-    #                 print(f'Empty DataFrame at Loop {i}: {symbol}')
 
     # @measure_time
     # def get_history_from_fred(self):

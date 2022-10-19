@@ -151,13 +151,8 @@ COLS_MASTER_ENTIRE = sorted(list(
     set(COLS_MASTER_COMMON + COLS_PP_ETF_META + COLS_PP_ETF_INFO + COLS_PP_ETF_PROFILE)
 ))
 
-
-
-COLS_HISTORY_RAW = [
- 'date', 'symbol', 'full_name', 'open', 'high', 'low', 'close', 'volume', 'dividend', 'stock_split'
-] 
-
-DICT_COLS_HISTORY_RAW = {
+# History
+COLS_MAPPER_RAW_HISTORY = {
     'Date': 'date',
     'Open': 'open',
     'High': 'high',
@@ -167,13 +162,12 @@ DICT_COLS_HISTORY_RAW = {
     'Dividends': 'dividend',
     'Stock Splits': 'stock_split'
 }
+COLS_HISTORY_RAW = [
+ 'date', 'symbol', 'open', 'high', 'low', 'close', 'volume', 'dividend', 'stock_split'
+] 
 
-DICT_COLS_RECESSION = {
-    'DATE': 'date',
-    'USREC': 'recession'
-}
 
-LIST_DICT_SYMBOLS_FRED = [
+FRED_METAS = [
     {
      'symbol'   : 'CPIAUCSL',
      'name'     : 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average',
