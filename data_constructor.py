@@ -5,7 +5,7 @@ from preprocessor import *
 
 class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저장하는 녀석
 
-    @staticmethod #done
+    @staticmethod 
     def construct_etf_metas():
         raw_etf_metas = RawDataCollector.get_raw_etf_metas()
         pp_etf_metas = Preprocessor.preprocess_raw_etf_metas(raw_etf_metas)
@@ -14,7 +14,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_META, FNAME_ETF_METAS)
         )
 
-    @staticmethod #done
+    @staticmethod 
     def construct_etf_infos():
         etf_names = RawDataCollector.get_etf_names()
         for etf_name in tqdm(etf_names, mininterval=0.5):
@@ -40,7 +40,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_INFO, FNAME_ETF_INFOS)
         )
     
-    @staticmethod #done
+    @staticmethod 
     def construct_etf_profiles():
         etf_symbols = RawDataCollector.get_etf_symbols()
         for etf_symbol in tqdm(etf_symbols, mininterval=0.5):
@@ -74,7 +74,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             )
         )
 
-    @staticmethod #done
+    @staticmethod 
     def construct_etf_masters():
         pp_etf_metas = pd.read_csv(
             os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_META, FNAME_ETF_METAS)
@@ -94,7 +94,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_ETF_MASTERS)
         )
 
-    @staticmethod #done
+    @staticmethod 
     def construct_index_yahoo_masters():
         index_yahoo_masters = RawDataCollector.get_index_masters_from_yahoo()
         export_df_to_csv(
@@ -102,7 +102,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_YAHOO_MASTERS)
         )
 
-    @staticmethod #done
+    @staticmethod 
     def construct_index_investpy_masters():
         index_investpy_masters = RawDataCollector.get_index_masters_from_investpy()
         export_df_to_csv(
@@ -110,7 +110,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_INVESTPY_MASTERS)
         )
 
-    @staticmethod #done
+    @staticmethod 
     def construct_index_fred_masters():
         index_fred_masters = RawDataCollector.get_index_masters_from_fred()
         export_df_to_csv(
@@ -118,7 +118,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_FRED_MASTERS)
         )
 
-    @staticmethod #done
+    @staticmethod 
     def construct_currency_masters():
         currency_masters = RawDataCollector.get_currency_masters()
         export_df_to_csv(
@@ -126,8 +126,8 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_CURRENCY_MASTERS)
         )
     
-    @staticmethod #done
-    def construct_etf_histories_from_yf():
+    @staticmethod
+    def construct_etf_histories():
         etf_symbols = RawDataCollector.get_etf_symbols()
         for etf_symbol in etf_symbols:
             raw_etf_history = RawDataCollector.get_raw_history_from_yf(etf_symbol)
@@ -143,9 +143,8 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             prefix_chunk="concatenated_etf_histories"
         )
 
-
     @staticmethod
-    def construct_currency_histories_from_yf():
+    def construct_currency_histories():
         currency_symbols = RawDataCollector.get_currency_symbols()
         for currency_symbol in currency_symbols:
             raw_currency_history = RawDataCollector.get_raw_history_from_yf(currency_symbol)
@@ -153,47 +152,75 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
                 pp_currency_history = Preprocessor.preprocess_history(raw_currency_history)
                 export_df_to_csv(
                     df=pp_currency_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_CURRENCIES, "pp_history_{currency_symbol}.csv")
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY, "history_{currency_symbol}.csv")
                 )
         Preprocessor.save_dfs_by_chunk(
-            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_CURRENCIES),
-            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_CONCATENATED),
+            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY),
+            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK),
             prefix_chunk="concatenated_currency_histories"
         )
     
     @staticmethod
-    def construct_index_histories_from_yf():
-        index_symbols = RawDataCollector.get_index_symbols()
+    def construct_index_yahoo_histories():
+        index_symbols = RawDataCollector.get_index_yahoo_symbols()
         for index_symbol in index_symbols:
             raw_index_history = RawDataCollector.get_raw_history_from_yf(index_symbol) #
             if raw_index_history is not None:
                 pp_index_history = Preprocessor.preprocess_history(raw_index_history)
                 export_df_to_csv(
                     df=pp_index_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_INDICES, "pp_history_{index_symbol}.csv")
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_YAHOO_HISTORY, "history_{index_symbol}.csv")
                 )
         Preprocessor.save_dfs_by_chunk(
-            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_INDICES),
-            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_CONCATENATED),
-            prefix_chunk="concatenated_index_histories"
+            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_YAHOO_HISTORY),
+            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK),
+            prefix_chunk="concatenated_index_yahoo_histories"
         )  
 
     @staticmethod
-    def construct_index_histories_from_fred():
-        index_symbols_fred = RawDataCollector.get_index_symbols_fred()
+    def construct_index_investpy_histories():
+        index_symbols = RawDataCollector.get_index_investpy_symbols()
+        for index_symbol in index_symbols:
+            raw_index_history = RawDataCollector.get_raw_history_from_yf(index_symbol) #
+            if raw_index_history is not None:
+                pp_index_history = Preprocessor.preprocess_history(raw_index_history)
+                export_df_to_csv(
+                    df=pp_index_history,
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_INVESTPY_HISTORY, "history_{index_symbol}.csv")
+                )
+        Preprocessor.save_dfs_by_chunk(
+            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_INVESTPY_HISTORY),
+            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK),
+            prefix_chunk="concatenated_index_investpy_histories"
+        )  
+
+    @staticmethod
+    def construct_index_fred_histories():
+        index_symbols_fred = RawDataCollector.get_index_fred_symbols()
         for index_symbol in index_symbols_fred:
             raw_index_history = RawDataCollector.get_raw_history_from_fred(index_symbol) #
             if raw_index_history is not None:
                 pp_index_history = Preprocessor.preprocess_history(raw_index_history)
                 export_df_to_csv(
                     df=pp_index_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_INDICES, "pp_history_{index_symbol}.csv")
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY, "history_{index_symbol}.csv")
                 )
         Preprocessor.save_dfs_by_chunk(
-            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_INDICES),
-            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_PP_CONCATENATED),
+            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY),
+            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK),
             prefix_chunk="concatenated_fred_index_histories"
         )
         
+    @staticmethod
+    def construct_recents(get_dir_histories, put_fpath_recents):
+        pass
+
+    @staticmethod
+    def construct_summaries(master, recent, fpath_summary):
+        summary = pd.merge(master, recent, how='inner', on=['symbol'])
+        export_df_to_csv(
+            df=summary,
+            fpath=fpath_summary
+        )
 
   

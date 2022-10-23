@@ -38,17 +38,19 @@ FNAME_INDEX_INVESTPY_MASTERS = 'index_investpy_masters.csv'
 FNAME_INDEX_FRED_MASTERS = 'index_fred_mastersd.csv'
 FNAME_CURRENCY_MASTERS = 'currency_masters.csv'
 
-
 FNAME_RECENT_ETF = 'recent_etf.csv'
 FNAME_RECENT_CURRENCIES = 'recent_currencies.csv'
 FNAME_RECENT_INDICES = 'recent_indices.csv'
 FNAME_HISTORY_PP_ETF = 'history_pp_etf.csv'
 FNAME_HISTORY_PP_CURRENCIES = 'history_pp_currencies.csv'
 FNAME_HISTORY_PP_INDICES = 'history_pp_indices.csv'
-FNAME_SUMMARY_ETF = 'summary_etf.csv'
-FNAME_SUMMARY_INDICES = 'summary_indices.csv'
-FNAME_SUMMARY_CURRENCIES = 'summary_currencies.csv'
-FNAME_BENCHMARK = 'benchmark.csv'
+
+FNAME_ETF_SUMMARIES = 'etf_summaries.csv'
+FNAME_INDEX_YAHOO_SUMMARIES = 'index_yahoo_summaries.csv'
+FNAME_INDEX_INVESTPY_SUMMARIES = 'index_investpy_summaries.csv'
+FNAME_INDEX_FRED_SUMMARIES = 'index_fred_summaries.csv'
+FNAME_CURRENCY_SUMMARIES = 'currency_summaries.csv'
+
 
 # Meta ETF
 COL_MAPPER_RAW_ETF_META  = { # for rename

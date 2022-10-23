@@ -28,7 +28,7 @@ class RawDataCollector():
         pp_etf_metas = pd.read_csv(os.path.join(
             DIR_DOWNLOAD,
             SUBDIR_ETF_META,
-            FNAME_PP_ETF_METAS
+            FNAME_ETF_METAS
         ))
         etf_names = list(pp_etf_metas['name'])
         return etf_names
@@ -38,7 +38,7 @@ class RawDataCollector():
         pp_etf_metas = pd.read_csv(os.path.join(
             DIR_DOWNLOAD,
             SUBDIR_ETF_META,
-            FNAME_PP_ETF_METAS
+            FNAME_ETF_METAS
         ))
         etf_symbols = list(pp_etf_metas['symbol'])
         return etf_symbols
@@ -143,15 +143,23 @@ class RawDataCollector():
         return currency_masters
 
     @staticmethod
-    def get_index_symbols():
-        index_masters = pd.read_csv(os.path.join(
-            DIR_DOWNLOAD, SUBDIR_MASTER_INDICES, FNAME_MASTER_INDICES
+    def get_index_investpy_symbols():
+        index_investpy_masters = pd.read_csv(os.path.join(
+            DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_INVESTPY_MASTERS
         ))
-        index_symbols = list(index_masters['symbol'])
-        return index_symbols
+        index_investpy_symbols = list(index_investpy_masters['symbol'])
+        return index_investpy_symbols
     
     @staticmethod
-    def get_index_symbols_fred():
+    def get_index_yahoo_symbols():
+        index_yahoo_masters = pd.read_csv(os.path.join(
+            DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_YAHOO_MASTERS
+        ))
+        index_yahoo_symbols = list(index_yahoo_masters['symbol'])
+        return index_yahoo_symbols
+
+    @staticmethod
+    def get_index_fred_symbols():
         index_masters_fred = pd.rea_csv(os.path.join(
             DIR_DOWNLOAD, SUBDIR_MASTER_INDICES, FNAME_MASTER_INDICES_FRED
         ))
