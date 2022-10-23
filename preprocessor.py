@@ -20,13 +20,13 @@ class Preprocessor():
     @staticmethod
     def preprocess_raw_etf_infos(raw_etf_infos): # None 처리
         if raw_etf_infos is not None:
-            raw_etf_infos.rename(columns=DICT_COLS_RAW_INFO_ETF, inplace=True)
+            raw_etf_infos.rename(columns=COL_MAPPER_RAW_ETF_INFO, inplace=True)
         return raw_etf_infos
 
     @staticmethod
     def preprocess_raw_etf_profiles(raw_etf_profiles):
         if raw_etf_profiles is not None:
-            raw_etf_profiles.rename(columns=DICT_COLS_RAW_PROFILE_ETF, inplace=True)
+            raw_etf_profiles.rename(columns=COL_MAPPER_RAW_ETF_PROFILE, inplace=True)
             raw_etf_profiles['elapsed_year'] = round((dt.datetime.today() - pd.to_datetime(raw_etf_profiles['inception_date'])).dt.days/365, 1)
             raw_etf_profiles['expense_ratio'] = raw_etf_profiles['expense_ratio'].str.replace('%','').astype('float')/100
             raw_etf_profiles['net_assets_abbv'] = raw_etf_profiles['net_assets_abbv'].fillna("0")
@@ -40,38 +40,37 @@ class Preprocessor():
                                         * raw_etf_profiles['multiplier_tril']
         return raw_etf_profiles
 
+    @staticmethod
+    def preprocess_history(raw_history):
+        pp_history = calculate_metrics(raw_history)
+        symbol = pp_history['symbol'].iat[0]
+        return pp_history
 
-    @measure_time
-    def construct_master_etf(self):
-        meta_etf = pd.read_csv(self.fpath_meta_etf)
-        info_etf = pd.read_csv(self.fpath_info_etf)[COLS_INFO_ETF]
-        profile_etf = pd.read_csv(self.fpath_profile_etf)[COLS_PROFILE_ETF]
-                
-        master_etf = meta_etf.merge(info_etf, how='left', on='name')
-        master_etf = master_etf.merge(profile_etf, how='left', on='symbol')
-        master_etf = master_etf[COLS_MASTER_ENTIRE]
-        master_etf.to_csv(self.fpath_master_etf, index=False)
-        return master_etf
+    @staticmethod
+    def save_dfs_by_chunk(get_dirpath, put_dirpath, prefix_chunk): # n행씩 분할저장.. # 마지막거는 어케하지..?
+        df_list = []
+        total_len = 0
+        chunk_num = 1
+        
+        df_generator =  (pd.read_csv(os.path.join(get_dirpath, fname)) for fname in os.listdir(get_dirpath) if fname.endswith('csv'))
+        for df in df_generator:
+            df_list.append(df)
+            total_len += len(df)
+            
+            print(f'Concatenateing Dfs in {get_dirpath} | Chunk No.{chunk_num} | Total Length: {total_len}')
+            if total_len > 1000_000:
+                put_fpath = os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
+                df_concatenated = pd.concat(df_list)
+                df_concatenated.to_csv(put_fpath, index=False)
 
-    @measure_time
-    def concat_master_indices(self):
-        concat_csv_files_in_dir(
-            get_dirpath=self.dirpath_master_indices,
-            put_fpath=self.fpath_master_indices
-        )
-
-    def preprocess_history(self, category):
-        path_dict = self.get_path_dict_by_category(category)
-        dirpath_history_raw = path_dict.get('dirpath_history_raw')
-        dirpath_history_pp = path_dict.get('dirpath_history_pp')
-
-        history_raw_generator = (pd.read_csv(os.path.join(dirpath_history_raw, fname)) for fname in os.listdir(dirpath_history_raw) if fname.endswith('csv'))
-        for history_raw in tqdm(history_raw_generator, mininterval=0.5, total=len(os.listdir(dirpath_history_raw))):    
-            history_pp = calculate_metrics(history_raw)
-            #history = self._join_benchmark
-            symbol = history_pp['symbol'].iat[0]
-            history_pp.to_csv(os.path.join(dirpath_history_pp, f'history_pp_{symbol}.csv'), index=False)
-        print(f"Finished Preprocessing History: {category}")
+                df_list = []
+                total_len = 0
+                chunk_num += 1
+        
+        if total_len > 0: # 나눠 떨어지지 않은 마지막 사이클 저장
+            put_fpath = os.path.join(put_fpath, f'{prefix_chunk}_{chunk_num}.csv')
+            df = pd.concat(df_list)
+            df.to_csv(put_fpath, index=False)
 
     def get_recent_from_history(self, category):
         path_dict = self.get_path_dict_by_category(category)
@@ -89,36 +88,6 @@ class Preprocessor():
         print(f"Finished Extracting Recent Data of Histories: {category}")
         return recents
     
-    def concat_history_pp(self,category): # n행씩 분할저장.. # 마지막거는 어케하지..?
-        history_list = []
-        total_len = 0
-        chunk_num = 1
-        
-        path_dict = self.get_path_dict_by_category(category)
-        dirpath_history_pp = path_dict.get('dirpath_history_pp')
-        
-        
-        history_pp_generator =  (pd.read_csv(os.path.join(dirpath_history_pp, fname)) for fname in os.listdir(dirpath_history_pp) if fname.endswith('csv'))
-        for history_pp in history_pp_generator:
-            history_list.append(history_pp)
-            total_len += len(history_pp)
-            
-            print(f'Concatenateing History of {category.capitalize()} | Chunk No.{chunk_num} | Total Length: {total_len}')
-            if total_len > 1000_000:
-                fpath_history_pp_concatenated = os.path.join(self.dirpath_history_pp_concatenated, f'history_pp_{category}_{chunk_num}.csv')
-                df = pd.concat(history_list)
-                df.to_csv(fpath_history_pp_concatenated, index=False)
-
-                history_list = []
-                total_len = 0
-                chunk_num += 1
-        
-        if total_len > 0: # 나눠 떨어지지 않은 마지막 사이클 저장
-            fpath_history_pp_concatenated = os.path.join(self.dirpath_history_pp_concatenated, f'history_pp_{category}_{chunk_num}.csv')
-            df = pd.concat(history_list)
-            df.to_csv(fpath_history_pp_concatenated, index=False)
-
-
     def construct_summary(self, category):
         path_dict = self.get_path_dict_by_category(category)
         master = pd.read_csv(path_dict.get('fpath_master'))

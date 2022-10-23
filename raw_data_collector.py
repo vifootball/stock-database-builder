@@ -1,3 +1,4 @@
+from locale import currency
 import os
 import time
 import requests
@@ -16,20 +17,10 @@ from preprocessor import *
 
 pd.options.mode.chained_assignment = None
 
-
-
 class RawDataCollector():
     @staticmethod
     def get_raw_etf_metas():
         raw_etf_metas = investpy.etfs.get_etfs(country='united states')
-        export_df_to_csv(
-            df=raw_etf_metas, 
-            fpath=os.path.join(
-                DIR_DOWNLOAD, 
-                SUBDIR_ETF_META, 
-                FNAME_RAW_ETF_METAS
-            )
-        )
         return raw_etf_metas
 
     @staticmethod
@@ -57,15 +48,6 @@ class RawDataCollector():
         try:
             time.sleep(0.5)
             raw_etf_info = investpy.etfs.get_etf_information(etf_name, country='united states')
-            export_df_to_csv(
-                df=raw_etf_info,
-                fpath=os.path.join(
-                    DIR_DOWNLOAD,
-                    SUBDIR_ETF_INFO,
-                    SUBDIR_RAW_ETF_INFO,
-                    f'raw_etf_info_{etf_name}.csv'
-                )
-            )
         except:
             raw_etf_info = None
             print(f'Error Ocurred While Getting Information of: {etf_name}')
@@ -84,16 +66,6 @@ class RawDataCollector():
             if 'Expense Ratio (net)' not in raw_etf_profile.columns: # 구해져도 ETF가 아닌 경우가 있음
                 raw_etf_profile= None
                 print(f'Not ETF: {symbol}')
-            else:
-                export_df_to_csv(
-                    df=raw_etf_profile,
-                    fpath=os.path.join(
-                        DIR_DOWNLOAD,
-                        SUBDIR_ETF_PROFILE,
-                        SUBDIR_ETF_PROFILE,
-                        f'raw_etf_profile_{symbol}.csv'
-                    )
-                )
         except:
             raw_etf_profile = None
             print(f'Error Ocurred While Getting Profile of: {symbol}')
@@ -171,7 +143,31 @@ class RawDataCollector():
         return currency_masters
 
     @staticmethod
-    def get_history_from_yf(symbol):
+    def get_index_symbols():
+        index_masters = pd.read_csv(os.path.join(
+            DIR_DOWNLOAD, SUBDIR_MASTER_INDICES, FNAME_MASTER_INDICES
+        ))
+        index_symbols = list(index_masters['symbol'])
+        return index_symbols
+    
+    @staticmethod
+    def get_index_symbols_fred():
+        index_masters_fred = pd.rea_csv(os.path.join(
+            DIR_DOWNLOAD, SUBDIR_MASTER_INDICES, FNAME_MASTER_INDICES_FRED
+        ))
+        index_symbols_fred = list(index_masters_fred['symbol'])
+        return index_symbols_fred
+
+    @staticmethod
+    def get_currency_symbols():
+        currency_masters =  pd.read_csv(os.path.join(
+            DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_MASTER_CURRENCIES
+        ))
+        currency_symbols = list(currency_masters['symbol'])
+        return currency_symbols
+
+    @staticmethod
+    def get_raw_history_from_yf(symbol):
         history = yf.Ticker(symbol).history(period='max')
         history = history.reset_index()
         history.rename(columns=COLS_MAPPER_RAW_HISTORY, inplace=True)
@@ -186,26 +182,28 @@ class RawDataCollector():
          
         return history
 
+    @staticmethod
+    def get_raw_history_from_fred(symbol):
+        start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
+        try: 
+            history = web.DataReader(symbol, 'fred', start, end)#.asfreq(freq='1d', method='ffill').reset_index(drop=False)
+            history = history.reset_index()
+            history.rename(columns={f'{symbol}':'close'}, inplace=True)
+            history.rename(columns={'DATE':'date'}, inplace=True)
+            history['symbol'] = 'symbol'
+            history['date'] = history['date'].astype('str')
 
-    # @measure_time
-    # def get_history_from_fred(self):
-    #     master_df = pd.read_csv(self.fpath_master_indices_fred)
-    #     start, end = (dt.datetime(1800, 1, 1), dt.datetime.today())
-    #     for row in tqdm(master_df.itertuples(), total=len(master_df)):
-    #         i = getattr(row, 'Index')
-    #         symbol = getattr(row, 'symbol')
-    #         history = web.DataReader(symbol, 'fred', start, end)#.asfreq(freq='1d', method='ffill').reset_index(drop=False)
-    #         history = history.reset_index()
-    #         history.rename(columns={f'{symbol}':'close'}, inplace=True)
-    #         history.rename(columns={'DATE':'date'}, inplace=True)
-    #         history['symbol'] = getattr(row, 'symbol')
-    #         history['full_name'] = getattr(row, 'full_name')
-    #         history['date'] = history['date'].astype('str')
+            header = pd.DataFrame(columns=COLS_HISTORY_RAW)
+            history = pd.concat([header, history])
+        
+        except:
+            history = None
 
-    #         header = pd.DataFrame(columns=COLS_HISTORY_RAW)
-    #         history = pd.concat([header, history])
-    #         history.to_csv(os.path.join(self.dirpath_history_raw_indices, f'history_raw_{symbol}.csv'), index=False)
+        return history
 
+    @staticmethod
+    def get_recent_from_history(history):
+        pass
 
 # if __name__ == '__main__':
 #     print('hi')

@@ -9,42 +9,36 @@ DIR_DOWNLOAD = 'download'
 
 # name of subdir
 SUBDIR_ETF_META = 'eff_meta'
-
 SUBDIR_ETF_INFO = 'etf_info'
 SUBDIR_RAW_ETF_INFO = 'raw_etf_info'
-
 SUBDIR_ETF_PROFILE = 'etf_profile'
 SUBDIR_RAW_ETF_PROFILE = 'raw_etf_profile'
 
-SUBDIR_HISTORY_RAW_ETF = 'history_raw_etf'
-SUBDIR_HISTORY_RAW_CURRENCIES = 'history_raw_currencies'
-SUBDIR_HISTORY_RAW_INDICES = 'history_raw_indices'
+SUBDIR_MASTER = 'master'
 
-SUBDIR_HISTORY_PP_ETF = 'history_pp_etf'
-SUBDIR_HISTORY_PP_CURRENCIES = 'history_pp_currencies'
-SUBDIR_HISTORY_PP_INDICES = 'history_pp_indices'
-SUBDIR_HISTORY_PP_CONCATENATED = 'history_pp_concatenated'
+SUBDIR_ETF_HISTORY = 'etf_history'
+SUBDIR_CURRENCY_HISTORY = 'currency_history'
+SUBDIR_INDEX_YAHOO_HISTORY = 'index_yahoo_history'
+SUBDIR_INDEX_INVESTPY_HISTORY = 'index_investpy_history'
+SUBDIR_INDEX_FRED_HISTORY = 'index_fred_history'
+
+SUBDIR_HISTORY_CHUNK = 'history_chunk'
 
 SUBDIR_SUMMARY = 'summary'
 SUBDIR_RECENT = 'recent'
 
-SUBDIR_MASTER = 'master'
-SUBDIR_MASTER_INDICES = 'master_indices'
-
 # name of file
-FNAME_RAW_ETF_METAS = 'raw_etf_metas.csv'
-FNAME_PP_ETF_METAS = 'pp_etf_metas.csv'
-FNAME_PP_ETF_INFOS = 'pp_etf_infos.csv'
-FNAME_PP_ETF_PROFILES = 'pp_etf_profiles.csv'
+FNAME_ETF_METAS = 'etf_metas.csv'
+FNAME_ETF_INFOS = 'etf_infos.csv'
+FNAME_ETF_PROFILES = 'etf_profiles.csv'
 
-FNAME_PROFILE_ETF = 'profile_etf.csv'
-FNAME_HISTORY_ETF = 'history_etf.csv'
-FNAME_MASTER_ETF = 'master_etf.csv'
-FNAME_MASTER_INDICES_YAHOO = 'master_indices_yahoo.csv'
-FNAME_MASTER_INDICES_INVESTPY = 'master_indices_investpy.csv'
-FNAME_MASTER_INDICES_FRED = 'master_indices_fred.csv'
-FNAME_MASTER_INDICES = 'master_indices.csv'
-FNAME_MASTER_CURRENCIES = 'master_currencies.csv'
+FNAME_ETF_MASTERS = 'etf_masters.csv'
+FNAME_INDEX_YAHOO_MASTERS = 'index_yahoo_masters.csv'
+FNAME_INDEX_INVESTPY_MASTERS = 'index_investpy_masters.csv'
+FNAME_INDEX_FRED_MASTERS = 'index_fred_mastersd.csv'
+FNAME_CURRENCY_MASTERS = 'currency_masters.csv'
+
+
 FNAME_RECENT_ETF = 'recent_etf.csv'
 FNAME_RECENT_CURRENCIES = 'recent_currencies.csv'
 FNAME_RECENT_INDICES = 'recent_indices.csv'
