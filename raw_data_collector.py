@@ -160,8 +160,8 @@ class RawDataCollector():
 
     @staticmethod
     def get_index_fred_symbols():
-        index_masters_fred = pd.rea_csv(os.path.join(
-            DIR_DOWNLOAD, SUBDIR_MASTER_INDICES, FNAME_MASTER_INDICES_FRED
+        index_masters_fred = pd.read_csv(os.path.join(
+            DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_FRED_MASTERS
         ))
         index_symbols_fred = list(index_masters_fred['symbol'])
         return index_symbols_fred

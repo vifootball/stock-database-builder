@@ -12,12 +12,18 @@ def calc_price_change(price: pd.Series):
     return price_change
 
 def calc_price_change_rate(price, price_change):
-    price_change_rate = price_change / price
-    price_change_rate = price_change_rate.round(6)
+    try:
+        price_change_rate = price_change / price
+        price_change_rate = price_change_rate.round(6)
+    except ZeroDivisionError:
+        price_change_rate = np.nan
     return price_change_rate
 
 def calc_price_change_sign(price_change):
-    price_change_sign =  np.sign(price_change)
+    if price_change.dtype in [int, float]:
+        price_change_sign =  np.sign(price_change)
+    else:
+        price_change_sign = np.nan
     return price_change_sign
 
 def calc_price_all_time_high(price):
@@ -25,7 +31,14 @@ def calc_price_all_time_high(price):
     return price_all_time_high
 
 def calc_drawdown_current(price, price_all_time_high):
-    drawdown_current = ((price / price_all_time_high) - 1).round(6)
+    try:
+        drawdown_current_plus1 = (price / price_all_time_high)
+        if drawdown_current_plus1.dtype in [int, float]:
+            drawdown_current = ((price / price_all_time_high) - 1).round(6)
+        else:
+            drawdown_current = np.nan
+    except ZeroDivisionError:
+        drawdown_current = np.nan
     return drawdown_current
 
 def calc_drawdown_max(drawdown_current):
@@ -33,7 +46,9 @@ def calc_drawdown_max(drawdown_current):
     return drawdown_max
 
 def calc_volume_of_dollar(price, volume_of_shares): # estimated by close price
-    volume_of_dollar = (price * volume_of_shares).round(0)
+    volume_of_dollar = (price * volume_of_shares)
+    if volume_of_dollar.dtype in [int, float]:
+        volume_of_dollar = volume_of_dollar.round(0)
     return volume_of_dollar
 
 def calc_volume_of_share_3m_avg(volume_of_share):
@@ -46,7 +61,10 @@ def calc_volume_of_dollar_3m_avg(volume_of_dollar):
 
 # dividend
 def calc_dividend_paid_or_not(dividend):
-    dividend_paid_or_not = np.sign(dividend)
+    if dividend.dtype in [int, float]:
+        dividend_paid_or_not = np.sign(dividend)
+    else:
+        dividend_paid_or_not = np.nan
     return dividend_paid_or_not
 
 def calc_dividend_paid_count_ttm(dividend_paid_or_not):
@@ -58,11 +76,19 @@ def calc_dividend_ttm(dividend):
     return dividend_ttm
 
 def calc_dividend_rate(price, dividend):
-    dividend_rate = (dividend / price).round(6)
+    try:
+        dividend_rate = (dividend / price)
+        if dividend_rate.dtype in [int, float]:
+            dividend_rate = dividend_rate.round(6)
+    except ZeroDivisionError: # price가 0을 찍는 것은 어차피 지수밖에 없음
+        dividend_rate = np.nan
     return dividend_rate
     
 def calc_dividend_rate_ttm(price, dividend_ttm):
-    dividend_ttm = dividend_ttm / price
+    try:
+        dividend_ttm = dividend_ttm / price
+    except ZeroDivisionError:
+        dividend_ttm = np.nan
     return dividend_ttm
 
 def calculate_metrics(history):

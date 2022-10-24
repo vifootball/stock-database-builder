@@ -132,10 +132,10 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
         for etf_symbol in etf_symbols:
             raw_etf_history = RawDataCollector.get_raw_history_from_yf(etf_symbol)
             if raw_etf_history is not None:
-                pp_etf_history = Preprocessor.preprocess_history(raw_etf_history)
+                pp_etf_history = Preprocessor.preprocess_raw_history(raw_etf_history)
                 export_df_to_csv(
                     df=pp_etf_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_HISTORY, "history_{etf_symbol}.csv"),
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_HISTORY, f"history_{etf_symbol}.csv"),
                 )
         Preprocessor.save_dfs_by_chunk(
             get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_HISTORY),
@@ -149,10 +149,10 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
         for currency_symbol in currency_symbols:
             raw_currency_history = RawDataCollector.get_raw_history_from_yf(currency_symbol)
             if raw_currency_history is not None:
-                pp_currency_history = Preprocessor.preprocess_history(raw_currency_history)
+                pp_currency_history = Preprocessor.preprocess_raw_history(raw_currency_history)
                 export_df_to_csv(
                     df=pp_currency_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY, "history_{currency_symbol}.csv")
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY, f"history_{currency_symbol}.csv")
                 )
         Preprocessor.save_dfs_by_chunk(
             get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY),
@@ -166,10 +166,10 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
         for index_symbol in index_symbols:
             raw_index_history = RawDataCollector.get_raw_history_from_yf(index_symbol) #
             if raw_index_history is not None:
-                pp_index_history = Preprocessor.preprocess_history(raw_index_history)
+                pp_index_history = Preprocessor.preprocess_raw_history(raw_index_history)
                 export_df_to_csv(
                     df=pp_index_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_YAHOO_HISTORY, "history_{index_symbol}.csv")
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_YAHOO_HISTORY, f"history_{index_symbol}.csv")
                 )
         Preprocessor.save_dfs_by_chunk(
             get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_YAHOO_HISTORY),
@@ -183,10 +183,10 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
         for index_symbol in index_symbols:
             raw_index_history = RawDataCollector.get_raw_history_from_yf(index_symbol) #
             if raw_index_history is not None:
-                pp_index_history = Preprocessor.preprocess_history(raw_index_history)
+                pp_index_history = Preprocessor.preprocess_raw_history(raw_index_history)
                 export_df_to_csv(
                     df=pp_index_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_INVESTPY_HISTORY, "history_{index_symbol}.csv")
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_INVESTPY_HISTORY, f"history_{index_symbol}.csv")
                 )
         Preprocessor.save_dfs_by_chunk(
             get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_INVESTPY_HISTORY),
@@ -198,12 +198,13 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
     def construct_index_fred_histories():
         index_symbols_fred = RawDataCollector.get_index_fred_symbols()
         for index_symbol in index_symbols_fred:
+            print(f"{index_symbol} processing...")
             raw_index_history = RawDataCollector.get_raw_history_from_fred(index_symbol) #
             if raw_index_history is not None:
-                pp_index_history = Preprocessor.preprocess_history(raw_index_history)
+                pp_index_history = Preprocessor.preprocess_raw_history(raw_index_history)
                 export_df_to_csv(
                     df=pp_index_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY, "history_{index_symbol}.csv")
+                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY, f"history_{index_symbol}.csv")
                 )
         Preprocessor.save_dfs_by_chunk(
             get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY),
@@ -213,7 +214,15 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
         
     @staticmethod
     def construct_recents(get_dir_histories, put_fpath_recents):
-        pass
+        history_generator = (pd.read_csv(os.path.join(get_dir_histories, f)) for f in os.listdir(get_dir_histories) if f.endswith('csv'))        
+        recents = []
+        for history in tqdm(history_generator, mininterval=0.5, total=len(os.listdir(get_dir_histories))):
+            history = history.loc[history['close'].notnull()] # 휴장일을 제외한 최신 데이터
+            recent = history.iloc[-1]
+            recents.append(recent)
+        recents = pd.DataFrame(recents).reset_index(drop=True)
+        recents.to_csv(put_fpath_recents, index=False)
+        return recents
 
     @staticmethod
     def construct_summaries(master, recent, fpath_summary):
@@ -223,4 +232,21 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             fpath=fpath_summary
         )
 
-  
+
+if __name__ == '__main__':
+    if 'stock-database-builder' in os.listdir():
+        os.chdir('stock-database-builder')
+    
+    # DataConstructor.construct_etf_metas()
+    # DataConstructor.construct_etf_infos()
+    # DataConstructor.construct_etf_profiles()
+
+    # DataConstructor.construct_index_yahoo_masters()
+    # DataConstructor.construct_index_investpy_masters()
+    # DataConstructor.construct_index_fred_masters()
+    # DataConstructor.construct_currency_masters()
+
+    DataConstructor.construct_index_fred_histories()
+
+
+

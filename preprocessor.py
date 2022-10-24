@@ -41,7 +41,7 @@ class Preprocessor():
         return raw_etf_profiles
 
     @staticmethod
-    def preprocess_history(raw_history):
+    def preprocess_raw_history(raw_history):
         pp_history = calculate_metrics(raw_history)
         symbol = pp_history['symbol'].iat[0]
         return pp_history
@@ -56,10 +56,10 @@ class Preprocessor():
         for df in df_generator:
             df_list.append(df)
             total_len += len(df)
-            
+            put_fpath = os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
+
             print(f'Concatenateing Dfs in {get_dirpath} | Chunk No.{chunk_num} | Total Length: {total_len}')
             if total_len > 1000_000:
-                put_fpath = os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
                 df_concatenated = pd.concat(df_list)
                 df_concatenated.to_csv(put_fpath, index=False)
 
@@ -70,33 +70,11 @@ class Preprocessor():
         if total_len > 0: # 나눠 떨어지지 않은 마지막 사이클 저장
             put_fpath = os.path.join(put_fpath, f'{prefix_chunk}_{chunk_num}.csv')
             df = pd.concat(df_list)
-            df.to_csv(put_fpath, index=False)
+            export_df_to_csv(
+                df = df,
+                fpath=put_fpath
+            )
 
-    def get_recent_from_history(self, category):
-        path_dict = self.get_path_dict_by_category(category)
-        dirpath_history_pp = path_dict.get('dirpath_history_pp')
-        fpath_recent = path_dict.get('fpath_recent')
-
-        history_pp_generator = (pd.read_csv(os.path.join(dirpath_history_pp, fname)) for fname in os.listdir(dirpath_history_pp) if fname.endswith('csv'))        
-        recents = []
-        for history_pp in tqdm(history_pp_generator, mininterval=0.5, total=len(os.listdir(dirpath_history_pp))):
-            history_pp = history_pp.loc[history_pp['close'].notnull()] # 휴장일을 제외한 최신 데이터
-            recent = history_pp.iloc[-1]
-            recents.append(recent)
-        recents = pd.DataFrame(recents).reset_index(drop=True)
-        recents.to_csv(fpath_recent, index=False)
-        print(f"Finished Extracting Recent Data of Histories: {category}")
-        return recents
-    
-    def construct_summary(self, category):
-        path_dict = self.get_path_dict_by_category(category)
-        master = pd.read_csv(path_dict.get('fpath_master'))
-        recent = pd.read_csv(path_dict.get('fpath_recent'))
-        fpath_summary = path_dict.get('fpath_summary')
-
-        summary = pd.merge(master, recent, how='inner', on=['symbol', 'full_name'])
-        summary.to_csv(fpath_summary, index=False)
-        return summary
 
 
 

@@ -15,7 +15,7 @@ def export_df_to_csv(df, fpath): # None 처리 # makedirs를 해주기 위해 �
 def concat_csv_files_in_dir(get_dirpath):
     df = []
     csv_file_generator = (pd.read_csv(os.path.join(get_dirpath, csv_fname)) for csv_fname in os.listdir(get_dirpath) if csv_fname.endswith('csv'))
-    for csv_file in csv_file_generator:
+    for csv_file in tqdm(csv_file_generator, mininterval=0.5, total=len(os.listdir(get_dirpath))):
         df.append(csv_file)
     df = pd.concat(df)
     return df
