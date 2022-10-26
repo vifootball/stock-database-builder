@@ -38,12 +38,11 @@ FNAME_INDEX_INVESTPY_MASTERS = 'index_investpy_masters.csv'
 FNAME_INDEX_FRED_MASTERS = 'index_fred_mastersd.csv'
 FNAME_CURRENCY_MASTERS = 'currency_masters.csv'
 
-FNAME_RECENT_ETF = 'recent_etf.csv'
-FNAME_RECENT_CURRENCIES = 'recent_currencies.csv'
-FNAME_RECENT_INDICES = 'recent_indices.csv'
-FNAME_HISTORY_PP_ETF = 'history_pp_etf.csv'
-FNAME_HISTORY_PP_CURRENCIES = 'history_pp_currencies.csv'
-FNAME_HISTORY_PP_INDICES = 'history_pp_indices.csv'
+FNAME_ETF_RECENTS = 'etf_recents.csv'
+FNAME_INDEX_YAHOO_RECENTS = 'index_yahoo_recents.csv'
+FNAME_INDEX_INVESTPY_RECENTS = 'index_investpy_recents.csv'
+FNAME_INDEX_FRED_RECENTS = 'index_fred_recents.csv'
+FNAME_CURRENCY_RECENTS = 'currency_recents.csv'
 
 FNAME_ETF_SUMMARIES = 'etf_summaries.csv'
 FNAME_INDEX_YAHOO_SUMMARIES = 'index_yahoo_summaries.csv'
@@ -133,7 +132,7 @@ COLS_PP_ETF_PROFILE_DROP = [
     'multiplier_mil', 'multiplier_bil', 'multiplier_tril'
 ]
 COLS_PP_ETF_PROFILE_ADD = [
-    'symbol', 'fun_family', 'elapsed_day', 'net_assets'
+    'symbol', 'fund_family', 'elapsed_year', 'net_assets'
 ]
 COLS_PP_ETF_PROFILE = list(
     set(COLS_PP_ETF_PROFILE_ORIG + COLS_PP_ETF_PROFILE_ADD) - set(COLS_PP_ETF_PROFILE_DROP)

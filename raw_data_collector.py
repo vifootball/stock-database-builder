@@ -169,7 +169,7 @@ class RawDataCollector():
     @staticmethod
     def get_currency_symbols():
         currency_masters =  pd.read_csv(os.path.join(
-            DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_MASTER_CURRENCIES
+            DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_CURRENCY_MASTERS
         ))
         currency_symbols = list(currency_masters['symbol'])
         return currency_symbols
@@ -198,7 +198,7 @@ class RawDataCollector():
             history = history.reset_index()
             history.rename(columns={f'{symbol}':'close'}, inplace=True)
             history.rename(columns={'DATE':'date'}, inplace=True)
-            history['symbol'] = 'symbol'
+            history['symbol'] = symbol
             history['date'] = history['date'].astype('str')
 
             header = pd.DataFrame(columns=COLS_HISTORY_RAW)

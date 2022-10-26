@@ -42,9 +42,8 @@ class Preprocessor():
 
     @staticmethod
     def preprocess_raw_history(raw_history):
-        pp_history = calculate_metrics(raw_history)
-        symbol = pp_history['symbol'].iat[0]
-        return pp_history
+        history = calculate_metrics(raw_history)
+        return history
 
     @staticmethod
     def save_dfs_by_chunk(get_dirpath, put_dirpath, prefix_chunk): # n행씩 분할저장.. # 마지막거는 어케하지..?
