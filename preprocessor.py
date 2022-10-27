@@ -50,12 +50,12 @@ class Preprocessor():
         df_list = []
         total_len = 0
         chunk_num = 1
-        
+        put_fpath = os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
+
         df_generator =  (pd.read_csv(os.path.join(get_dirpath, fname)) for fname in os.listdir(get_dirpath) if fname.endswith('csv'))
         for df in df_generator:
             df_list.append(df)
             total_len += len(df)
-            put_fpath = os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
 
             print(f'Concatenateing Dfs in {get_dirpath} | Chunk No.{chunk_num} | Total Length: {total_len}')
             if total_len > 1000_000:
@@ -67,7 +67,6 @@ class Preprocessor():
                 chunk_num += 1
         
         if total_len > 0: # 나눠 떨어지지 않은 마지막 사이클 저장
-            put_fpath = os.path.join(put_fpath, f'{prefix_chunk}_{chunk_num}.csv')
             df = pd.concat(df_list)
             export_df_to_csv(
                 df = df,

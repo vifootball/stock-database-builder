@@ -1,26 +1,23 @@
 from utils import *
 from constants import *
-from directory_builder import DirectoryBuilder
 from google.cloud import bigquery
 
 
-class BqUploader(DirectoryBuilder):
+class BqUploader():
     def __init__(self):
-        super().__init__()
         self.bq_project_id = BQ_PROJECT_ID
         self.bq_dataset_id = BQ_DATASET_ID
         self.bq_table_id_summary = BQ_TABLE_ID_SUMMARY
         self.bq_table_id_history = BQ_TABLE_ID_HISTORY
 
-
     @measure_time
-    def upload_summary_to_bq(self):
+    def upload_summaries_to_bq(self):
         client = bigquery.Client(project=self.bq_project_id)
         table_id = f"{self.bq_project_id}.{self.bq_dataset_id}.{self.bq_table_id_summary}"
         client.create_table(table_id, exists_ok=True)
 
-        dirpath = self.dirpath_summary
-        summary_generator = (pd.read_csv(os.path.join(dirpath, x)) for x in os.listdir(dirpath) if x.endswith('csv'))
+        dirpath_summaries = os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY)
+        summary_generator = (pd.read_csv(os.path.join(dirpath_summaries, x)) for x in os.listdir(dirpath_summaries) if x.endswith('csv'))
         for i, summary in enumerate(summary_generator):
             get_write_disposition = lambda i: 'WRITE_TRUNCATE' if i==0 else 'WRITE_APPEND'                            
             print(f'Row, Col:{summary.shape} | Write-Disposition: {get_write_disposition(i)}')
@@ -30,6 +27,9 @@ class BqUploader(DirectoryBuilder):
                     bigquery.SchemaField("asset_class", "STRING"),
                     bigquery.SchemaField("dividend", "FLOAT64"),
                     bigquery.SchemaField("dividend_paid_or_not", "FLOAT64"),
+                    bigquery.SchemaField("net_assets_abbv", "STRING"),
+                    bigquery.SchemaField("currency", "STRING"),
+                    bigquery.SchemaField("country", "STRING"),
                     bigquery.SchemaField("fund_family", "STRING"),                    
                     bigquery.SchemaField("inception_date", "STRING"),
                     bigquery.SchemaField("isin", "STRING"),
@@ -52,8 +52,8 @@ class BqUploader(DirectoryBuilder):
         table_id = f"{self.bq_project_id}.{self.bq_dataset_id}.{self.bq_table_id_history}"
         client.create_table(table_id, exists_ok=True)
 
-        dirpath = self.dirpath_history_pp_concatenated
-        history_generator = (pd.read_csv(os.path.join(dirpath, x)) for x in tqdm(os.listdir(dirpath)) if x.endswith('csv'))
+        dirpath_histories = os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK)
+        history_generator = (pd.read_csv(os.path.join(dirpath_histories, x)) for x in tqdm(os.listdir(dirpath_histories)) if x.endswith('csv'))
         for i, summary in enumerate(history_generator):
             get_write_disposition = lambda i: 'WRITE_TRUNCATE' if (i==0) else 'WRITE_APPEND'                            
             print(f'Row, Col:{summary.shape} | Write-Disposition: {get_write_disposition(i)}')
@@ -86,5 +86,5 @@ if __name__ == "__main__":
         os.chdir('stock-database-builder')
 
     bq_uploader = BqUploader()
-    # bq_uploader.upload_summary_to_bq()
+    bq_uploader.upload_summaries_to_bq()
     bq_uploader.upload_history_to_bq()

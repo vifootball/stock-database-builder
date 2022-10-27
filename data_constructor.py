@@ -279,28 +279,28 @@ if __name__ == '__main__':
     #     put_fpath_recents=os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_ETF_RECENTS)
     # )
 
-    DataConstructor.construct_summaries(
-        master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_ETF_MASTERS)),
-        recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_ETF_RECENTS)),
-        fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_ETF_SUMMARIES)
-    )
-    DataConstructor.construct_summaries(
-        master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_CURRENCY_MASTERS)),
-        recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_CURRENCY_RECENTS)),
-        fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_CURRENCY_SUMMARIES)
-    )
-    DataConstructor.construct_summaries(
-        master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_INVESTPY_MASTERS)),
-        recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_INVESTPY_RECENTS)),
-        fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_INVESTPY_SUMMARIES)
-    )
-    DataConstructor.construct_summaries(
-        master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_YAHOO_MASTERS)),
-        recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_YAHOO_RECENTS)),
-        fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_YAHOO_SUMMARIES)
-    )
-    DataConstructor.construct_summaries(
-        master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_FRED_MASTERS)),
-        recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_FRED_RECENTS)),
-        fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_FRED_SUMMARIES)
-    )
+    # DataConstructor.construct_summaries(
+    #     master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_ETF_MASTERS)),
+    #     recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_ETF_RECENTS)),
+    #     fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_ETF_SUMMARIES)
+    # )
+    # DataConstructor.construct_summaries(
+    #     master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_CURRENCY_MASTERS)),
+    #     recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_CURRENCY_RECENTS)),
+    #     fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_CURRENCY_SUMMARIES)
+    # )
+    # DataConstructor.construct_summaries(
+    #     master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_INVESTPY_MASTERS)),
+    #     recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_INVESTPY_RECENTS)),
+    #     fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_INVESTPY_SUMMARIES)
+    # )
+    # DataConstructor.construct_summaries(
+    #     master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_YAHOO_MASTERS)),
+    #     recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_YAHOO_RECENTS)),
+    #     fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_YAHOO_SUMMARIES)
+    # )
+    # DataConstructor.construct_summaries(
+    #     master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_FRED_MASTERS)),
+    #     recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_FRED_RECENTS)),
+    #     fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_FRED_SUMMARIES)
+    # )

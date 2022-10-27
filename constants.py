@@ -1,3 +1,4 @@
+# 이런건 config 파일이라고 부름 / 가독성을 위해 JSON으로 할 수 도 있음
 # bigquery
 BQ_PROJECT_ID = 'between-buy-and-sell'
 BQ_DATASET_ID = 'stock'
