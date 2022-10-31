@@ -1,22 +1,10 @@
 import os
-import time
-import datetime as dt
-import numpy as np
 import pandas as pd
-import requests
-from bs4 import BeautifulSoup as bs
-
-import investpy
-import yfinance as yf
-import pandas_datareader
-import pandas_datareader.data as web
-
-import etl_processor
-from utils import *
 from constants import *
-
-pd.options.mode.chained_assignment = None
-
+from raw_data_collector import RawDataCollector
+from data_constructor import DataConstructor
+from preprocessor import Preprocessor
+from bq_uploader import BqUploader
 
 
 if __name__ == '__main__':
@@ -25,52 +13,59 @@ if __name__ == '__main__':
     if 'stock-database-builder' in os.listdir():
         os.chdir('stock-database-builder')
 
-    processor = etl_processor.EtlProcessor()
+        DataConstructor.construct_index_fred_histories()
+        DataConstructor.construct_index_yahoo_histories()
+        DataConstructor.construct_index_investpy_histories()
+        DataConstructor.construct_currency_histories()
+        DataConstructor.construct_etf_histories()
 
-    ### Get Master of ETF ###
-    # processor.get_meta_etf()                                 # complete
-    # processor.get_info_etf()                                 # complete
-    # processor.get_profile_etf()                              # complete
-    
-    # processor.concat_info_etf()                              # complete
-    # processor.concat_profile_etf()                           # complete
-    # processor.construct_master_etf()                         # complete
+        DataConstructor.construct_recents(
+            get_dir_histories=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY),
+            put_fpath_recents=os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_FRED_RECENTS)
+        )
+        DataConstructor.construct_recents(
+            get_dir_histories=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_INVESTPY_HISTORY),
+            put_fpath_recents=os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_INVESTPY_RECENTS)
+        )
+        DataConstructor.construct_recents(
+            get_dir_histories=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_YAHOO_HISTORY),
+            put_fpath_recents=os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_YAHOO_RECENTS)
+        )
+        DataConstructor.construct_recents(
+            get_dir_histories=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY),
+            put_fpath_recents=os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_CURRENCY_RECENTS)
+        )
+        DataConstructor.construct_recents(
+            get_dir_histories=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_HISTORY),
+            put_fpath_recents=os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_ETF_RECENTS)
+        )
 
-    ### Get Master of Currencies ###
-    # processor.get_master_currencies()                        # complete  
+        DataConstructor.construct_summaries(
+            master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_ETF_MASTERS)),
+            recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_ETF_RECENTS)),
+            fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_ETF_SUMMARIES)
+        )
+        DataConstructor.construct_summaries(
+            master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_CURRENCY_MASTERS)),
+            recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_CURRENCY_RECENTS)),
+            fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_CURRENCY_SUMMARIES)
+        )
+        DataConstructor.construct_summaries(
+            master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_INVESTPY_MASTERS)),
+            recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_INVESTPY_RECENTS)),
+            fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_INVESTPY_SUMMARIES)
+        )
+        DataConstructor.construct_summaries(
+            master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_YAHOO_MASTERS)),
+            recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_YAHOO_RECENTS)),
+            fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_YAHOO_SUMMARIES)
+        )
+        DataConstructor.construct_summaries(
+            master=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_FRED_MASTERS)),
+            recent=pd.read_csv(os.path.join(DIR_DOWNLOAD, SUBDIR_RECENT, FNAME_INDEX_FRED_RECENTS)),
+            fpath_summary=os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY, FNAME_INDEX_FRED_SUMMARIES)
+        )
 
-    ### Get Master of Indices ###
-    # processor.get_master_indices_investpy()                  # complete
-    # processor.get_master_indices_yahoo()                     # complete
-    # processor.get_master_indices_fred()                      # complete
-    # processor.concat_master_indices()                        # complete
-
-                     
-    
-    ### Get Histories ###
-    # processor.get_history_from_yf(category='etf')            # complete
-    # processor.get_history_from_yf(category='currency')       # complete
-    # processor.get_history_from_yf(category='index')          # complete
-
-    ### Preprocess Histories ###
-    # processor.preprocess_history(category='etf')             # complete
-    # processor.preprocess_history(category='index')           # complete
-    # processor.preprocess_history(category='currency')        # complete
-
-    # processor.concat_history(category='etf')                 # complete
-    # processor.concat_history(category='index')               # complete
-    # processor.concat_history(category='currency'  )          # complete
-
-    ### Get Recent Data from Hisotires ###
-    # processor.get_recent_from_history(category='etf')        # complete
-    # processor.get_recent_from_history(category='index')      # complete
-    # processor.get_recent_from_history(category='currency')   # complete
-
-    # processor.construct_summary(category='etf')              # complete    
-    # processor.construct_summary(category='index')            # complete
-    # processor.construct_summary(category='currency')         # complete
-
-    # processor.load_summary_to_bq()
-    # processor.load_history_to_bq()
-
-    print('bye')
+        bq_uploader = BqUploader()
+        bq_uploader.upload_summaries_to_bq()
+        bq_uploader.upload_history_to_bq()
