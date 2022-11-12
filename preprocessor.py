@@ -12,6 +12,13 @@ from directory_helper import DirectoryHelper
 class Preprocessor():
 
     @staticmethod
+    def _preprocess_raw_etf_metas(raw_etf_metas):
+        pp_etf_metas = raw_etf_metas.copy()
+        pp_etf_metas.rename(columns={"category": "asset_subcategory"}) 
+        pp_etf_metas['category'] = 'etf'
+        return pp_etf_metas
+
+    @staticmethod
     def preprocess_raw_etf_metas(raw_etf_metas):
         pp_etf_metas = raw_etf_metas.copy()
         pp_etf_metas['category'] = 'etf'

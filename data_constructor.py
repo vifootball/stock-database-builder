@@ -1,5 +1,3 @@
-from importlib.resources import path
-from operator import index
 from raw_data_collector import *
 from preprocessor import *
 
