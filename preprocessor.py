@@ -12,17 +12,26 @@ from directory_helper import DirectoryHelper
 class Preprocessor():
 
     @staticmethod
-    def _preprocess_raw_etf_metas(raw_etf_metas):
-        pp_etf_metas = raw_etf_metas.copy()
-        pp_etf_metas.rename(columns={"category": "asset_subcategory"}) 
-        pp_etf_metas['category'] = 'etf'
-        return pp_etf_metas
-
-    @staticmethod
     def preprocess_raw_etf_metas(raw_etf_metas):
         pp_etf_metas = raw_etf_metas.copy()
+        pp_etf_metas.rename(columns={"category": "asset_subcategory"}, inplace=True)
+        def _asset_subcat_to_asset_cat(subcat):
+            if subcat in ASSET_CAT_EQT:
+                return "Equity"
+            elif subcat in ASSET_CAT_BND:
+                return "Bond"
+            elif subcat in ASSET_CAT_COM:
+                return "Commodity"
+            elif subcat in ASSET_CAT_OTH:
+                return "Other"
+            else:
+                return None
+        pp_etf_metas["asset_category"] = pp_etf_metas['asset_subcategory'].apply(_asset_subcat_to_asset_cat)
         pp_etf_metas['category'] = 'etf'
+        comm = ['pdbc', 'gld', 'gldm', 'iau'] # 누락된 애들 중 눈에 띄는 것
+        pp_etf_metas.loc[pp_etf_metas['symbol'].str.lower().isin(comm), "asset_category"] = "Commodity"
         return pp_etf_metas
+
 
     @staticmethod
     def preprocess_raw_etf_infos(raw_etf_infos): # None 처리

@@ -8,6 +8,7 @@ import datetime as dt
 
 import investpy
 import yfinance as yf
+import financedatabase as fd
 import pandas_datareader.data as web
 from bs4 import BeautifulSoup as bs
 
@@ -18,13 +19,15 @@ from preprocessor import *
 pd.options.mode.chained_assignment = None
 
 class RawDataCollector():
+
     @staticmethod
     def get_raw_etf_metas():
-        raw_etf_metas = investpy.etfs.get_etfs(country='united states')
+        raw_etf_metas = fd.select_etfs(category=None)
+        raw_etf_metas = pd.DataFrame(raw_etf_metas).T.reset_index().rename(columns={"index": "symbol"})
         return raw_etf_metas
 
     @staticmethod
-    def get_etf_names():
+    def get_etf_names(): # 이제 굳이 필요 없음
         pp_etf_metas = pd.read_csv(os.path.join(
             DIR_DOWNLOAD,
             SUBDIR_ETF_META,
@@ -35,13 +38,17 @@ class RawDataCollector():
 
     @staticmethod
     def get_etf_symbols():
-        pp_etf_metas = pd.read_csv(os.path.join(
-            DIR_DOWNLOAD,
-            SUBDIR_ETF_META,
-            FNAME_ETF_METAS
-        ))
-        etf_symbols = list(pp_etf_metas['symbol'])
+        etf_metas = fd.select_etfs(category=None)
+        etf_metas = pd.DataFrame(etf_metas).T.reset_index().rename(columns={"index": "symbol"})
+        etf_symbols = list(etf_metas["symbol"])
         return etf_symbols
+        # pp_etf_metas = pd.read_csv(os.path.join(
+        #     DIR_DOWNLOAD,
+        #     SUBDIR_ETF_META,
+        #     FNAME_ETF_METAS
+        # ))
+        # etf_symbols = list(pp_etf_metas['symbol'])
+        # return etf_symbols
 
     @staticmethod
     def get_raw_etf_info(etf_name):
