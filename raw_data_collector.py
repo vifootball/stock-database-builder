@@ -1,4 +1,3 @@
-from locale import currency
 import os
 import time
 import requests
@@ -27,40 +26,32 @@ class RawDataCollector():
         return raw_etf_metas
 
     @staticmethod
-    def get_etf_names(): # 이제 굳이 필요 없음
-        pp_etf_metas = pd.read_csv(os.path.join(
-            DIR_DOWNLOAD,
-            SUBDIR_ETF_META,
-            FNAME_ETF_METAS
-        ))
-        etf_names = list(pp_etf_metas['name'])
-        return etf_names
-
-    @staticmethod
     def get_etf_symbols():
         etf_metas = fd.select_etfs(category=None)
         etf_metas = pd.DataFrame(etf_metas).T.reset_index().rename(columns={"index": "symbol"})
         etf_symbols = list(etf_metas["symbol"])
         return etf_symbols
-        # pp_etf_metas = pd.read_csv(os.path.join(
-        #     DIR_DOWNLOAD,
-        #     SUBDIR_ETF_META,
-        #     FNAME_ETF_METAS
-        # ))
-        # etf_symbols = list(pp_etf_metas['symbol'])
-        # return etf_symbols
 
     @staticmethod
-    def get_raw_etf_info(etf_name):
+    def get_raw_etf_info(etf_symbol):
+        time.sleep(0.5)
+        raw_etf_info = yf.Ticker(etf_symbol).info
         try:
-            time.sleep(0.5)
-            raw_etf_info = investpy.etfs.get_etf_information(etf_name, country='united states')
+            raw_etf_info = pd.json_normalize(raw_etf_info)[[
+                "symbol", "totalAssets", "sectorWeightings", "holdings", "bondRatings"
+            ]].rename(columns={
+                "symbol": "symbol",
+                "totalAssets": "total_assets",
+                "sectorWeightings": "sector_weight",
+                "holdings": "holdings",
+                "bondRatings": "bond_rating"
+            })
         except:
             raw_etf_info = None
-            print(f'Error Ocurred While Getting Information of: {etf_name}')
+            print(f'Error Ocurred While Getting Information of: {etf_symbol}')
         finally:
             return raw_etf_info
-    
+
     @staticmethod
     def get_raw_etf_profile(symbol):
         etf = yf.Ticker(symbol)
@@ -94,7 +85,8 @@ class RawDataCollector():
             html_table = html.select("table")
             table = pd.read_html(str(html_table))
             df = table[0][['Symbol','Name']]
-            df['full_name'] = df['Name']
+            df['short_name'] = df['Name'].copy()
+            df['long_name'] = df['Name'].copy()
             df['country'] = None
             df['currency'] = None
             df['category'] = 'index'
@@ -114,6 +106,8 @@ class RawDataCollector():
         df = df[df['country'].isin(countries)].reset_index(drop=True)
         df['symbol'] = '^' + df['symbol']
         df['category'] = 'index'
+        df['short_name'] = df['name'].copy()
+        df['long_name'] = df['name'].copy()
         df = df[COLS_MASTER_COMMON]
 
         header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
@@ -143,6 +137,8 @@ class RawDataCollector():
             symbol = f'{second_cur}=X' if base_cur == 'USD' else f'{base_cur}{second_cur}=X'
             return symbol
         currencies['symbol'] = currencies['name'].apply(_encode_symbol)
+        currencies['short_name'] = currencies['name'].copy()
+        currencies['long_name'] = currencies['name'].copy()
         currencies = currencies[COLS_MASTER_COMMON]
         
         header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)

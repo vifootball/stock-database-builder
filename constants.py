@@ -53,60 +53,26 @@ FNAME_CURRENCY_SUMMARIES = 'currency_summaries.csv'
 
 
 # Meta ETF
-COL_MAPPER_RAW_ETF_META  = { # for rename
-    'country': 'country', 
-    'name': 'name', 
-    'full_name': 'full_name', 
-    'symbol': 'symbol', 
-    'isin': 'isin', 
-    'asset_class': 'asset_class', 
-    'currency': 'currency', 
-    'stock_exchange': 'stock_exchange', 
-    'def_stock_exchange': 'def_stock_exchange'
-}
 COLS_PP_ETF_META_ORIG = [
-    'country', 'name', 'full_name', 'symbol', 'isin',
-    'asset_class', 'currency', 'stock_exchange', 'def_stock_exchange'
+    'symbol', 'short_name', 'long_name', 'currency', 'summary',
+    'fund_family', 'exchange', 'market', 'total_assets',
 ]
 COLS_PP_ETF_META_DROP = [
-    'def_stock_exchange'
+    'currency', 'exchange', 'market', 'total_assets',
 ]
 COLS_PP_ETF_META_ADD = [
-    'category'
+    'category', 'asset_subcategory', 'asset_category'
 ]
 COLS_PP_ETF_META = list(
     set(COLS_PP_ETF_META_ORIG + COLS_PP_ETF_META_ADD) - set(COLS_PP_ETF_META_DROP)
 )
 
 # Info ETF
-COL_MAPPER_RAW_ETF_INFO = {
-    'ETF Name': 'name',
-    'Prev. Close': 'prev_close',
-    'Todays Range': 'todays_range',
-    'ROI (TTM)': 'roi_ttm',
-    'Open': 'open',
-    '52 wk Range': '52_week_range',
-    'Dividends (TTM)': 'dividend_ttm',
-    'Volume': 'volume',
-    'Market Cap': 'market_cap',
-    'Dividend Yield': 'dividend_yield_rate',
-    'Average Vol. (3m)': 'volume_3m_avg',
-    'Total Assets': 'total_assets',
-    'Beta': 'beta',
-    '1-Year Change': '1_year_change_rate',
-    'Shares Outstanding': 'shares_outstanding',
-    'Asset Class': 'asset_class'
-}
 COLS_PP_ETF_INFO_ORIG = [
-    'name', 'market_cap', 'shares_outstanding',
-    'prev_close', 'todays_range', 'roi_ttm', 'open', '52_week_range', 
-    'dividend_ttm', 'volume', 'dividend_yield_rate', 'volume_3m_avg', 'total_assets', 
-    'beta', '1_year_change_rate', 'asset_class'
+    'symbol', 'total_assets', 'sector_weight', 'holdings', 'bond_rating'
 ]
 COLS_PP_ETF_INFO_DROP = [
-    'prev_close', 'todays_range', 'roi_ttm', 'open', '52_week_range', 
-    'dividend_ttm', 'volume', 'dividend_yield_rate', 'volume_3m_avg', 'total_assets', 
-    'beta', '1_year_change_rate', 'asset_class'
+    'sector_weight', 'holdings', 'bond_rating'
 ]
 COLS_PP_ETF_INFO = list(
     set(COLS_PP_ETF_INFO_ORIG) - set(COLS_PP_ETF_INFO_DROP)
@@ -141,7 +107,12 @@ COLS_PP_ETF_PROFILE = list(
 
 # Master
 COLS_MASTER_COMMON = [
-    'country', 'symbol', 'name', 'full_name', 'currency', 'category'
+    'country', 
+    'symbol', 
+    'short_name', 
+    'long_name', 
+    'currency', 
+    'category'
 ]
 COLS_MASTER_ENTIRE = sorted(list(
     set(COLS_MASTER_COMMON + COLS_PP_ETF_META + COLS_PP_ETF_INFO + COLS_PP_ETF_PROFILE)
@@ -266,112 +237,112 @@ ASSET_CAT_OTH = [
 FRED_METAS = [
     {
      'symbol'   : 'CPIAUCSL',
-     'name'     : 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average',
-     'full_name': 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average', 
+     'short_name'     : 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average',
+     'long_name': 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'EFFR',
-     'name'     : 'Effective Federal Funds Rate',
-     'full_name': 'Effective Federal Funds Rate', 
+     'short_name'     : 'Effective Federal Funds Rate',
+     'long_name': 'Effective Federal Funds Rate', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'T10Y2Y',
-     'name'     : '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity',
-     'full_name': '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity', 
+     'short_name'     : '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity',
+     'long_name': '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },    
     {
      'symbol'   : 'T10Y3M',
-     'name'     : '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity',
-     'full_name': '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity', 
+     'short_name'   : '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity',
+     'long_name': '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'T10YIE',
-     'name'     : '10-Year Breakeven Inflation Rate',
-     'full_name': '10-Year Breakeven Inflation Rate', 
+     'short_name'     : '10-Year Breakeven Inflation Rate',
+     'long_name': '10-Year Breakeven Inflation Rate', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USREC',
-     'name'     : 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough',
-     'full_name': 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough', 
+     'short_name'     : 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough',
+     'long_name': 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USRECM',
-     'name'     : 'NBER based Recession Indicators for the United States from the Peak through the Trough',
-     'full_name': 'NBER based Recession Indicators for the United States from the Peak through the Trough', 
+     'short_name'     : 'NBER based Recession Indicators for the United States from the Peak through the Trough',
+     'long_name': 'NBER based Recession Indicators for the United States from the Peak through the Trough', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USRECP',
-     'name'     : 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough',
-     'full_name': 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough', 
+     'short_name'     : 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough',
+     'long_name': 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USAREC',
-     'name'     : 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough',
-     'full_name': 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough', 
+     'short_name'     : 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough',
+     'long_name': 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USARECM',
-     'name'     : 'OECD based Recession Indicators for the United States from the Peak through the Trough',
-     'full_name': 'OECD based Recession Indicators for the United States from the Peak through the Trough', 
+     'short_name'     : 'OECD based Recession Indicators for the United States from the Peak through the Trough',
+     'long_name': 'OECD based Recession Indicators for the United States from the Peak through the Trough', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'T10YIE',
-     'name'     : '10-Year Breakeven Inflation Rate',
-     'full_name': '10-Year Breakeven Inflation Rate', 
+     'short_name'     : '10-Year Breakeven Inflation Rate',
+     'long_name': '10-Year Breakeven Inflation Rate', 
      'country'  : 'united states', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'DEXKOUS',
-     'name'     : 'South Korean Won to U.S. Dollar Spot Exchange Rate',
-     'full_name': 'South Korean Won to U.S. Dollar Spot Exchange Rate', 
+     'short_name'     : 'South Korean Won to U.S. Dollar Spot Exchange Rate',
+     'long_name': 'South Korean Won to U.S. Dollar Spot Exchange Rate', 
      'country'  : 'south korea', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'INTDSRKRM193N',
-     'name'     : 'Interest Rates, Discount Rate for Republic of Korea',
-     'full_name': 'Interest Rates, Discount Rate for Republic of Korea', 
+     'short_name'     : 'Interest Rates, Discount Rate for Republic of Korea',
+     'long_name': 'Interest Rates, Discount Rate for Republic of Korea', 
      'country'  : 'south korea', 
      'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'KORCPIALLMINMEI',
-     'name'     : 'Consumer Price Index: All Items for Korea',
-     'full_name': 'Consumer Price Index: All Items for Korea', 
+     'short_name'     : 'Consumer Price Index: All Items for Korea',
+     'long_name': 'Consumer Price Index: All Items for Korea', 
      'country'  : 'south korea', 
      'currency' : None, 
      'category' : 'index'

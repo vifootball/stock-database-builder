@@ -14,9 +14,9 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
 
     @staticmethod 
     def construct_etf_infos():
-        etf_names = RawDataCollector.get_etf_names()
-        for etf_name in tqdm(etf_names, mininterval=0.5):
-            raw_etf_info = RawDataCollector.get_raw_etf_info(etf_name)
+        etf_symbols = RawDataCollector.get_etf_symbols()
+        for etf_symbol in tqdm(etf_symbols, mininterval=0.5):
+            raw_etf_info = RawDataCollector.get_raw_etf_info(etf_symbol)
             if raw_etf_info is not None:
                 export_df_to_csv(
                     df=raw_etf_info,
@@ -24,7 +24,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
                         DIR_DOWNLOAD, 
                         SUBDIR_ETF_INFO, 
                         SUBDIR_RAW_ETF_INFO,
-                        f'raw_etf_info_{etf_name}.csv'
+                        f'raw_etf_info_{etf_symbol}.csv'
                     )
                 )
         

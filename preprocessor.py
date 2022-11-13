@@ -14,6 +14,7 @@ class Preprocessor():
     @staticmethod
     def preprocess_raw_etf_metas(raw_etf_metas):
         pp_etf_metas = raw_etf_metas.copy()
+        pp_etf_metas.rename(columns={"family": "fund_family"}, inplace=True)
         pp_etf_metas.rename(columns={"category": "asset_subcategory"}, inplace=True)
         def _asset_subcat_to_asset_cat(subcat):
             if subcat in ASSET_CAT_EQT:
@@ -32,11 +33,11 @@ class Preprocessor():
         pp_etf_metas.loc[pp_etf_metas['symbol'].str.lower().isin(comm), "asset_category"] = "Commodity"
         return pp_etf_metas
 
-
     @staticmethod
     def preprocess_raw_etf_infos(raw_etf_infos): # None 처리
         if raw_etf_infos is not None:
-            raw_etf_infos.rename(columns=COL_MAPPER_RAW_ETF_INFO, inplace=True)
+            pass
+            #raw_etf_infos.rename(columns=COL_MAPPER_RAW_ETF_INFO, inplace=True)
         return raw_etf_infos
 
     @staticmethod
