@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup as bs
 
 from utils import *
 from constants import *
+from columns import *
 from preprocessor import *
 
 pd.options.mode.chained_assignment = None
@@ -150,7 +151,8 @@ class MetaDataCollector():
                                         * raw_etf_profiles['multiplier_mil'] \
                                         * raw_etf_profiles['multiplier_bil'] \
                                         * raw_etf_profiles['multiplier_tril']
-        return raw_etf_profiles
+            pp_etf_profiles = raw_etf_profiles.copy()
+        return pp_etf_profiles
     
 
     @staticmethod
@@ -172,14 +174,11 @@ class MetaDataCollector():
             })
             df['long_name'] = df['short_name'].copy()
             df['category'] = 'index'
-            df['country'] = None
-            df['currency'] = None
-            df['exchange'] = None
             dfs.append(df)
 
-        dfs = pd.concat(dfs).reset_index(drop=True)#[COLS_MASTER_COMMON]
-        # header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
-        # dfs = pd.concat([header, dfs]).reset_index(drop=True)
+        dfs = pd.concat(dfs).reset_index(drop=True)
+        header = pd.DataFrame(columns=COL_MASTER)
+        dfs = pd.concat([header, dfs]).reset_index(drop=True)[COL_MASTER]
         return dfs
     
     @staticmethod
@@ -188,10 +187,9 @@ class MetaDataCollector():
         df = pd.DataFrame(indices).T.reset_index().rename(columns={'index': 'symbol'})
         df['long_name'] = df['short_name'].copy()
         df['category'] = 'index'
-        df['country'] = None
 
-        # header = pd.DataFrame(columns=COLS_MASTER_ENTIRE)
-        # df = pd.concat([header, df]).reset_index(drop=True)
+        header = pd.DataFrame(columns=COL_MASTER)
+        df = pd.concat([header, df]).reset_index(drop=True)[COL_MASTER]
         return df
     
     @staticmethod
