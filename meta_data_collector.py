@@ -156,6 +156,10 @@ class MetaDataCollector():
     
 
     @staticmethod
+    def construct_etf_masters():
+        pass
+
+    @staticmethod
     def get_index_masters_from_yahoo():
         dfs = []
         urls = [
@@ -189,21 +193,50 @@ class MetaDataCollector():
         df['category'] = 'index'
 
         header = pd.DataFrame(columns=COL_MASTER)
-        df = pd.concat([header, df]).reset_index(drop=True)[COL_MASTER]
-        return df
+        index_masters_fd = pd.concat([header, df]).reset_index(drop=True)[COL_MASTER]
+        return index_masters_fd
     
     @staticmethod
     def get_index_masters_from_investpy(): # 미국 핵심만 추려서 있는 듯 함 # 미국&한국 수집
-        pass
+        countries = ['united states', 'south korea']
+        df = investpy.indices.get_indices()
+        df = df[df['country'].isin(countries)].reset_index(drop=True)
+        df['symbol'] = '^' + df['symbol']
+        df['category'] = 'index'
+        df['short_name'] = df['name'].copy()
+        df['long_name'] = df['name'].copy()
+
+        header = pd.DataFrame(columns=COL_MASTER)
+        index_masters_invespty = pd.concat([header, df])[COL_MASTER]
+        return index_masters_invespty
 
     @staticmethod
     def get_index_masters_from_fred():
-        pass
+        df = pd.DataFrame(FRED_METAS)
+        header = pd.DataFrame(columns=COL_MASTER)
+        index_masters_fred = pd.concat([header, df])[COL_MASTER]
+        return index_masters_fred
 
     @staticmethod
-    def get_currency_masters_From_fred():
-        pass
+    def get_currency_masters(): # fd에서도 가져올 수 있으나 symbol만 알 수 있음 #investpy에서는 symbol을 만들어줘야 함
+        currencies = investpy.currency_crosses.get_currency_crosses()
+        base_cur = ['KRW', 'USD']
+        currencies = currencies[currencies['base'].isin(base_cur)].reset_index(drop=True)
+        currencies['currency'] = currencies['base']
+        currencies['category'] = 'currency'
+        # currency_to_country = {'USD': 'united states', 'KRW': 'south Korea'}
+        # currencies['country'] = currencies['currency'].map(currency_to_country)
+        def _encode_symbol(name):
+            base_cur, second_cur = name.split('/')
+            symbol = f'{second_cur}=X' if base_cur == 'USD' else f'{base_cur}{second_cur}=X'
+            return symbol
+        currencies['symbol'] = currencies['name'].apply(_encode_symbol)
+        currencies.rename(columns={
+            'name': 'short_name',
+            'full_name': 'long_name'
+        }, inplace=True)
+        
+        header = pd.DataFrame(columns=COL_MASTER)
+        currency_masters = pd.concat([header, currencies])[COL_MASTER]
+        return currency_masters
 
-    @staticmethod
-    def get_currency_masters_from_fd():
-        pass

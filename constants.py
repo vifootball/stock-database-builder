@@ -36,7 +36,7 @@ FNAME_ETF_PROFILES = 'etf_profiles.csv'
 FNAME_ETF_MASTERS = 'etf_masters.csv'
 FNAME_INDEX_YAHOO_MASTERS = 'index_yahoo_masters.csv'
 FNAME_INDEX_INVESTPY_MASTERS = 'index_investpy_masters.csv'
-FNAME_INDEX_FRED_MASTERS = 'index_fred_mastersd.csv'
+FNAME_INDEX_FRED_MASTERS = 'index_fred_master.csv'
 FNAME_CURRENCY_MASTERS = 'currency_masters.csv'
 
 FNAME_ETF_RECENTS = 'etf_recents.csv'
@@ -58,10 +58,10 @@ COLS_PP_ETF_META_ORIG = [
     'fund_family', 'exchange', 'market', 'total_assets',
 ]
 COLS_PP_ETF_META_DROP = [
-    'currency', 'exchange', 'market', 'total_assets',
+    'exchange', 'market', 'total_assets',
 ]
 COLS_PP_ETF_META_ADD = [
-    'category', 'asset_subcategory', 'asset_category'
+    'country', 'category', 'asset_subcategory', 'asset_category'
 ]
 COLS_PP_ETF_META = list(
     set(COLS_PP_ETF_META_ORIG + COLS_PP_ETF_META_ADD) - set(COLS_PP_ETF_META_DROP)
@@ -99,7 +99,7 @@ COLS_PP_ETF_PROFILE_DROP = [
     'multiplier_mil', 'multiplier_bil', 'multiplier_tril'
 ]
 COLS_PP_ETF_PROFILE_ADD = [
-    'symbol', 'fund_family', 'elapsed_year', 'net_assets'
+    'symbol', 'elapsed_year', 'net_assets'
 ]
 COLS_PP_ETF_PROFILE = list(
     set(COLS_PP_ETF_PROFILE_ORIG + COLS_PP_ETF_PROFILE_ADD) - set(COLS_PP_ETF_PROFILE_DROP)
@@ -239,112 +239,84 @@ FRED_METAS = [
      'symbol'   : 'CPIAUCSL',
      'short_name'     : 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average',
      'long_name': 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'EFFR',
      'short_name'     : 'Effective Federal Funds Rate',
      'long_name': 'Effective Federal Funds Rate', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'T10Y2Y',
      'short_name'     : '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity',
      'long_name': '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },    
     {
      'symbol'   : 'T10Y3M',
      'short_name'   : '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity',
      'long_name': '10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'T10YIE',
      'short_name'     : '10-Year Breakeven Inflation Rate',
      'long_name': '10-Year Breakeven Inflation Rate', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USREC',
      'short_name'     : 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough',
      'long_name': 'NBER based Recession Indicators for the United States from the Period following the Peak through the Trough', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USRECM',
      'short_name'     : 'NBER based Recession Indicators for the United States from the Peak through the Trough',
      'long_name': 'NBER based Recession Indicators for the United States from the Peak through the Trough', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USRECP',
      'short_name'     : 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough',
      'long_name': 'NBER based Recession Indicators for the United States from the Peak through the Period preceding the Trough', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USAREC',
      'short_name'     : 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough',
      'long_name': 'OECD based Recession Indicators for the United States from the Period following the Peak through the Trough', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'USARECM',
      'short_name'     : 'OECD based Recession Indicators for the United States from the Peak through the Trough',
      'long_name': 'OECD based Recession Indicators for the United States from the Peak through the Trough', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'T10YIE',
      'short_name'     : '10-Year Breakeven Inflation Rate',
      'long_name': '10-Year Breakeven Inflation Rate', 
-     'country'  : 'united states', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'DEXKOUS',
      'short_name'     : 'South Korean Won to U.S. Dollar Spot Exchange Rate',
      'long_name': 'South Korean Won to U.S. Dollar Spot Exchange Rate', 
-     'country'  : 'south korea', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'INTDSRKRM193N',
      'short_name'     : 'Interest Rates, Discount Rate for Republic of Korea',
      'long_name': 'Interest Rates, Discount Rate for Republic of Korea', 
-     'country'  : 'south korea', 
-     'currency' : None, 
      'category' : 'index'
     },
     {
      'symbol'   : 'KORCPIALLMINMEI',
      'short_name'     : 'Consumer Price Index: All Items for Korea',
      'long_name': 'Consumer Price Index: All Items for Korea', 
-     'country'  : 'south korea', 
-     'currency' : None, 
      'category' : 'index'
     }
 ]
