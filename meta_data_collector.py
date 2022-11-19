@@ -4,6 +4,7 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime as dt
+from tqdm import tqdm
 
 import investpy
 import yfinance as yf
@@ -11,10 +12,11 @@ import financedatabase as fd
 import pandas_datareader.data as web
 from bs4 import BeautifulSoup as bs
 
+from fred import *
 from utils import *
-from constants import *
+from config import *
 from columns import *
-from preprocessor import *
+from _constants import *
 
 pd.options.mode.chained_assignment = None
 
@@ -37,12 +39,12 @@ class MetaDataCollector():
             "family": "fund_family",
             "category": "asset_subcategory"
         })
+        raw_etf_metas = raw_etf_metas.reset_index() # 번호 부여
         return raw_etf_metas
 
     @staticmethod
     def preprocess_raw_etf_metas(raw_etf_metas):
         pp_etf_metas = raw_etf_metas.copy()
-        pp_etf_metas['country'] = None
         def _asset_subcat_to_asset_cat(subcat):
             if subcat in ASSET_CAT_EQT:
                 return "Equity"
@@ -81,13 +83,14 @@ class MetaDataCollector():
             return raw_etf_info
     
     def collect_raw_etf_infos(self, etf_symbols: list): # 임시로 indexing으로 끊어 사용
-        for etf_symbol in etf_symbols:
-            dirpath = ""
-            fname = ""
-            # fpath = os.makedirs(os.path.join(dirpath, fpath))
+        for etf_symbol in tqdm(etf_symbols, mininterval=0.5):
             raw_etf_info = self.get_raw_etf_info(etf_symbol)
-            # raw_etf_info.to_csv(fpath, index=False)
-            print(raw_etf_info)
+            if raw_etf_info is not None:
+                dirpath = os.path.join("download", "etf_info", "raw_etf_info")
+                fname = f"raw_etf_info_{etf_symbol}.csv"
+                fpath = os.path.join(dirpath, fname)
+                os.makedirs(os.path.dirname(fpath), exist_ok=True)
+                raw_etf_info.to_csv(fpath, index=False)
 
     @staticmethod
     def preprocess_raw_etf_infos(raw_etf_infos): # None 처리
@@ -117,7 +120,6 @@ class MetaDataCollector():
                 'Inception Date': 'inception_date'
             })
             raw_etf_profile['symbol'] = symbol
-            #raw_etf_profile['fund_family'] = etf.info.get('fundFamily')
             if 'expense_ratio' not in raw_etf_profile.columns: # 구해져도 ETF가 아닌 경우가 있음
                 raw_etf_profile= None
                 print(f'Not ETF: {symbol}')
@@ -129,13 +131,14 @@ class MetaDataCollector():
             return raw_etf_profile
     
     def collect_raw_etf_profiles(self, etf_symbols: list):
-        for etf_symbol in etf_symbols:
-            dirpath = ""
-            fname = ""
-            # fpath = os.makedirs(os.path.join(dirpath, fpath))
+        for etf_symbol in tqdm(etf_symbols, mininterval=0.5):
             raw_etf_profile = self.get_raw_etf_profile(etf_symbol)
-            # raw_etf_info.to_csv(fpath, index=False)
-            print(raw_etf_profile)
+            if raw_etf_profile is not None:
+                dirpath = os.path.join("download", "etf_profile", "raw_etf_profile")
+                fname = f"raw_etf_profile_{etf_symbol}.csv"
+                fpath = os.path.join(dirpath, fname)
+                os.makedirs(os.path.dirname(fpath), exist_ok=True)
+                raw_etf_profile.to_csv(fpath, index=False)
 
     @staticmethod
     def preprocess_raw_etf_profiles(raw_etf_profiles):
@@ -154,10 +157,6 @@ class MetaDataCollector():
             pp_etf_profiles = raw_etf_profiles.copy()
         return pp_etf_profiles
     
-
-    @staticmethod
-    def construct_etf_masters():
-        pass
 
     @staticmethod
     def get_index_masters_from_yahoo():
@@ -239,4 +238,8 @@ class MetaDataCollector():
         header = pd.DataFrame(columns=COL_MASTER)
         currency_masters = pd.concat([header, currencies])[COL_MASTER]
         return currency_masters
+
+
+
+
 

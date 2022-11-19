@@ -5,7 +5,10 @@ COL_ETF_META_ORIG = [
 COL_ETF_META_ADD = [
     'asset_category', 'category'
 ]
-COL_ETF_META = list(set(COL_ETF_META_ORIG + COL_ETF_META_ADD))
+COL_ETF_META_DROP = [
+    'total_assets' # info에도 있는데 그게 더 최신
+]
+COL_ETF_META = list(set(COL_ETF_META_ORIG + COL_ETF_META_ADD) - set(COL_ETF_META_DROP))
 
 COL_ETF_INFO = [
     'symbol', 'total_assets', 'sector_weight', 'holdings', 'bond_rating'
