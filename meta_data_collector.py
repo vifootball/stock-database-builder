@@ -16,7 +16,7 @@ from fred import *
 from utils import *
 from config import *
 from columns import *
-from _constants import *
+from constants import *
 
 pd.options.mode.chained_assignment = None
 

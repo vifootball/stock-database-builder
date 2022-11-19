@@ -4,6 +4,7 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime as dt
+from tqdm import tqdm
 
 import investpy
 import yfinance as yf
@@ -12,9 +13,8 @@ import pandas_datareader.data as web
 from bs4 import BeautifulSoup as bs
 
 from utils import *
-from constants import *
 from columns import *
-# from preprocessor import *
+from constants import *
 from metric_calculator import *
 
 
@@ -22,15 +22,14 @@ pd.options.mode.chained_assignment = None
 
 class HistoryCollector():
     
-    @staticmethod
-    def get_raw_history_from_yf(symbol):
+    def get_raw_history_from_yf(self, symbol):
         history = yf.Ticker(symbol).history(period='max').reset_index(drop=False) # date가 index
         history.rename(columns={
             "Date": "date",
             "Open": "open",
             "HIgh": "high",
             "Low": "low",
-            "close": "close",
+            "Close": "close",
             "Volume": "volume",
             "Dividends": "dividend",
             "Stock Splits": "stock_split"
@@ -69,8 +68,24 @@ class HistoryCollector():
         history = calculate_metrics(raw_history)
         return history
     
-    def collect_histories(self, symbols: list, save_dirpath):
-        for symbol in symbols:
-            fname = f"{symbol}.csv"
-            fpath = os.makedirs(save_dirpath, fname)
-            raw_history = 
+    def collect_histories_from_yf(self, symbols: list, save_dirpath):
+        for symbol in tqdm(symbols, mininterval=0.5):    
+            raw_history = self.get_raw_history_from_yf(symbol)
+            if raw_history is not None:
+                pp_history = self.preprocess_raw_history(raw_history)
+                
+                fname = f"history_{symbol}.csv"
+                fpath = os.path.join(save_dirpath, fname)            
+                os.makedirs(save_dirpath, exist_ok=True)
+                pp_history.to_csv(fpath, index=False)
+    
+    def collect_histories_from_fred(self, symbols: list, save_dirpath):
+        for symbol in tqdm(symbols, mininterval=0.5):    
+            raw_history = self.get_raw_history_from_fred(symbol)
+            if raw_history is not None:
+                pp_history = self.preprocess_raw_history(raw_history)
+                
+                fname = f"{symbol}.csv"
+                fpath = os.path.join(save_dirpath, fname)            
+                os.makedirs(fpath, exist_ok=True)
+                pp_history.to_csv(fpath, index=False)
