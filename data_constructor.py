@@ -1,104 +1,67 @@
-from raw_data_collector import *
-from preprocessor import *
+import os
+from utils import *
+from columns import *
+from meta_data_collector  import MetaDataCollector
 
 class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저장하는 녀석
-
-    @staticmethod 
-    def construct_etf_metas():
-        raw_etf_metas = RawDataCollector.get_raw_etf_metas()
-        pp_etf_metas = Preprocessor.preprocess_raw_etf_metas(raw_etf_metas)
-        export_df_to_csv(
-            df=pp_etf_metas,
-            fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_META, FNAME_ETF_METAS)
-        )
-
-    @staticmethod 
-    def construct_etf_infos():
-        etf_symbols = RawDataCollector.get_etf_symbols()
-        for etf_symbol in tqdm(etf_symbols, mininterval=0.5):
-            raw_etf_info = RawDataCollector.get_raw_etf_info(etf_symbol)
-            if raw_etf_info is not None:
-                export_df_to_csv(
-                    df=raw_etf_info,
-                    fpath=os.path.join(
-                        DIR_DOWNLOAD, 
-                        SUBDIR_ETF_INFO, 
-                        SUBDIR_RAW_ETF_INFO,
-                        f'raw_etf_info_{etf_symbol}.csv'
-                    )
-                )
-        
-        raw_etf_infos = concat_csv_files_in_dir(
-            get_dirpath = os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_INFO,SUBDIR_RAW_ETF_INFO)
-        )
-
-        pp_etf_infos = Preprocessor.preprocess_raw_etf_infos(raw_etf_infos)
-        export_df_to_csv(
-            df=pp_etf_infos,
-            fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_INFO, FNAME_ETF_INFOS)
-        )
     
-    @staticmethod 
-    def construct_etf_profiles():
-        etf_symbols = RawDataCollector.get_etf_symbols()
-        for etf_symbol in tqdm(etf_symbols, mininterval=0.5):
-            raw_etf_profile = RawDataCollector.get_raw_etf_profile(symbol=etf_symbol)
-            if raw_etf_profile is not None:
-                export_df_to_csv(
-                    df=raw_etf_profile,
-                    fpath=os.path.join(
-                        DIR_DOWNLOAD,
-                        SUBDIR_ETF_PROFILE,
-                        SUBDIR_RAW_ETF_PROFILE,
-                        f'raw_etf_profile_{etf_symbol}.csv'
-                    )
-                )
+    @staticmethod
+    def construct_etf_metas():
+        mdc = MetaDataCollector()
+        raw_etf_metas = mdc.get_raw_etf_metas()
+        pp_etf_metas = mdc.preprocess_raw_etf_metas(raw_etf_metas)
+
+        fpath_pp_etf_metas = os.path.join("download", "etf_meta", "etf_metas.csv")
+        os.makedirs(os.path.dirname(fpath_pp_etf_metas), exist_ok=True)
+        pp_etf_metas.to_csv(fpath_pp_etf_metas, index=False)
+
+    @staticmethod
+    def construct_etf_infos():
+        mdc = MetaDataCollector()
+        etf_symbols = mdc.get_etf_symbols()[:]
+        mdc.collect_raw_etf_infos(etf_symbols=etf_symbols)
         
-        raw_etf_profiles = concat_csv_files_in_dir(
-            get_dirpath=os.path.join(
-                DIR_DOWNLOAD,
-                SUBDIR_ETF_PROFILE,
-                SUBDIR_RAW_ETF_PROFILE
-            )
-        )
+        raw_etf_infos = concat_csv_files_in_dir(os.path.join("download", "etf_info", "raw_etf_info"))
+        pp_etf_infos = mdc.preprocess_raw_etf_infos(raw_etf_infos)
+        fpath_pp_etf_infos = os.path.join("download", "etf_info", "etf_infos.csv")
+        os.makedirs(os.path.dirname(fpath_pp_etf_infos), exist_ok=True)
+        pp_etf_infos.to_csv(fpath_pp_etf_infos, index=False)
+    
+    @staticmethod
+    def construct_etf_profiles():
+        mdc = MetaDataCollector()
+        etf_symbols = mdc.get_etf_symbols()[:]
+        mdc.collect_raw_etf_profiles(etf_symbols=etf_symbols)
+        
+        raw_etf_profiles = concat_csv_files_in_dir(os.path.join("download", "etf_profile", "raw_etf_profile"))
+        pp_etf_profiles = mdc.preprocess_raw_etf_profiles(raw_etf_profiles)
+        fpath_pp_etf_profiles = os.path.join("download", "etf_profile", "etf_profiles.csv")
+        os.makedirs(os.path.dirname(fpath_pp_etf_profiles), exist_ok=True)
+        pp_etf_profiles.to_csv(fpath_pp_etf_profiles, index=False)
 
-        pp_etf_profiles = Preprocessor.preprocess_raw_etf_profiles(raw_etf_profiles)
-        export_df_to_csv(
-            df=pp_etf_profiles,
-            fpath=os.path.join(
-                DIR_DOWNLOAD,
-                SUBDIR_ETF_PROFILE,
-                FNAME_ETF_PROFILES
-            )
-        )
-
-    @staticmethod 
+    @staticmethod
     def construct_etf_masters():
-        pp_etf_metas = pd.read_csv(
-            os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_META, FNAME_ETF_METAS)
-            )[COLS_PP_ETF_META]
-        pp_etf_infos = pd.read_csv(
-            os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_INFO, FNAME_ETF_INFOS)
-            )[COLS_PP_ETF_INFO]
-        pp_etf_profiles = pd.read_csv(
-            os.path.join(DIR_DOWNLOAD, SUBDIR_ETF_PROFILE, FNAME_ETF_PROFILES)
-            )[COLS_PP_ETF_PROFILE]
+        pp_etf_metas = pd.read_csv(os.path.join("download", "etf_meta", "etf_metas.csv"))[COL_ETF_META]
+        pp_etf_infos = pd.read_csv(os.path.join("download", "etf_info", "etf_infos.csv"))[COL_ETF_INFO]
+        pp_etf_profiles = pd.read_csv(os.path.join("download", "etf_profile", "etf_profiles.csv"))[COL_ETF_PROFILE]
 
-        etf_masters = pp_etf_metas.merge(pp_etf_infos, how='left', on='name')
+        etf_masters = pp_etf_metas.merge(pp_etf_infos, how='left', on='symbol')
         etf_masters = etf_masters.merge(pp_etf_profiles, how='left', on='symbol')
-        etf_masters = etf_masters[COLS_MASTER_ENTIRE]
-        export_df_to_csv(
-            df=etf_masters,
-            fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_ETF_MASTERS)
-        )
+        etf_masters = etf_masters[COL_MASTER]
 
-    @staticmethod 
-    def construct_index_yahoo_masters():
-        index_yahoo_masters = RawDataCollector.get_index_masters_from_yahoo()
-        export_df_to_csv(
-            df=index_yahoo_masters,
-            fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_YAHOO_MASTERS)
-        )
+        fpath_etf_masters = os.path.join("download", "master", "etf_masters.csv")
+        os.makedirs(os.path.dirname(fpath_etf_masters), exist_ok=True)
+        etf_masters.to_csv(fpath_etf_masters, index = False)
+
+
+
+    # @staticmethod 
+    # def construct_index_yahoo_masters():
+    #     index_yahoo_masters = RawDataCollector.get_index_masters_from_yahoo()
+    #     export_df_to_csv(
+    #         df=index_yahoo_masters,
+    #         fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_MASTER, FNAME_INDEX_YAHOO_MASTERS)
+    #     )
 
     @staticmethod 
     def construct_index_investpy_masters():
