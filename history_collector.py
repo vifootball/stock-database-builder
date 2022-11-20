@@ -27,7 +27,7 @@ class HistoryCollector():
         history.rename(columns={
             "Date": "date",
             "Open": "open",
-            "HIgh": "high",
+            "High": "high",
             "Low": "low",
             "Close": "close",
             "Volume": "volume",
@@ -87,5 +87,5 @@ class HistoryCollector():
                 
                 fname = f"{symbol}.csv"
                 fpath = os.path.join(save_dirpath, fname)            
-                os.makedirs(fpath, exist_ok=True)
+                os.makedirs(os.path.dirname(fpath), exist_ok=True)
                 pp_history.to_csv(fpath, index=False)

@@ -34,10 +34,8 @@ def save_dfs_by_chunk(get_dirpath, put_dirpath, prefix_chunk): # n행씩 분할�
         
         if total_len > 1000_000:
             df_concatenated = pd.concat(df_list)
-            export_df_to_csv(
-                df=df_concatenated,
-                fpath=os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
-            )
+            fpath = os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
+            df_concatenated.to_csv(fpath, index=False)
 
             df_list = []
             total_len = 0
@@ -45,10 +43,9 @@ def save_dfs_by_chunk(get_dirpath, put_dirpath, prefix_chunk): # n행씩 분할�
     
     if total_len > 0: # 나눠 떨어지지 않은 마지막 사이클 저장
         df_concatenated = pd.concat(df_list)
-        export_df_to_csv(
-            df = df_concatenated,
-            fpath=os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
-        )
+        fpath = os.path.join(put_dirpath, f'{prefix_chunk}_{chunk_num}.csv')
+        df_concatenated.to_csv(fpath, index=False)
+
 
 def measure_time(func):
     def wrapper(*args, **kwargs):

@@ -55,11 +55,27 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
         etf_masters.to_csv(fpath_etf_masters, index=False)
 
     @staticmethod
-    def construct_index_yahoo_masters():
-        mdc = MetaDataCollector()
-        index_yahoo_masters = mdc.get_index_masters_from_yahoo()
+    def construct_index_yf_masters():
+        index_yahoo_main_masters = pd.read_csv(os.path.join("download", "master", "index_yahoo_main_masters.csv"))
+        index_fd_masters = pd.read_csv(os.path.join("download", "master", "index_fd_masters.csv"))
+        index_investpy_masters = pd.read_csv(os.path.join("download", "master", "index_investpy_masters.csv"))
 
-        fpath = os.path.join("download", "master", "index_yahoo_masters.csv")
+        index_yf_masters = pd.concat([
+            index_yahoo_main_masters,
+            index_fd_masters,
+            index_investpy_masters
+        ]).drop_duplicates(subset=['symbol'])
+
+        fpath = os.path.join("download", "master", "index_yf_master.csv")
+        os.makedirs(os.path.dirname(fpath), exist_ok=True)
+        index_yf_masters.to_csv(fpath, index=False)
+
+    @staticmethod
+    def construct_index_yahoo_main_masters():
+        mdc = MetaDataCollector()
+        index_yahoo_masters = mdc.get_index_masters_from_yahoo_main()
+
+        fpath = os.path.join("download", "master", "index_yahoo_main_masters.csv")
         os.makedirs(os.path.dirname(fpath), exist_ok=True) 
         index_yahoo_masters.to_csv(fpath, index=False)
     
@@ -103,7 +119,7 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
     def construct_etf_histories():
         mdc = MetaDataCollector()
         hc = HistoryCollector()
-        etf_symbols = mdc.get_etf_symbols()[:10]
+        etf_symbols = mdc.get_etf_symbols()[:]
         hc.collect_histories_from_yf(
             symbols=etf_symbols, 
             save_dirpath=os.path.join("download", "etf_history")
@@ -115,94 +131,107 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
         )
 
     @staticmethod
-    def construct_index_yahoo_histories():
+    def construct_index_yf_histories():
         mdc = MetaDataCollector()
         hc = HistoryCollector()
-        index_yahoo_masters = pd.read_csv(os.path.join("download", "master", "index_yahoo_masters.csv"))
-        index_yahoo_symbols = index_yahoo_masters["symbol"].to_list()[:]
+        index_yf_masters = pd.read_csv(os.path.join("download", "master", "index_yf_masters.csv"))
+        index_yf_symbols = index_yf_masters["symbol"].to_list()[:]
 
         hc.collect_histories_from_yf(
-            symbols=index_yahoo_symbols, 
-            save_dirpath=os.path.join("download", "index_yahoo_history")
+            symbols=index_yf_symbols,
+            save_dirpath=os.path.join("download", "index_yf_history")
         )
         save_dfs_by_chunk(
-            get_dirpath=os.path.join("download", "index_yahoo_history"),
+            get_dirpath=os.path.join("download", "index_yf_history"),
             put_dirpath=os.path.join("download", "history_chunk"),
-            prefix_chunk="concatenated_index_yahoo_histories"
+            prefix_chunk="concatenated_yf_histories"
         )
 
-    @staticmethod
-    def construct_index_investpy_histories():
-        mdc = MetaDataCollector()
-        hc = HistoryCollector()
-        index_investpy_masters = pd.read_csv(os.path.join("download", "master", "index_investpy_masters.csv"))
-        index_investpy_symbols = index_investpy_masters["symbol"].to_list()[:]
+    # @staticmethod
+    # def construct_index_yahoo_histories():
+    #     mdc = MetaDataCollector()
+    #     hc = HistoryCollector()
+    #     index_yahoo_masters = pd.read_csv(os.path.join("download", "master", "index_yahoo_masters.csv"))
+    #     index_yahoo_symbols = index_yahoo_masters["symbol"].to_list()[:]
 
-        hc.collect_histories_from_yf(
-            symbols=index_investpy_symbols, 
-            save_dirpath=os.path.join("download", "index_investpy_history")
-        )
-        save_dfs_by_chunk(
-            get_dirpath=os.path.join("download", "index_investpy_history"),
-            put_dirpath=os.path.join("download", "history_chunk"),
-            prefix_chunk="concatenated_index_investpy_histories"
-        )
+    #     hc.collect_histories_from_yf(
+    #         symbols=index_yahoo_symbols, 
+    #         save_dirpath=os.path.join("download", "index_yahoo_history")
+    #     )
+    #     save_dfs_by_chunk(
+    #         get_dirpath=os.path.join("download", "index_yahoo_history"),
+    #         put_dirpath=os.path.join("download", "history_chunk"),
+    #         prefix_chunk="concatenated_index_yahoo_histories"
+    #     )
 
-    @staticmethod
-    def construct_index_fd_histories():
-        mdc = MetaDataCollector()
-        hc = HistoryCollector()
-        index_fd_masters = pd.read_csv(os.path.join("download", "master", "index_fd_masters.csv"))
-        index_fd_symbols = index_fd_masters["symbol"].to_list()[:10]
+    # @staticmethod
+    # def construct_index_investpy_histories():
+    #     mdc = MetaDataCollector()
+    #     hc = HistoryCollector()
+    #     index_investpy_masters = pd.read_csv(os.path.join("download", "master", "index_investpy_masters.csv"))
+    #     index_investpy_symbols = index_investpy_masters["symbol"].to_list()[:]
 
-        hc.collect_histories_from_yf(
-            symbols=index_fd_symbols, 
-            save_dirpath=os.path.join("download", "index_fd_history")
-        )
-        save_dfs_by_chunk(
-            get_dirpath=os.path.join("download", "index_fd_history"),
-            put_dirpath=os.path.join("download", "history_chunk"),
-            prefix_chunk="concatenated_index_fd_histories"
-        )
+    #     hc.collect_histories_from_yf(
+    #         symbols=index_investpy_symbols, 
+    #         save_dirpath=os.path.join("download", "index_investpy_history")
+    #     )
+    #     save_dfs_by_chunk(
+    #         get_dirpath=os.path.join("download", "index_investpy_history"),
+    #         put_dirpath=os.path.join("download", "history_chunk"),
+    #         prefix_chunk="concatenated_index_investpy_histories"
+    #     )
+
+    # @staticmethod
+    # def construct_index_fd_histories():
+    #     mdc = MetaDataCollector()
+    #     hc = HistoryCollector()
+    #     index_fd_masters = pd.read_csv(os.path.join("download", "master", "index_fd_masters.csv"))
+    #     index_fd_symbols = index_fd_masters["symbol"].to_list()[:10]
+
+    #     hc.collect_histories_from_yf(
+    #         symbols=index_fd_symbols, 
+    #         save_dirpath=os.path.join("download", "index_fd_history")
+    #     )
+    #     save_dfs_by_chunk(
+    #         get_dirpath=os.path.join("download", "index_fd_history"),
+    #         put_dirpath=os.path.join("download", "history_chunk"),
+    #         prefix_chunk="concatenated_index_fd_histories"
+    #     )
 
     @staticmethod
     def construct_currency_histories():
-        currency_symbols = RawDataCollector.get_currency_symbols()
-        for currency_symbol in currency_symbols:
-            print(f"{currency_symbol} processing...")
-            raw_currency_history = RawDataCollector.get_raw_history_from_yf(currency_symbol)
-            if raw_currency_history is not None:
-                pp_currency_history = Preprocessor.preprocess_raw_history(raw_currency_history)
-                export_df_to_csv(
-                    df=pp_currency_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY, f"history_{currency_symbol}.csv")
-                )
-        Preprocessor.save_dfs_by_chunk(
-            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_CURRENCY_HISTORY),
-            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK),
+        mdc = MetaDataCollector()
+        hc = HistoryCollector()
+        currency_masters = pd.read_csv(os.path.join("download", "master", "currency_masters.csv"))
+        currency_symbols = currency_masters["symbol"].to_list()[:]
+
+        hc.collect_histories_from_yf(
+            symbols=currency_symbols,
+            save_dirpath=os.path.join("download", "currency_history")
+        )
+        save_dfs_by_chunk(
+            get_dirpath=os.path.join("download", "currency_history"),
+            put_dirpath=os.path.join("download", "history_chunk"),
             prefix_chunk="concatenated_currency_histories"
         )
 
     @staticmethod
     def construct_index_fred_histories():
-        index_symbols_fred = RawDataCollector.get_index_fred_symbols()
-        for index_symbol in index_symbols_fred:
-            print(f"{index_symbol} processing...")
-            raw_index_history = RawDataCollector.get_raw_history_from_fred(index_symbol) #
-            if raw_index_history is not None:
-                pp_index_history = Preprocessor.preprocess_raw_history(raw_index_history)
-                export_df_to_csv(
-                    df=pp_index_history,
-                    fpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY, f"history_{index_symbol}.csv")
-                )
-        Preprocessor.save_dfs_by_chunk(
-            get_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_INDEX_FRED_HISTORY),
-            put_dirpath=os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK),
-            prefix_chunk="concatenated_fred_index_histories"
+        mdc = MetaDataCollector()
+        hc = HistoryCollector()
+        index_fred_masters = pd.read_csv(os.path.join("download", "master", "index_fred_masters.csv"))
+        index_fred_symbols = index_fred_masters["symbol"].to_list()
+
+        hc.collect_histories_from_fred(
+            symbols=index_fred_symbols,
+            save_dirpath=os.path.join("download", "index_fred_history"),
+        )
+        save_dfs_by_chunk(
+            get_dirpath=os.path.join("download", "index_fred_history"),
+            put_dirpath=os.path.join("download", "history_chunk"),
+            prefix_chunk="concatenated_fred_histories"
         )
         
-
-
     @staticmethod
     def construct_recents(get_dir_histories, put_fpath_recents):
         history_generator = (pd.read_csv(os.path.join(get_dir_histories, f)) for f in os.listdir(get_dir_histories) if f.endswith('csv'))        
@@ -212,18 +241,16 @@ class DataConstructor(): # 함수를 조합해서 데이터를 구성하고 저�
             recent = history.iloc[-1]
             recents.append(recent)
         recents = pd.DataFrame(recents).reset_index(drop=True)
-        export_df_to_csv(
-            df=recents,
-            fpath=os.path.join(put_fpath_recents)
-        )
+
+        os.makedirs(os.path.dirname(put_fpath_recents), exist_ok=True)
+        recents.to_csv(put_fpath_recents, index=False)
 
     @staticmethod
     def construct_summaries(master, recent, fpath_summary):
-        summary = pd.merge(master, recent, how='inner', on='symbol')
-        export_df_to_csv(
-            df=summary,
-            fpath=fpath_summary
-        )
+        summaries = pd.merge(master, recent, how='inner', on='symbol')
+
+        os.makedirs(os.path.dirname(fpath_summary), exist_ok=True)
+        summaries.to_csv(fpath_summary, index=False)
 
 
 if __name__ == '__main__':

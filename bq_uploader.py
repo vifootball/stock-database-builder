@@ -1,5 +1,5 @@
 from utils import *
-from constants import *
+from config import *
 from google.cloud import bigquery
 
 
@@ -16,7 +16,7 @@ class BqUploader():
         table_id = f"{self.bq_project_id}.{self.bq_dataset_id}.{self.bq_table_id_summary}"
         client.create_table(table_id, exists_ok=True)
 
-        dirpath_summaries = os.path.join(DIR_DOWNLOAD, SUBDIR_SUMMARY)
+        dirpath_summaries = os.path.join("download", "summary")
         summary_generator = (pd.read_csv(os.path.join(dirpath_summaries, x)) for x in os.listdir(dirpath_summaries) if x.endswith('csv'))
         for i, summary in enumerate(summary_generator):
             get_write_disposition = lambda i: 'WRITE_TRUNCATE' if i==0 else 'WRITE_APPEND'                            
@@ -24,16 +24,14 @@ class BqUploader():
 
             job_config = bigquery.LoadJobConfig(
                 schema=[
-                    bigquery.SchemaField("asset_class", "STRING"),
+                    bigquery.SchemaField("asset_category", "STRING"),
+                    bigquery.SchemaField("asset_subcategory", "STRING"),
+                    bigquery.SchemaField("summary", "STRING"),
                     bigquery.SchemaField("dividend", "FLOAT64"),
                     bigquery.SchemaField("dividend_paid_or_not", "FLOAT64"),
-                    bigquery.SchemaField("net_assets_abbv", "STRING"),
                     bigquery.SchemaField("currency", "STRING"),
-                    bigquery.SchemaField("country", "STRING"),
                     bigquery.SchemaField("fund_family", "STRING"),                    
                     bigquery.SchemaField("inception_date", "STRING"),
-                    bigquery.SchemaField("isin", "STRING"),
-                    bigquery.SchemaField("stock_exchange", "STRING"),
                     bigquery.SchemaField("stock_split", "FLOAT64"),
                     bigquery.SchemaField("volume", "FLOAT64"),
                     bigquery.SchemaField("volume_of_dollar", "FLOAT64"),
@@ -52,7 +50,7 @@ class BqUploader():
         table_id = f"{self.bq_project_id}.{self.bq_dataset_id}.{self.bq_table_id_history}"
         client.create_table(table_id, exists_ok=True)
 
-        dirpath_histories = os.path.join(DIR_DOWNLOAD, SUBDIR_HISTORY_CHUNK)
+        dirpath_histories = os.path.join("download", "history_chunk")
         history_generator = (pd.read_csv(os.path.join(dirpath_histories, x)) for x in tqdm(os.listdir(dirpath_histories)) if x.endswith('csv'))
         for i, summary in enumerate(history_generator):
             get_write_disposition = lambda i: 'WRITE_TRUNCATE' if (i==0) else 'WRITE_APPEND'                            

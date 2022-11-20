@@ -159,7 +159,7 @@ class MetaDataCollector():
     
 
     @staticmethod
-    def get_index_masters_from_yahoo():
+    def get_index_masters_from_yahoo_main():
         dfs = []
         urls = [
             'https://finance.yahoo.com/world-indices',
