@@ -27,6 +27,11 @@ class BqUploader():
                     bigquery.SchemaField("asset_category", "STRING"),
                     bigquery.SchemaField("asset_subcategory", "STRING"),
                     bigquery.SchemaField("summary", "STRING"),
+                    bigquery.SchemaField("sector_weight", "STRING"),
+                    bigquery.SchemaField("exchange", "STRING"),
+                    bigquery.SchemaField("holdings", "STRING"),
+                    bigquery.SchemaField("market", "STRING"),
+                    bigquery.SchemaField("bond_rating", "STRING"),
                     bigquery.SchemaField("dividend", "FLOAT64"),
                     bigquery.SchemaField("dividend_paid_or_not", "FLOAT64"),
                     bigquery.SchemaField("currency", "STRING"),
@@ -83,6 +88,6 @@ if __name__ == "__main__":
     if 'stock-database-builder' in os.listdir():
         os.chdir('stock-database-builder')
 
-    bq_uploader = BqUploader()
+    # bq_uploader = BqUploader()
     # bq_uploader.upload_summaries_to_bq()
-    bq_uploader.upload_history_to_bq()
+    # bq_uploader.upload_history_to_bq()

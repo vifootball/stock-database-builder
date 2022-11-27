@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
 
     bq_uploader = BqUploader()
-    bq_uploader.upload_summaries_to_bq()
+    # bq_uploader.upload_summaries_to_bq()
     bq_uploader.upload_history_to_bq()
 
     print("Done")
