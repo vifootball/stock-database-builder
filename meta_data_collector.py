@@ -11,6 +11,7 @@ import yfinance as yf
 import financedatabase as fd
 import pandas_datareader.data as web
 from bs4 import BeautifulSoup as bs
+from urllib.request import urlopen, Request
 
 from fred import *
 from utils import *
@@ -157,6 +158,52 @@ class MetaDataCollector():
             pp_etf_profiles = raw_etf_profiles.copy()
         return pp_etf_profiles
     
+    def get_etf_aums(self, etf_symbol):
+        def _string_to_int(string):
+            multipliers = {'K':1000, 'M':1000_000, 'B':1000_000_000, 'T':1000_000_000_000}
+            if string[-1].isdigit(): # check if no suffix
+                return int(string)
+            mult = multipliers[string[-1]] # look up suffix to get multiplier
+            # convert number to float, multiply by multiplier, then make int
+            return int(float(string[:-1]) * mult)
+
+        try:
+            symbol = symbol.lower()
+            url = Request(f"https://stockanalysis.com/etf/{etf_symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
+            html = urlopen(url)
+            bs_obj = bs(html, "html.parser")
+            trs = bs_obj.find_all('tr')
+            
+            for tr in (trs):
+                try:
+                    if "Assets" in tr.find_all('td')[0].get_text():
+                        assets = tr.find_all('td')[1].get_text().replace("$", "")
+                        assets = _string_to_int(assets)
+                        # print(assets)
+                        break
+                except:
+                    continue
+            
+            for tr in (trs):
+                try:
+                    if "Shares Out" in tr.find_all('td')[0].get_text():
+                        shares_out = tr.find_all('td')[1].get_text()
+                        shares_out = _string_to_int(shares_out)
+                        # print(shares_out)
+                        break
+                except:
+                    continue
+            
+            df = {'symbol': symbol, 'assets': assets, 'shares_out': shares_out}
+            df = pd.DataFrame.from_dict(df, orient='index').T.reset_index(drop=True)
+            return df
+        
+        except:
+            print(f"Error: {symbol}")
+            return None
+
+    def collect_etf_aums(self, etf_symbols: list):
+        pass
 
     @staticmethod
     def get_index_masters_from_yahoo_main():
