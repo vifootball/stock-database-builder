@@ -41,6 +41,20 @@ class DataConstructor(): # 단위함수를 이용하여 테이블을 만드는 �
         pp_etf_profiles.to_csv(fpath_pp_etf_profiles, index=False)
 
     @staticmethod
+    def construct_etf_aums():
+        mdc = MetaDataCollector()
+        # etf_symbols = mdc.get_etf_symbols()[:]
+        # mdc.collect_raw_etf_aums(etf_symbols=etf_symbols)
+
+        raw_etf_aums = concat_csv_files_in_dir(os.path.join("download", "etf_aum", "raw_etf_aum"))
+        raw_etf_aums = raw_etf_aums.loc[raw_etf_aums['aum'].notna()]
+        pp_etf_aums = mdc.preprocess_raw_etf_aums(raw_etf_aums)
+        fpath_pp_etf_aums = os.path.join("download", "etf_aum", "etf_aums.csv")
+        os.makedirs(os.path.dirname(fpath_pp_etf_aums), exist_ok=True)
+        pp_etf_aums.to_csv(fpath_pp_etf_aums, index=False)
+
+
+    @staticmethod
     def construct_etf_masters():
         pp_etf_metas = pd.read_csv(os.path.join("download", "etf_meta", "etf_metas.csv"))[COL_ETF_META]
         pp_etf_infos = pd.read_csv(os.path.join("download", "etf_info", "etf_infos.csv"))[COL_ETF_INFO]

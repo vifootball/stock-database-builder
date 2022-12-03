@@ -65,7 +65,7 @@ class MetaDataCollector():
 
 
     def get_raw_etf_info(self, symbol):
-        time.sleep(0.5)
+        time.sleep(5)
         raw_etf_info = yf.Ticker(symbol).info
         try:
             raw_etf_info = pd.json_normalize(raw_etf_info)[[  # only useful infos
@@ -157,18 +157,12 @@ class MetaDataCollector():
                                         * raw_etf_profiles['multiplier_tril']
             pp_etf_profiles = raw_etf_profiles.copy()
         return pp_etf_profiles
-    
-    def get_etf_aums(self, etf_symbol):
-        def _string_to_int(string):
-            multipliers = {'K':1000, 'M':1000_000, 'B':1000_000_000, 'T':1000_000_000_000}
-            if string[-1].isdigit(): # check if no suffix
-                return int(string)
-            mult = multipliers[string[-1]] # look up suffix to get multiplier
-            # convert number to float, multiply by multiplier, then make int
-            return int(float(string[:-1]) * mult)
 
+    @staticmethod  
+    def get_raw_etf_aum(etf_symbol): # 2-3번에 나눠돌려야함 429에러 발생
         try:
-            symbol = symbol.lower()
+            time.sleep(3)
+            etf_symbol = etf_symbol.lower()
             url = Request(f"https://stockanalysis.com/etf/{etf_symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
             html = urlopen(url)
             bs_obj = bs(html, "html.parser")
@@ -177,33 +171,53 @@ class MetaDataCollector():
             for tr in (trs):
                 try:
                     if "Assets" in tr.find_all('td')[0].get_text():
-                        assets = tr.find_all('td')[1].get_text().replace("$", "")
-                        assets = _string_to_int(assets)
-                        # print(assets)
+                        aum = tr.find_all('td')[1].get_text().replace("$", "")
                         break
                 except:
                     continue
-            
             for tr in (trs):
                 try:
                     if "Shares Out" in tr.find_all('td')[0].get_text():
                         shares_out = tr.find_all('td')[1].get_text()
-                        shares_out = _string_to_int(shares_out)
-                        # print(shares_out)
                         break
                 except:
                     continue
             
-            df = {'symbol': symbol, 'assets': assets, 'shares_out': shares_out}
+            df = {'symbol': etf_symbol, 'aum': aum, 'shares_out': shares_out}
             df = pd.DataFrame.from_dict(df, orient='index').T.reset_index(drop=True)
             return df
         
         except:
-            print(f"Error: {symbol}")
+            print(f"Error: {etf_symbol}")
             return None
 
-    def collect_etf_aums(self, etf_symbols: list):
-        pass
+    @staticmethod
+    def preprocess_raw_etf_aums(raw_etf_aums):
+        def _string_to_int(string):
+            multipliers = {'K':1000, 'M':1000_000, 'B':1000_000_000, 'T':1000_000_000_000}
+            string = str(string) # transform to string if not
+            if string[-1].isdigit(): # check if no suffix
+                string = string.replace(',', '')
+                return int(string)
+            mult = multipliers[string[-1]]
+            return int(float(string[:-1]) * mult)
+        
+        pp_etf_aums = raw_etf_aums.copy()
+        pp_etf_aums['symbol'] = pp_etf_aums['symbol'].str.upper()
+        pp_etf_aums['aum'] = pp_etf_aums['aum'].apply(_string_to_int)
+        pp_etf_aums['shares_out'] = pp_etf_aums['shares_out'].apply(_string_to_int)
+        return pp_etf_aums
+
+    def collect_raw_etf_aums(self, etf_symbols: list):
+        for etf_symbol in tqdm(etf_symbols, mininterval=0.5):
+            raw_etf_aum = self.get_raw_etf_aum(etf_symbol)
+            if raw_etf_aum is not None:
+                dirpath = os.path.join("download", "etf_aum", "raw_etf_aum")
+                fname = f"raw_etf_aum_{etf_symbol}.csv"
+                fpath = os.path.join(dirpath, fname)
+                os.makedirs(os.path.dirname(fpath), exist_ok=True)
+                raw_etf_aum.to_csv(fpath, index=False)
+
 
     @staticmethod
     def get_index_masters_from_yahoo_main():
