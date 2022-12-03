@@ -43,8 +43,8 @@ class DataConstructor(): # 단위함수를 이용하여 테이블을 만드는 �
     @staticmethod
     def construct_etf_aums():
         mdc = MetaDataCollector()
-        # etf_symbols = mdc.get_etf_symbols()[:]
-        # mdc.collect_raw_etf_aums(etf_symbols=etf_symbols)
+        etf_symbols = mdc.get_etf_symbols()[:]
+        mdc.collect_raw_etf_aums(etf_symbols=etf_symbols)
 
         raw_etf_aums = concat_csv_files_in_dir(os.path.join("download", "etf_aum", "raw_etf_aum"))
         raw_etf_aums = raw_etf_aums.loc[raw_etf_aums['aum'].notna()]
@@ -59,9 +59,11 @@ class DataConstructor(): # 단위함수를 이용하여 테이블을 만드는 �
         pp_etf_metas = pd.read_csv(os.path.join("download", "etf_meta", "etf_metas.csv"))[COL_ETF_META]
         pp_etf_infos = pd.read_csv(os.path.join("download", "etf_info", "etf_infos.csv"))[COL_ETF_INFO]
         pp_etf_profiles = pd.read_csv(os.path.join("download", "etf_profile", "etf_profiles.csv"))[COL_ETF_PROFILE]
+        pp_etf_aums = pd.read_csv(os.path.join("download", "etf_aum", "etf_aums.csv"))[COL_ETF_AUM]
 
         etf_masters = pp_etf_metas.merge(pp_etf_infos, how='left', on='symbol')
         etf_masters = etf_masters.merge(pp_etf_profiles, how='left', on='symbol')
+        etf_masters = etf_masters.merge(pp_etf_aums, how='left', on='symbol')
         etf_masters = etf_masters[COL_MASTER]
 
         fpath_etf_masters = os.path.join("download", "master", "etf_masters.csv")
@@ -80,7 +82,7 @@ class DataConstructor(): # 단위함수를 이용하여 테이블을 만드는 �
             index_investpy_masters
         ]).drop_duplicates(subset=['symbol'])
 
-        fpath = os.path.join("download", "master", "index_yf_master.csv")
+        fpath = os.path.join("download", "master", "index_yf_masters.csv")
         os.makedirs(os.path.dirname(fpath), exist_ok=True)
         index_yf_masters.to_csv(fpath, index=False)
 

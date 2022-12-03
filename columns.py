@@ -28,7 +28,11 @@ COL_ETF_PROFILE_DROP = [
 ]
 COL_ETF_PROFILE = list(set(COL_ETF_PROFILE_ORIG + COL_ETF_PROFILE_ADD) - set(COL_ETF_PROFILE_DROP))
 
-COL_MASTER = list(set(COL_ETF_META + COL_ETF_INFO + COL_ETF_PROFILE))
+COL_ETF_AUM = [
+    'symbol', 'aum', 'shares_out'
+]
+
+COL_MASTER = list(set(COL_ETF_META + COL_ETF_INFO + COL_ETF_PROFILE + COL_ETF_AUM))
 
 COL_HISTORY_RAW = [
     'date', 'symbol', 'open', 'high', 'low', 
