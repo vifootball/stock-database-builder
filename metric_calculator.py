@@ -6,9 +6,8 @@ def copy_column(col):
     col_copied = col.copy(deep=True)
     return col_copied
 
-# price -> close 복사하기 # 하나씩 검증하기
 def calc_price_change(price: pd.Series):
-    price_change = price.diff() #.fillna(0)
+    price_change = price.diff()
     return price_change
 
 def calc_price_change_rate(price, price_change):
@@ -45,6 +44,39 @@ def calc_drawdown_max(drawdown_current):
     drawdown_max = drawdown_current.cummin().round(6)
     return drawdown_max
 
+def calc_price_7d_ago(price):
+    price_7d_ago = price.shift(periods=7, freq='D')
+    price_7d_ago = price_7d_ago.loc[price_7d_ago.index <= price_7d_ago.index.max() - pd.to_timedelta('7days')]
+    return price_7d_ago
+
+def calc_weekly_price_change(price, price_7d_ago): # 현재 가격과 1주일 전 가격의 차이
+    weekly_price_change = price - price_7d_ago
+    return weekly_price_change
+
+def calc_weekly_price_change_rate(price_7d_ago, weekly_price_change):
+    try:
+        weekly_price_change_rate = (weekly_price_change / price_7d_ago).round(6)
+    except ZeroDivisionError:
+        weekly_price_change_rate = np.nan
+    return weekly_price_change_rate
+
+def calc_price_30d_ago(price):
+    price_30d_ago = price.shift(periods=30, freq='D')
+    price_30d_ago = price_30d_ago.loc[price_30d_ago.index <= price_30d_ago.index.max() - pd.to_timedelta('7days')]
+    return price_30d_ago
+
+def calc_monthly_price_change(price, price_30d_ago):
+    monthly_price_change = price - price_30d_ago
+    return monthly_price_change
+    
+def calc_monthly_price_change_rate(price_30d_ago, monthly_price_change):
+    try:
+        monthly_price_change_rate = (monthly_price_change / price_30d_ago).round(6)
+    except ZeroDivisionError:
+        monthly_price_change_rate = np.nan
+    return monthly_price_change_rate
+
+#volume
 def calc_volume_of_dollar(price, volume_of_shares): # estimated by close price
     volume_of_dollar = (price * volume_of_shares)
     if volume_of_dollar.dtype in [int, float]:
@@ -95,7 +127,7 @@ def calculate_metrics(history):
     history['date'] = pd.to_datetime(history['date'])
     history = history.set_index('date')
 
-    history['price'] = copy_column(history['close'])
+    history['price'] = copy_column(history['close']).astype(float)
 
     # price
     history['price_change'] = calc_price_change(price=history['price'])
@@ -105,6 +137,14 @@ def calculate_metrics(history):
     history['drawdown_current'] = calc_drawdown_current(history['price'], history['price_all_time_high'])
     history['drawdown_max'] = calc_drawdown_max(history['drawdown_current'])
     
+    history['price_7d_ago'] = calc_price_7d_ago(price=history['price'])
+    history['weekly_price_change'] = calc_weekly_price_change(price=history['price'], price_7d_ago=history['price_7d_ago'])
+    history['weekly_price_change_rate'] = calc_weekly_price_change_rate(price_7d_ago=history['price_7d_ago'], weekly_price_change=history['weekly_price_change'])
+    
+    history['price_30d_ago'] = calc_price_30d_ago(price=history['price'])
+    history['monthly_price_change'] = calc_monthly_price_change(price=history['price'], price_30d_ago=history['price_30d_ago'])
+    history['monthly_price_change_rate'] = calc_monthly_price_change_rate(price_30d_ago=history['price_30d_ago'], monthly_price_change=history['monthly_price_change'])
+
     # volume
     history['volume_of_share'] = copy_column(history['volume'])
     history['volume_of_share_3m_avg'] = calc_volume_of_share_3m_avg(history['volume_of_share'])
