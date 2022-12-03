@@ -50,7 +50,7 @@ def calc_price_7d_ago(price):
     return price_7d_ago
 
 def calc_weekly_price_change(price, price_7d_ago): # 현재 가격과 1주일 전 가격의 차이
-    weekly_price_change = price - price_7d_ago
+    weekly_price_change = (price - price_7d_ago).ffill()
     return weekly_price_change
 
 def calc_weekly_price_change_rate(price_7d_ago, weekly_price_change):
@@ -66,7 +66,7 @@ def calc_price_30d_ago(price):
     return price_30d_ago
 
 def calc_monthly_price_change(price, price_30d_ago):
-    monthly_price_change = price - price_30d_ago
+    monthly_price_change = price - price_30d_ago.ffill()
     return monthly_price_change
     
 def calc_monthly_price_change_rate(price_30d_ago, monthly_price_change):
