@@ -47,6 +47,7 @@ def calc_drawdown_max(drawdown_current):
 def calc_price_7d_ago(price):
     price_7d_ago = price.shift(periods=7, freq='D')
     price_7d_ago = price_7d_ago.loc[price_7d_ago.index <= price_7d_ago.index.max() - pd.to_timedelta('7days')]
+    price_7d_ago = price_7d_ago
     return price_7d_ago
 
 def calc_weekly_price_change(price, price_7d_ago): # 현재 가격과 1주일 전 가격의 차이
@@ -138,10 +139,12 @@ def calculate_metrics(history):
     history['drawdown_max'] = calc_drawdown_max(history['drawdown_current'])
     
     history['price_7d_ago'] = calc_price_7d_ago(price=history['price'])
+    history['price_7d_ago'] = history['price_7d_ago'].ffill()
     history['weekly_price_change'] = calc_weekly_price_change(price=history['price'], price_7d_ago=history['price_7d_ago'])
     history['weekly_price_change_rate'] = calc_weekly_price_change_rate(price_7d_ago=history['price_7d_ago'], weekly_price_change=history['weekly_price_change'])
     
     history['price_30d_ago'] = calc_price_30d_ago(price=history['price'])
+    history['price_30d_ago'] = history['price_30d_ago'].ffill()
     history['monthly_price_change'] = calc_monthly_price_change(price=history['price'], price_30d_ago=history['price_30d_ago'])
     history['monthly_price_change_rate'] = calc_monthly_price_change_rate(price_30d_ago=history['price_30d_ago'], monthly_price_change=history['monthly_price_change'])
 
