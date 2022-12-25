@@ -37,15 +37,6 @@ class HistoryCollector():
 
         if (len(history) > 50): 
             if  (days_from_last_traded := dt.datetime.today() - history['date'].max()) < pd.Timedelta('50 days'):
-                
-                # history = history.set_index('date')
-                # dates = history.index
-                # dr = pd.date_range(start=min(dates), end=max(dates))
-                # dr = pd.DataFrame(dr).set_index(0)
-                # dr.index.name = 'date'
-                # history = dr.join(history, how='left')
-                # history.reset_index(drop=False, inplace=True)
-
                 history['date'] = history['date'].astype('str')
                 history['symbol'] = symbol
         else:
@@ -77,24 +68,17 @@ class HistoryCollector():
         # 1. Raw Data 획득: 이미 함
         # 2. 거래일 데이터만으로 지표 게산
         # 3. 빈 날짜 채워주기
-        # 4. 모든 날짜범위에서 지표 계산
-        # 5. Fill NA 처리
+        # 4. 컬럼별 적절한 fillna 메서드 사용
+        # 5. 모든 날짜범위에서 지표 계산
         
         # 2. 
-        history = calculate_metrics(raw_history)
-
-        # 3. 빈 날짜 채워주기
-        history = history.set_index('date')
-        dates = history.index
-        dr = pd.date_range(start=min(dates), end=max(dates))
-        dr = pd.DataFrame(dr).set_index(0)
-        dr.index.name = 'date'
-        history = dr.join(history, how='left')
-        history.reset_index(drop=False, inplace=True)
-
-        history['date'] = history['date'].astype('str')
-        history['symbol'] = history['symbol'].ffill()
-
+        history = calculate_metrics_on_trading_dates(raw_history)
+        # 3.
+        history = fill_missing_date_index(history)
+        # 4.
+        history = fill_na_values(history)
+        # 5.
+        history = calculate_metrics_on_all_dates(history)
 
         return history
     

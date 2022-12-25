@@ -130,6 +130,7 @@ def calculate_metrics_on_trading_dates(history):
     history = history.set_index('date')
 
     # price
+    history['price'] = copy_column(history['close']).astype(float)
     history['price_all_time_high'] = calc_price_all_time_high(history['price'])
     history['drawdown_current'] = calc_drawdown_current(history['price'], history['price_all_time_high'])
     history['drawdown_max'] = calc_drawdown_max(history['drawdown_current'])
@@ -147,15 +148,40 @@ def calculate_metrics_on_trading_dates(history):
     history['dividend_rate'] = calc_dividend_rate(history['price'], history['dividend'])
     history['dividend_rate_ttm'] = calc_dividend_rate_ttm(history['price'], history['dividend_ttm'])
 
-    history = history.reset_index()
+    # etc
+    history['is_normal_date'] = 1
 
+    history = history.reset_index()
+    return history
+
+def fill_missing_date_index(history):
+    history = history.set_index('date')
+    dates = history.index
+    dr = pd.date_range(start=min(dates), end=max(dates))
+    dr = pd.DataFrame(dr).set_index(0)
+    dr.index.name = 'date'
+    history = dr.join(history, how='left')
+    history.reset_index(drop=False, inplace=True)
+    return history
+
+def fill_na_values(history):
+    history['price'] = history['price'].ffill()
+    history['price_all_time_high'] = history['price_all_time_high'].ffill()
+    history['drawdown_current'] = history['drawdown_current'].ffill()
+    history['drawdown_max'] = history['drawdown_max'].ffill()
+
+    history['dividend_paid_count_ttm'] = history['dividend_paid_count_ttm'].ffill()
+    history['dividend_ttm'] = history['dividend_ttm'].ffill()
+    history['dividend_rate_ttm'] = history['dividend_rate_ttm'].ffill()
+
+    history['is_normal_date'] = history['is_normal_date'].fillna(0)
+    return history
 
 def calculate_metrics_on_all_dates(history):
     history['date'] = pd.to_datetime(history['date'])
     history = history.set_index('date')
 
     # price
-    history['price'] = copy_column(history['close']).astype(float)
     history['price_change'] = calc_price_change(price=history['price'])
     history['price_change_rate'] = calc_price_change_rate(history['price'], history['price_change'])
     history['price_change_sign'] = calc_price_change_sign(history['price_change'])
@@ -169,6 +195,7 @@ def calculate_metrics_on_all_dates(history):
     history['monthly_price_change_rate'] = calc_monthly_price_change_rate(price_30d_ago=history['price_30d_ago'], monthly_price_change=history['monthly_price_change'])
 
     history = history.reset_index()
+    return history
 
 
 def calculate_metrics(history):
