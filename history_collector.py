@@ -35,8 +35,17 @@ class HistoryCollector():
             "Stock Splits": "stock_split"
         }, inplace=True)
 
-        if (len(history) > 50):
+        if (len(history) > 50): # 정상일 경우 빈 날짜 채워주기
             if  (days_from_last_traded := dt.datetime.today() - history['date'].max()) < pd.Timedelta('50 days'):
+                
+                history = history.set_index('date')
+                dates = history.index
+                dr = pd.date_range(start=min(dates), end=max(dates))
+                dr = pd.DataFrame(dr).set_index(0)
+                dr.index.name = 'date'
+                history = dr.join(history, how='left')
+                history.reset_index(drop=False, inplace=True)
+
                 history['date'] = history['date'].astype('str')
                 history['symbol'] = symbol
         else:

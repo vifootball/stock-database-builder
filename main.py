@@ -8,11 +8,8 @@ from bq_uploader import BqUploader
 if __name__ == '__main__':
     print(os.getcwd())
 
-    if 'stock-database-builder' in os.listdir():
-        os.chdir('stock-database-builder')
-    
-    else: # path setting for window scheduler
-        os.chdir(r"C:\Users\Dongwook Jung\Home\dongwook-src\stock-database-builder")
+    # path setting for window scheduler
+    os.chdir(r"C:\Users\Dongwook Jung\Home\dongwook-src\stock-database-builder")
     
     print('hi')
     # print(os.getcwd())
