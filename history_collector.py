@@ -35,16 +35,16 @@ class HistoryCollector():
             "Stock Splits": "stock_split"
         }, inplace=True)
 
-        if (len(history) > 50): # 정상일 경우 빈 날짜 채워주기
+        if (len(history) > 50): 
             if  (days_from_last_traded := dt.datetime.today() - history['date'].max()) < pd.Timedelta('50 days'):
                 
-                history = history.set_index('date')
-                dates = history.index
-                dr = pd.date_range(start=min(dates), end=max(dates))
-                dr = pd.DataFrame(dr).set_index(0)
-                dr.index.name = 'date'
-                history = dr.join(history, how='left')
-                history.reset_index(drop=False, inplace=True)
+                # history = history.set_index('date')
+                # dates = history.index
+                # dr = pd.date_range(start=min(dates), end=max(dates))
+                # dr = pd.DataFrame(dr).set_index(0)
+                # dr.index.name = 'date'
+                # history = dr.join(history, how='left')
+                # history.reset_index(drop=False, inplace=True)
 
                 history['date'] = history['date'].astype('str')
                 history['symbol'] = symbol
@@ -74,7 +74,28 @@ class HistoryCollector():
         return history
 
     def preprocess_raw_history(self, raw_history):
+        # 1. Raw Data 획득: 이미 함
+        # 2. 거래일 데이터만으로 지표 게산
+        # 3. 빈 날짜 채워주기
+        # 4. 모든 날짜범위에서 지표 계산
+        # 5. Fill NA 처리
+        
+        # 2. 
         history = calculate_metrics(raw_history)
+
+        # 3. 빈 날짜 채워주기
+        history = history.set_index('date')
+        dates = history.index
+        dr = pd.date_range(start=min(dates), end=max(dates))
+        dr = pd.DataFrame(dr).set_index(0)
+        dr.index.name = 'date'
+        history = dr.join(history, how='left')
+        history.reset_index(drop=False, inplace=True)
+
+        history['date'] = history['date'].astype('str')
+        history['symbol'] = history['symbol'].ffill()
+
+
         return history
     
     def collect_histories_from_yf(self, symbols: list, save_dirpath):
