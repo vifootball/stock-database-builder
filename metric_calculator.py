@@ -165,6 +165,7 @@ def fill_missing_date_index(history):
     return history
 
 def fill_na_values(history):
+    history['symbol'] = history['symbol'].ffill()
     history['price'] = history['price'].ffill()
     history['price_all_time_high'] = history['price_all_time_high'].ffill()
     history['drawdown_current'] = history['drawdown_current'].ffill()
@@ -198,41 +199,41 @@ def calculate_metrics_on_all_dates(history):
     return history
 
 
-def calculate_metrics(history):
-    history['date'] = pd.to_datetime(history['date'])
-    history = history.set_index('date')
+# def calculate_metrics(history):
+#     history['date'] = pd.to_datetime(history['date'])
+#     history = history.set_index('date')
 
-    history['price'] = copy_column(history['close']).astype(float)
+#     history['price'] = copy_column(history['close']).astype(float)
     
 
-    # price
-    history['price_change'] = calc_price_change(price=history['price'])
-    history['price_change_rate'] = calc_price_change_rate(history['price'], history['price_change'])
-    history['price_change_sign'] = calc_price_change_sign(history['price_change'])
-    history['price_all_time_high'] = calc_price_all_time_high(history['price'])
-    history['drawdown_current'] = calc_drawdown_current(history['price'], history['price_all_time_high'])
-    history['drawdown_max'] = calc_drawdown_max(history['drawdown_current'])
+#     # price
+#     history['price_change'] = calc_price_change(price=history['price'])
+#     history['price_change_rate'] = calc_price_change_rate(history['price'], history['price_change'])
+#     history['price_change_sign'] = calc_price_change_sign(history['price_change'])
+#     history['price_all_time_high'] = calc_price_all_time_high(history['price'])
+#     history['drawdown_current'] = calc_drawdown_current(history['price'], history['price_all_time_high'])
+#     history['drawdown_max'] = calc_drawdown_max(history['drawdown_current'])
     
-    history['price_7d_ago'] = calc_price_7d_ago(price=history['price'])
-    history['weekly_price_change'] = calc_weekly_price_change(price=history['price'], price_7d_ago=history['price_7d_ago'])
-    history['weekly_price_change_rate'] = calc_weekly_price_change_rate(price_7d_ago=history['price_7d_ago'], weekly_price_change=history['weekly_price_change'])
+#     history['price_7d_ago'] = calc_price_7d_ago(price=history['price'])
+#     history['weekly_price_change'] = calc_weekly_price_change(price=history['price'], price_7d_ago=history['price_7d_ago'])
+#     history['weekly_price_change_rate'] = calc_weekly_price_change_rate(price_7d_ago=history['price_7d_ago'], weekly_price_change=history['weekly_price_change'])
     
-    history['price_30d_ago'] = calc_price_30d_ago(price=history['price'])
-    history['monthly_price_change'] = calc_monthly_price_change(price=history['price'], price_30d_ago=history['price_30d_ago'])
-    history['monthly_price_change_rate'] = calc_monthly_price_change_rate(price_30d_ago=history['price_30d_ago'], monthly_price_change=history['monthly_price_change'])
+#     history['price_30d_ago'] = calc_price_30d_ago(price=history['price'])
+#     history['monthly_price_change'] = calc_monthly_price_change(price=history['price'], price_30d_ago=history['price_30d_ago'])
+#     history['monthly_price_change_rate'] = calc_monthly_price_change_rate(price_30d_ago=history['price_30d_ago'], monthly_price_change=history['monthly_price_change'])
 
-    # volume
-    history['volume_of_share'] = copy_column(history['volume'])
-    history['volume_of_share_3m_avg'] = calc_volume_of_share_3m_avg(history['volume_of_share'])
-    history['volume_of_dollar'] = calc_volume_of_dollar(history['price'], history['volume_of_share'])
-    history['volume_of_dollar_3m_avg'] = calc_volume_of_dollar_3m_avg(history['volume_of_dollar'])
+#     # volume
+#     history['volume_of_share'] = copy_column(history['volume'])
+#     history['volume_of_share_3m_avg'] = calc_volume_of_share_3m_avg(history['volume_of_share'])
+#     history['volume_of_dollar'] = calc_volume_of_dollar(history['price'], history['volume_of_share'])
+#     history['volume_of_dollar_3m_avg'] = calc_volume_of_dollar_3m_avg(history['volume_of_dollar'])
 
-    # dividend
-    history['dividend_paid_or_not'] = calc_dividend_paid_or_not(history['dividend'])
-    history['dividend_paid_count_ttm'] = calc_dividend_paid_count_ttm(history['dividend_paid_or_not'])
-    history['dividend_ttm'] = calc_dividend_ttm(history['dividend'])
-    history['dividend_rate'] = calc_dividend_rate(history['price'], history['dividend'])
-    history['dividend_rate_ttm'] = calc_dividend_rate_ttm(history['price'], history['dividend_ttm'])
+#     # dividend
+#     history['dividend_paid_or_not'] = calc_dividend_paid_or_not(history['dividend'])
+#     history['dividend_paid_count_ttm'] = calc_dividend_paid_count_ttm(history['dividend_paid_or_not'])
+#     history['dividend_ttm'] = calc_dividend_ttm(history['dividend'])
+#     history['dividend_rate'] = calc_dividend_rate(history['price'], history['dividend'])
+#     history['dividend_rate_ttm'] = calc_dividend_rate_ttm(history['price'], history['dividend_ttm'])
 
-    history = history.reset_index()
-    return history
+#     history = history.reset_index()
+#     return history

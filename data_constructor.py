@@ -163,57 +163,6 @@ class DataConstructor(): # 단위함수를 이용하여 테이블을 만드는 �
             prefix_chunk="concatenated_yf_histories"
         )
 
-    # @staticmethod
-    # def construct_index_yahoo_histories():
-    #     mdc = MetaDataCollector()
-    #     hc = HistoryCollector()
-    #     index_yahoo_masters = pd.read_csv(os.path.join("download", "master", "index_yahoo_masters.csv"))
-    #     index_yahoo_symbols = index_yahoo_masters["symbol"].to_list()[:]
-
-    #     hc.collect_histories_from_yf(
-    #         symbols=index_yahoo_symbols, 
-    #         save_dirpath=os.path.join("download", "index_yahoo_history")
-    #     )
-    #     save_dfs_by_chunk(
-    #         get_dirpath=os.path.join("download", "index_yahoo_history"),
-    #         put_dirpath=os.path.join("download", "history_chunk"),
-    #         prefix_chunk="concatenated_index_yahoo_histories"
-    #     )
-
-    # @staticmethod
-    # def construct_index_investpy_histories():
-    #     mdc = MetaDataCollector()
-    #     hc = HistoryCollector()
-    #     index_investpy_masters = pd.read_csv(os.path.join("download", "master", "index_investpy_masters.csv"))
-    #     index_investpy_symbols = index_investpy_masters["symbol"].to_list()[:]
-
-    #     hc.collect_histories_from_yf(
-    #         symbols=index_investpy_symbols, 
-    #         save_dirpath=os.path.join("download", "index_investpy_history")
-    #     )
-    #     save_dfs_by_chunk(
-    #         get_dirpath=os.path.join("download", "index_investpy_history"),
-    #         put_dirpath=os.path.join("download", "history_chunk"),
-    #         prefix_chunk="concatenated_index_investpy_histories"
-    #     )
-
-    # @staticmethod
-    # def construct_index_fd_histories():
-    #     mdc = MetaDataCollector()
-    #     hc = HistoryCollector()
-    #     index_fd_masters = pd.read_csv(os.path.join("download", "master", "index_fd_masters.csv"))
-    #     index_fd_symbols = index_fd_masters["symbol"].to_list()[:10]
-
-    #     hc.collect_histories_from_yf(
-    #         symbols=index_fd_symbols, 
-    #         save_dirpath=os.path.join("download", "index_fd_history")
-    #     )
-    #     save_dfs_by_chunk(
-    #         get_dirpath=os.path.join("download", "index_fd_history"),
-    #         put_dirpath=os.path.join("download", "history_chunk"),
-    #         prefix_chunk="concatenated_index_fd_histories"
-    #     )
-
     @staticmethod
     def construct_currency_histories():
         mdc = MetaDataCollector()
