@@ -27,7 +27,7 @@ class MetaDataCollector():
     def get_etf_symbols():
         etf_metas = fd.select_etfs(category=None)
         etf_metas = pd.DataFrame(etf_metas).T.reset_index().rename(columns={"index": "symbol"})
-        etf_symbols = list(etf_metas["symbol"])
+        etf_symbols = sorted(list(etf_metas["symbol"]))
         return etf_symbols
 
 
@@ -161,7 +161,7 @@ class MetaDataCollector():
     @staticmethod  
     def get_raw_etf_aum(etf_symbol): # 2-3번에 나눠돌려야함 429에러 발생
         try:
-            time.sleep(3)
+            time.sleep(5)
             etf_symbol = etf_symbol.lower()
             url = Request(f"https://stockanalysis.com/etf/{etf_symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
             html = urlopen(url)
