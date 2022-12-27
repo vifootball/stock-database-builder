@@ -35,8 +35,8 @@ class HistoryCollector():
             "Stock Splits": "stock_split"
         }, inplace=True)
 
-        if (len(history) > 50): 
-            if  (days_from_last_traded := dt.datetime.today() - history['date'].max()) < pd.Timedelta('50 days'):
+        # 데이터가 어느정도 있으면서 최근까지 업데이트 되는 종목
+        if (len(history) > 50) and (days_from_last_traded := dt.datetime.today() - history['date'].max()) < pd.Timedelta('50 days'):
                 history['date'] = history['date'].astype('str')
                 history['symbol'] = symbol
         else:
