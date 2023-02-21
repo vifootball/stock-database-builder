@@ -61,4 +61,4 @@ def get_etf_holdings(etf_symbol):
 
 
 # print(get_etf_symbols())
-print(get_etf_holdings("edv"))
+print(get_etf_holdings("tlt"))
