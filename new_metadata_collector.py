@@ -8,6 +8,8 @@ import yahooquery
 import financedatabase as fd
 from bs4 import BeautifulSoup as bs
 from urllib.request import urlopen, Request
+import new_asset_categories
+
 
 def get_etf_symbols() -> list:
     etf_meta_fd = fd.select_etfs(category=None)
@@ -25,6 +27,8 @@ def get_etf_meta_fd(etf_symbol):
         'short_name': {'new_name': 'short_name', 'save': True},
         'long_name': {'new_name': 'long_name', 'save': True},
         'currency': {'new_name': 'currency', 'save': False},
+        'summary': {'new_name': 'summary', 'save': True},
+        'category': {'new_name': 'asset_subcategory', 'save': True},
         'family': {'new_name': 'fund_family', 'save': True},
         'exchange': {'new_name': 'exchange', 'save': False},
         'market': {'new_name': 'market', 'save': False},
@@ -43,6 +47,31 @@ def get_etf_meta_fd(etf_symbol):
         etf_meta_fd = pd.DataFrame({col: [np.nan] for col in expected_cols}) # empty row
 
     etf_meta_fd = etf_meta_fd.rename(columns=name_mapping)[cols_to_save]
+
+    return etf_meta_fd
+
+
+def transfrom_etf_meta_fd(etf_meta_fd: pd.DataFrame):
+    def _asset_subcat_to_asset_cat(subcat):
+        if subcat in new_asset_categories.ASSET_CAT_EQT:
+            return "Equity"
+        elif subcat in new_asset_categories.ASSET_CAT_BND:
+            return "Bond"
+        elif subcat in new_asset_categories.ASSET_CAT_COM:
+            return "Commodity"
+        elif subcat in new_asset_categories.ASSET_CAT_OTH:
+            return "Other"
+        else:
+            return None
+
+    if pd.isna(etf_meta_fd['symbol'][0]):
+        etf_meta_fd['category'] = np.nan
+
+    else:
+        etf_meta_fd['asset_category'] = etf_meta_fd['asset_subcategory'].apply(_asset_subcat_to_asset_cat)
+        etf_meta_fd['category'] = 'etf'
+        comm = ['pdbc', 'gld', 'gldm', 'iau'] # 카테고리 누락된 애들 중 눈에 띄는 것
+        etf_meta_fd.loc[etf_meta_fd['symbol'].str.lower().isin(comm), "asset_category"] = "Commodity"
 
     return etf_meta_fd
 
@@ -217,7 +246,8 @@ def transform_etf_aum(etf_aum: pd.DataFrame):
 
 
 # print(get_etf_symbols())
-print(get_etf_meta_fd("sche"))
+# print(get_etf_meta_fd("dbc"))
+print(transfrom_meta_fd(get_etf_meta_fd("gldg")))
 # print(get_etf_holdings("tlt"))
 # print(transform_etf_profile(get_etf_profile('xlv')))
 # print(transform_etf_aum(get_etf_aum('soxl')))
