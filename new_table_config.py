@@ -35,6 +35,21 @@ AUM = {
 	'shares_out': ColumnConfig(name_adj='shares_out', select=True)
 }
 
+HOLDINGS = {
+	'maxAge': ColumnConfig(name_adj='maxAge', select=False),
+	'stockPosition': ColumnConfig(name_adj='stock_position', select=True),
+	'bondPosition': ColumnConfig(name_adj='bond_position', select=True),
+	'holdings': ColumnConfig(name_adj='holdings', select=True),
+	'bondRatings': ColumnConfig(name_adj='bond_ratings', select=True),
+	'sectorWeightings': ColumnConfig(name_adj='sector_weightings', select=True),
+	'equityHoldings.priceToEarnings': ColumnConfig(name_adj='price_to_earnings', select=False),
+	'equityHoldings.priceToBook': ColumnConfig(name_adj='price_to_book', select=False),
+	'equityHoldings.priceToSales': ColumnConfig(name_adj='price_to_sales', select=False),
+	'equityHoldings.priceToCashflow': ColumnConfig(name_adj='price_to_cashflow', select=False),
+	'bondHoldings.maturity': ColumnConfig(name_adj='maturity', select=True), # 일부 채권에만 존재
+	'bondHoldings.duration': ColumnConfig(name_adj='duration', select=True) # 채권에만 존재
+}
+
 # HOLDINGS = {
 # 	'maxAge': {'new_name': 'max_age', 'save': False},
 # 	'stockPosition': {'new_name': 'stock_position', 'save': True},
@@ -49,11 +64,6 @@ AUM = {
 # 	'bondHoldings.maturity': {'new_name': 'maturity', 'save': True}, # 일부 채권에만 존재
 # 	'bondHoldings.duration': {'new_name': 'duration', 'save': True} # 채권에만 존재
 # }
-
-
-HOLDINGS = {
-
-}
 
 METADATA = {
 
