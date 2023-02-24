@@ -26,10 +26,14 @@ PROFILE = {
 	'Yield': ColumnConfig(name_adj='yield', select=True),
 	'YTD Daily Total Return': ColumnConfig(name_adj='ytd_datily_total_return', select=False),
 	'Beta (5Y Monthly)': ColumnConfig(name_adj='beta_5y_monthly', select=False),
-	'Expense Ratio (net)': ColumnConfig(name_adj='expense_ratio_net', select=True),
+	'Expense Ratio (net)': ColumnConfig(name_adj='expense_ratio', select=True),
 	'Inception Date': ColumnConfig(name_adj='inception_date', select=False),
 }
 
+AUM = {
+	'aum': ColumnConfig(name_adj='aum', select=True),
+	'shares_out': ColumnConfig(name_adj='shares_out', select=True)
+}
 
 # HOLDINGS = {
 # 	'maxAge': {'new_name': 'max_age', 'save': False},
@@ -46,9 +50,6 @@ PROFILE = {
 # 	'bondHoldings.duration': {'new_name': 'duration', 'save': True} # 채권에만 존재
 # }
 
-AUM = {
-
-}
 
 HOLDINGS = {
 
