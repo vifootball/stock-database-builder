@@ -67,9 +67,9 @@ class ETF():
             fd_meta.loc[fd_meta['symbol'].str.lower().isin(comm), "asset_category"] = "Commodity"
         return fd_meta
 
-    def get_profile(self, symbol):
+    def get_profile(self, symbol: str) -> pd.DataFrame:
         # get_raw_data
-        profile = yf.Ticker(symbol).get_institutional_holders()
+        profile = yf.Ticker(symbol.lower()).get_institutional_holders()
         # table handling
         table_handler = self.profile_table_handler
         if not isinstance(profile, pd.DataFrame): # 없는 종목일 경우 None 반환
@@ -93,74 +93,46 @@ class ETF():
         return profile
 
 
+    def get_aum(self, symbol: str): # 2-3번에 나눠돌려야함 429에러 발생
+        symbol = symbol.lower()
+        url = Request(f"https://stockanalysis.com/etf/{symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
+        table_handler = TableHandler(table_config=new_table_config.AUM)
 
-
-
-
-
-
-
-# def get_etf_aum(self, etf_symbol): # 2-3번에 나눠돌려야함 429에러 발생
-#     src_cols_info = {
-#         'aum': {'new_name': 'aum', 'save': True},
-#         'shares_out': {'new_name': 'shares_out', 'save': True}
-#     }
-#     expected_cols = list(src_cols_info.keys())
-#     name_mapping = {col: info['new_name'] for col, info in src_cols_info.items()}
-#     cols_to_save = [src_cols_info[col]['new_name'] for col in src_cols_info if src_cols_info[col]['save']]
-    
-#     etf_symbol = etf_symbol.lower()
-#     url = Request(f"https://stockanalysis.com/etf/{etf_symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
-
-
-#     try:
-#         time.sleep(1)
-#         html = urlopen(url)
-#         bs_obj = bs(html, "html.parser")
-#         trs = bs_obj.find_all('tr')
-#         for tr in (trs):
-#             try:
-#                 if "Assets" in tr.find_all('td')[0].get_text():
-#                     aum = tr.find_all('td')[1].get_text().replace("$", "")
-#                     break
-#             except:
-#                 continue
-#         for tr in (trs):
-#             try:
-#                 if "Shares Out" in tr.find_all('td')[0].get_text():
-#                     shares_out = tr.find_all('td')[1].get_text()
-#                     break
-#             except:
-#                 continue
+        try:
+            time.sleep(1)
+            html = urlopen(url)
+            bs_obj = bs(html, "html.parser")
+            trs = bs_obj.find_all('tr')
+            for tr in (trs):
+                try:
+                    if "Assets" in tr.find_all('td')[0].get_text():
+                        aum = tr.find_all('td')[1].get_text().replace("$", "")
+                        break
+                except:
+                    continue
+            for tr in (trs):
+                try:
+                    if "Shares Out" in tr.find_all('td')[0].get_text():
+                        shares_out = tr.find_all('td')[1].get_text()
+                        break
+                except:
+                    continue
+            
+            df = {'symbol': symbol, 'aum': aum, 'shares_out': shares_out}
+            df = {'aum': aum, 'shares_out': shares_out}
+            df = pd.DataFrame.from_dict(df, orient='index').T.reset_index(drop=True)
+            return df
         
-#         df = {'symbol': etf_symbol, 'aum': aum, 'shares_out': shares_out}
-#         df = {'aum': aum, 'shares_out': shares_out}
-
-#         df = pd.DataFrame.from_dict(df, orient='index').T.reset_index(drop=True)
-#         return df
-    
-#     except:
-#         print(f"Error Get AUM: {etf_symbol}")
-#         etf_aum = pd.DataFrame({col: [np.nan] for col in expected_cols})
-#         return etf_aum
+        except:
+            aum = pd.DataFrame(columns = table_handler.get_columns_to_select())
+            aum = table_handler.append_na_row(aum)            
+            return aum
 
 
-# def transform_etf_aum(self, etf_aum: pd.DataFrame):
-#     def _convert_str_to_number(num_str):
-#         if pd.isna(num_str):
-#              return num_str
-        
-#         multipliers = {'K': 1000, 'M': 1000000, 'B': 1000000000, 'T': 1000000000000}
-#         suffix = num_str[-1]
-#         if suffix.isdigit():
-#             return int(num_str.replace(',', ''))
-#         else:
-#             return int(float(num_str[:-1]) * multipliers[suffix])
-
-#     etf_aum['aum'] = etf_aum['aum'].apply(_convert_str_to_number)
-#     etf_aum['shares_out'] = etf_aum['shares_out'].apply(_convert_str_to_number)
-
-#     return etf_aum
+    def transform_aum(self, aum: pd.DataFrame) -> pd.DataFrame:
+        aum['aum'] = aum['aum'].apply(str_to_int)
+        aum['shares_out'] = aum['shares_out'].apply(str_to_int)
+        return aum
 
 
 
