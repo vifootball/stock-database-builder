@@ -17,9 +17,8 @@ class ETF():
     def __init__(self):
         self.fd_meta_table_handler = TableHandler(table_config=new_table_config.FD_META)
         self.profile_table_handler = TableHandler(table_config=new_table_config.PROFILE)
-        # self.holdings_table_handler = TableHandler(table_config=new_table_config.HOLDINGS)
-        # self.config_fd_meta = new_table_config.FD_META
-        # self.config_fd_meta = new_table_config.FD_META
+        self.aum_table_handler = TableHandler(table_config=new_table_config.AUM)
+        self.holdings_table_handler = TableHandler(table_config=new_table_config.HOLDINGS)
 
     def get_symbols(self) -> list:
         fd_meta = fd.select_etfs(category=None)
@@ -92,11 +91,10 @@ class ETF():
         profile['net_assets'] = profile['net_assets'].apply(str_to_int)
         return profile
 
-
     def get_aum(self, symbol: str): # 2-3번에 나눠돌려야함 429에러 발생
         symbol = symbol.lower()
         url = Request(f"https://stockanalysis.com/etf/{symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
-        table_handler = TableHandler(table_config=new_table_config.AUM)
+        table_handler = self.aum_table_handler
 
         try:
             time.sleep(1)
@@ -128,68 +126,30 @@ class ETF():
             aum = table_handler.append_na_row(aum)            
             return aum
 
-
     def transform_aum(self, aum: pd.DataFrame) -> pd.DataFrame:
         aum['aum'] = aum['aum'].apply(str_to_int)
         aum['shares_out'] = aum['shares_out'].apply(str_to_int)
         return aum
 
+    def get_holdings(self, symbol):
+        # get raw data
+        symbol = symbol.lower()
+        holdings = yahooquery.Ticker(symbol).fund_holding_info[symbol]
 
+        # table handling
+        table_handler = self.holdings_table_handler
+        if isinstance(holdings, str): # 없으면 str로 메시지 반환
+            holdings = pd.DataFrame(columns = table_handler.get_columns_to_select())
+            holdings = table_handler.append_na_row(holdings)                                 
+        else: 
+            holdings = pd.json_normalize(holdings)
+            holdings = table_handler.rename_columns(holdings)
 
+            header = pd.DataFrame(columns = table_handler.get_columns_to_select())
+            holdings = pd.concat([header, holdings], axis=0) # maturity나 durationr같은 없는 컬럼을 미리 추가
+            holdings = table_handler.select_columns(holdings)            
+        return holdings
 
-
-    # def get_etf_holdings(self, etf_symbol):
-    #     # 1. 반환이 아무것도 안되면 expected column에 빈 행이 있는 데이터프레임 반환
-    #     # 2. 반환되는데 missing column있으면 그 항목에만 null 채운 데이터프레임 반환
-        
-    #     # configure columns
-    #     src_cols_info = {
-    #         'maxAge': {'new_name': 'max_age', 'save': False},
-    #         'stockPosition': {'new_name': 'stock_position', 'save': True},
-    #         'bondPosition': {'new_name': 'bond_position', 'save': True},
-    #         'holdings': {'new_name': 'holdings', 'save': True},
-    #         'bondRatings': {'new_name': 'bond_ratings', 'save': True},
-    #         'sectorWeightings': {'new_name': 'sector_weightings', 'save': True},
-    #         'equityHoldings.priceToEarnings': {'new_name': 'price_to_earnings', 'save': False},
-    #         'equityHoldings.priceToBook': {'new_name': 'price_to_book', 'save': False}, 
-    #         'equityHoldings.priceToSales': {'new_name': 'price_to_sales', 'save': False},
-    #         'equityHoldings.priceToCashflow': {'new_name': 'price_to_cashflow', 'save': False},
-    #         'bondHoldings.maturity': {'new_name': 'maturity', 'save': True}, # 일부 채권에만 존재
-    #         'bondHoldings.duration': {'new_name': 'duration', 'save': True} # 채권에만 존재
-    #     }
-
-    #     expected_cols = list(src_cols_info.keys())
-    #     name_mapping = {col: info['new_name'] for col, info in src_cols_info.items()}
-    #     cols_to_save = [src_cols_info[col]['new_name'] for col in src_cols_info if src_cols_info[col]['save']]
-
-    #     # calling yahoo api
-    #     etf_symbol = etf_symbol.lower()
-    #     etf = yahooquery.Ticker(etf_symbol)
-    #     etf_holdings = etf.fund_holding_info[etf_symbol]
-
-    #     # If no holdings data is available, return an empty dataframe
-    #     if isinstance(etf_holdings, str):                                          # 없으면 str로 메시지 반환
-    #         etf_holdings = pd.DataFrame({col: [np.nan] for col in expected_cols})  # dict comprehension
-
-    #     # If holdings data is available, check columns and return dataframe
-    #     else: 
-    #         etf_holdings = pd.json_normalize(etf_holdings)
-    #         unexpected_cols = set(etf_holdings.columns) - set(expected_cols) 
-    #         if unexpected_cols:
-    #             raise ValueError(f"Unexpected columns in source data: {unexpected_cols}")
-    #         # If missing values exist, set NaN
-    #         header = pd.DataFrame(columns=expected_cols)
-    #         etf_holdings = pd.concat([header, etf_holdings])
-
-    #     etf_holdings = etf_holdings.rename(columns=name_mapping)[cols_to_save]
-    #     return etf_holdings
-
-# # print(get_etf_symbols())
-# print(get_etf_meta_fd("dbc"))
-# # print(transfrom_etf_meta_fd(get_etf_meta_fd("gldg")))
-# # print(get_etf_holdings("tlt"))
-# # print(transform_etf_profile(get_etf_profile('xlv')))
-# # print(transform_etf_aum(get_etf_aum('soxl')))
 
 
 
