@@ -109,3 +109,19 @@ CURRENCY = {
 	'second_name': ColumnConfig(name_adj='second_name', select=False)
 }
 
+SRC_HISTORY = {
+	'symbol': ColumnConfig(name_adj='symbol', select=True),
+	'Date': ColumnConfig(name_adj='date', select=True),
+	'Open': ColumnConfig(name_adj='open', select=True),
+	'High': ColumnConfig(name_adj='high', select=True),
+	'Low': ColumnConfig(name_adj='low', select=True),
+	'Close': ColumnConfig(name_adj='close', select=True),
+	'Volume': ColumnConfig(name_adj='volume', select=True),
+	'Dividends': ColumnConfig(name_adj='dividend', select=True),
+	'Stock Splits': ColumnConfig(name_adj='stock_split', select=True),
+	'Capital Gains': ColumnConfig(name_adj='capital_gain', select=False)
+}
+
+TRG_HISTORY = {
+	
+}
