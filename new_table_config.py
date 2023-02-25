@@ -1,6 +1,6 @@
 # 'symbol' = COLUMN(name_adj='symbol', select=True, dtype='str')
 class ColumnConfig:
-	def __init__(self, name_adj, select):
+	def __init__(self, name_adj, select=True):
 		self.name_adj = name_adj
 		self.select = select
 		# self.bq_dtype = dtype <- default auto 
@@ -9,10 +9,10 @@ class ColumnConfig:
 FD_META = {
 	'symbol': ColumnConfig(name_adj='symbol', select=True),
 	'short_name': ColumnConfig(name_adj='short_name', select=True),
-	'long_name': ColumnConfig(name_adj='long_name', select=True),
+	'long_name': ColumnConfig(name_adj='name', select=True),
 	'currency': ColumnConfig(name_adj='currency', select=False),
 	'summary': ColumnConfig(name_adj='summary', select=True),
-	'category': ColumnConfig(name_adj='category', select=True),
+	'category': ColumnConfig(name_adj='asset_subcategory', select=True),
 	'family': ColumnConfig(name_adj='fund_family', select=True),
 	'exchange': ColumnConfig(name_adj='exchange', select=False),
 	'market': ColumnConfig(name_adj='market', select=False),
@@ -50,23 +50,43 @@ HOLDINGS = {
 	'bondHoldings.duration': ColumnConfig(name_adj='duration', select=True) # 채권에만 존재
 }
 
-# HOLDINGS = {
-# 	'maxAge': {'new_name': 'max_age', 'save': False},
-# 	'stockPosition': {'new_name': 'stock_position', 'save': True},
-# 	'bondPosition': {'new_name': 'bond_position', 'save': True},
-# 	'holdings': {'new_name': 'holdings', 'save': True},
-# 	'bondRatings': {'new_name': 'bond_ratings', 'save': True},
-# 	'sectorWeightings': {'new_name': 'sector_weightings', 'save': True},
-# 	'equityHoldings.priceToEarnings': {'new_name': 'price_to_earnings', 'save': False},
-# 	'equityHoldings.priceToBook': {'new_name': 'price_to_book', 'save': False}, 
-# 	'equityHoldings.priceToSales': {'new_name': 'price_to_sales', 'save': False},
-# 	'equityHoldings.priceToCashflow': {'new_name': 'price_to_cashflow', 'save': False},
-# 	'bondHoldings.maturity': {'new_name': 'maturity', 'save': True}, # 일부 채권에만 존재
-# 	'bondHoldings.duration': {'new_name': 'duration', 'save': True} # 채권에만 존재
-# }
-
 METADATA = {
-
+	# FD_META
+	'symbol': ColumnConfig(name_adj='symbol'),
+	'short_name': ColumnConfig(name_adj='short_name'),
+	'name': ColumnConfig(name_adj='name'),
+	'summary': ColumnConfig(name_adj='summary'),
+	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
+	'fund_family': ColumnConfig(name_adj='fund_family'),
+	'total_assets': ColumnConfig(name_adj='total_assets'),
+	# PROFILE
+	'net_assets': ColumnConfig(name_adj='net_assets'),
+	'nav': ColumnConfig(name_adj='nav', select=False),
+	'yield': ColumnConfig(name_adj='yield', select=False),
+	'expense_ratio': ColumnConfig(name_adj='expense_ratio'),
+	# AUM
+	'aum': ColumnConfig(name_adj='aum'),
+	'shares_out': ColumnConfig(name_adj='shares_out'),
+	# HOLDINGS
+	'stock_position': ColumnConfig(name_adj='stock_position'),
+	'bond_position': ColumnConfig(name_adj='bond_position'),
+	'holdings': ColumnConfig(name_adj='holdings'),
+	'bond_ratings': ColumnConfig(name_adj='bond_ratings'),
+	'sector_weightings': ColumnConfig(name_adj='sector_weightings'),
+	'maturity': ColumnConfig(name_adj='maturity'), # 일부 채권에만 존재
+	'duration': ColumnConfig(name_adj='duration') # 채권에만 존재
 }
 
-# print( list(ETF_META_FD.items())[0] )
+SRC_CURRENCY = {
+	'symbol': ColumnConfig(name_adj='symbol', select=True),
+	'name': ColumnConfig(name_adj='short_name', select=True),
+	'full_name': ColumnConfig(name_adj='name', select=True),
+	'base': ColumnConfig(name_adj='base', select=False),
+	'base_name': ColumnConfig(name_adj='base_name', select=False),
+	'second': ColumnConfig(name_adj='second', select=False),
+	'second_name': ColumnConfig(name_adj='second_name', select=False)
+}
+
+SRC_BLAH = {
+
+}
