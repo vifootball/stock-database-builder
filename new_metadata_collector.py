@@ -19,6 +19,7 @@ class ETF():
         self.profile_table_handler = TableHandler(table_config=new_table_config.PROFILE)
         self.aum_table_handler = TableHandler(table_config=new_table_config.AUM)
         self.holdings_table_handler = TableHandler(table_config=new_table_config.HOLDINGS)
+        self.metadata_table_handler = TableHandler(table_config=new_table_config.METADATA)
 
     def get_symbols(self) -> list:
         fd_meta = fd.select_etfs(category=None)
@@ -131,7 +132,7 @@ class ETF():
         aum['shares_out'] = aum['shares_out'].apply(str_to_int)
         return aum
 
-    def get_holdings(self, symbol):
+    def get_holdings(self, symbol: str) -> pd.DataFrame:
         # get raw data
         symbol = symbol.lower()
         holdings = yahooquery.Ticker(symbol).fund_holding_info[symbol]
@@ -150,7 +151,14 @@ class ETF():
             holdings = table_handler.select_columns(holdings)            
         return holdings
 
+    def get_metadata(self, symbol: str) -> pd.DataFrame:
+        fd_meta = self.transfrom_fd_meta(self.get_fd_meta(symbol))
+        profile = self.transform_profile(self.get_profile(symbol))
+        aum = self.transform_aum(self.get_aum(symbol))
+        holdings = self.get_holdings(symbol)
 
-
-
-
+        # table handling
+        table_handler = self.metadata_table_handler
+        metadata = pd.concat([fd_meta, profile, aum, holdings], axis=1)
+        metadata = table_handler.select_columns(metadata)
+        return metadata
