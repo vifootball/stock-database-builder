@@ -37,11 +37,12 @@ class TableHandler:
         df = pd.concat([df, na_row], axis=0)
         return df
 
-
-    # def check_columns(df, table_config): # validate?
-    #     expected_columns = list(table_config.keys())
-    #     unexpected_columns = set(df.columns) - set(expected_columns)
-    #     missing_columns = set(expected_columns) - set(df.columns)
-    #     if unexpected_columns:
-    #         raise ValueError(f"Unexpected columns in source data: {unexpected_columns}")
+    def check_columns(self, df): # validate?
+        expected_columns = self.get_columns_to_select()
+        unexpected_columns = set(df.columns) - set(expected_columns)
+        missing_columns = set(expected_columns) - set(df.columns)
+        if unexpected_columns:
+            raise ValueError(f"Unexpected columns in data: {unexpected_columns}")
+        if missing_columns:
+            raise ValueError(f"Missing columns in data: {missing_columns}")
 
