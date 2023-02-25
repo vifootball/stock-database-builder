@@ -15,7 +15,8 @@ from new_common import *
 
 class ETF():
     def __init__(self):
-        self.fd_meta_table_handler = TableHandler(table_config=new_table_config.FD_META)
+        self.src_fd_meta_table_handler = TableHandler(table_config=new_table_config.SRC_FD_META)
+        self.trg_fd_meta_table_handler = TableHandler(table_config=new_table_config.TRG_FD_META)
         self.profile_table_handler = TableHandler(table_config=new_table_config.PROFILE)
         self.aum_table_handler = TableHandler(table_config=new_table_config.AUM)
         self.holdings_table_handler = TableHandler(table_config=new_table_config.HOLDINGS)
@@ -35,7 +36,7 @@ class ETF():
         fd_meta = fd_meta_all[fd_meta_all['symbol'].str.lower()==symbol].reset_index(drop=True)
 
         # table handling
-        table_handler = self.fd_meta_table_handler
+        table_handler = self.src_fd_meta_table_handler
         fd_meta = table_handler.rename_columns(fd_meta)
         fd_meta = table_handler.select_columns(fd_meta)
         
@@ -65,7 +66,12 @@ class ETF():
             fd_meta['category'] = 'etf'
             comm = ['pdbc', 'gld', 'gldm', 'iau'] # 카테고리 누락된 애들 중 눈에 띄는 것
             fd_meta.loc[fd_meta['symbol'].str.lower().isin(comm), "asset_category"] = "Commodity"
+        
+        table_handler = self.trg_fd_meta_table_handler
+        table_handler.check_columns(fd_meta)
         return fd_meta
+
+
 
     def get_profile(self, symbol: str) -> pd.DataFrame:
         # get_raw_data

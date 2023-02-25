@@ -20,5 +20,5 @@ def str_to_int(value):
             suffix = suffix.lower()
             return int(float(value[:-1]) * multipliers[suffix])
 
-print(str_to_int(112))
-print(str_to_int('11.2213123T'))
+# print(str_to_int(112))
+# print(str_to_int('11.2213123T'))
