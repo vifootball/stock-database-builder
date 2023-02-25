@@ -34,7 +34,24 @@ class AssetCategories():
     ]
 
 
-class FredSymbols():
-    SYMBOLS = [
-        
+class Symbols():
+    YAHOO_MAIN = [
+        '^GSPC', '^DJI', '^IXIC', '^NYA', '^XAX', 
+        '^BUK100P', '^RUT', '^VIX', '^FTSE', '^GDAXI', 
+        '^FCHI', '^STOXX50E', '^N100', '^BFX', 'IMOEX.ME', 
+        '^N225', '^HSI', '000001.SS', '399001.SZ', '^STI', 
+        '^AXJO', '^AORD', '^BSESN', '^JKSE', '^KLSE', 
+        '^NZ50', '^KS11', '^TWII', '^GSPTSE', '^BVSP', 
+        '^MXX', '^IPSA', '^MERV', '^TA125.TA', '^CASE30', 
+        '^JN0U.JO', 'ES=F', 'YM=F', 'NQ=F', 'RTY=F', 'ZB=F', 
+        'ZN=F', 'ZF=F', 'ZT=F', 'GC=F', 'MGC=F', 
+        'SI=F', 'SIL=F', 'PL=F', 'HG=F', 'PA=F', 
+        'CL=F', 'HO=F', 'NG=F', 'RB=F', 'BZ=F', 
+        'B0=F', 'ZC=F', 'ZO=F', 'KE=F', 'ZR=F', 
+        'ZM=F', 'ZL=F', 'ZS=F', 'GF=F', 'HE=F', 
+        'LE=F', 'CC=F', 'KC=F', 'CT=F', 'LBS=F', 
+        'OJ=F', 'SB=F'
+    ]
+    FRED = [
+
     ]
