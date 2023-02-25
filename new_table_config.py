@@ -6,7 +6,7 @@ class ColumnConfig:
 		# self.bq_dtype = dtype <- default auto 
 		# self.is_index = is_index
 
-FD_META = {
+SRC_FD_META = {
 	'symbol': ColumnConfig(name_adj='symbol', select=True),
 	'short_name': ColumnConfig(name_adj='short_name', select=True),
 	'long_name': ColumnConfig(name_adj='name', select=True),
@@ -16,6 +16,18 @@ FD_META = {
 	'family': ColumnConfig(name_adj='fund_family', select=True),
 	'exchange': ColumnConfig(name_adj='exchange', select=False),
 	'market': ColumnConfig(name_adj='market', select=False),
+	'total_assets': ColumnConfig(name_adj='total_assets', select=True)
+}
+
+TRG_FD_META = {
+	'symbol': ColumnConfig(name_adj='symbol', select=True),
+	'short_name': ColumnConfig(name_adj='short_name', select=True),
+	'name': ColumnConfig(name_adj='name', select=True),
+	'summary': ColumnConfig(name_adj='summary', select=True),
+	'category': ColumnConfig(name_adj='category', select=True),
+	'asset_category': ColumnConfig(name_adj='asset_category', select=True),
+	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory', select=True),
+	'family': ColumnConfig(name_adj='fund_family', select=True),
 	'total_assets': ColumnConfig(name_adj='total_assets', select=True)
 }
 
@@ -57,6 +69,8 @@ METADATA = {
 	'name': ColumnConfig(name_adj='name'),
 	'summary': ColumnConfig(name_adj='summary'),
 	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
+	'asset_category': ColumnConfig(name_adj='asset_category'),
+	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
 	'fund_family': ColumnConfig(name_adj='fund_family'),
 	'total_assets': ColumnConfig(name_adj='total_assets'),
 	# PROFILE
@@ -77,16 +91,21 @@ METADATA = {
 	'duration': ColumnConfig(name_adj='duration') # 채권에만 존재
 }
 
-SRC_CURRENCY = {
+METADATA_COMMON = {
+	'symbol': ColumnConfig(name_adj='symbol'),
+	'name': ColumnConfig(name_adj='name'),
+	'short_name': ColumnConfig(name_adj='short_name'),
+	'category': ColumnConfig(name_adj='category')
+}
+
+CURRENCY = {
 	'symbol': ColumnConfig(name_adj='symbol', select=True),
 	'name': ColumnConfig(name_adj='short_name', select=True),
 	'full_name': ColumnConfig(name_adj='name', select=True),
 	'base': ColumnConfig(name_adj='base', select=False),
+	'category': ColumnConfig(name_adj='category', select=True),
 	'base_name': ColumnConfig(name_adj='base_name', select=False),
 	'second': ColumnConfig(name_adj='second', select=False),
 	'second_name': ColumnConfig(name_adj='second_name', select=False)
 }
 
-SRC_BLAH = {
-
-}
