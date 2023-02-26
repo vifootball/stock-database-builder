@@ -14,7 +14,7 @@ from new_common import *
 import new_constants
 import investpy
 
-class Indices():
+class Indices:
     def __init__(self):
         self.metadata_table_handler = TableHandler(table_config=new_table_config.METADATA)
         self.metadata_common_table_handler = TableHandler(table_config=new_table_config.METADATA_COMMON)
