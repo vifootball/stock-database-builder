@@ -5,6 +5,7 @@ import yfinance as yf
 import datetime as dt
 from new_table import TableHandler
 import new_table_config
+from new_metric_calculator import *
 
 class History:
     def __init__(self):
@@ -54,16 +55,24 @@ class History:
 
         return history
 
-    def transform_history(history: pd.DataFrame) -> pd.DataFrame:
+    def transform_history(self, history: pd.DataFrame) -> pd.DataFrame:
+        # 1. 거래일 데이터만으로 지표 게산
+        # 2. 빈 날짜 채워주기
+        # 3. 컬럼 별 적절한 방법으로 결측치 보간하기
+        # 4. 모든 날짜범위에서 지표 계산
+        
         if history is None:
             return None
         else:
-            _cal_1()
-            _cal_2()
-        pass
-
-    def _cal_1():
-        pass
-
-    def _cal_2():
-        pass
+            # 1
+            history = calculate_metrics_on_trading_dates(history)
+            # 2
+            history = fill_missing_date_index(history)
+            # 3
+            history = fill_na_values(history)
+            # 4
+            history = calculate_metrics_on_all_dates(history)
+        
+        # table handling
+        # TODO
+        return history
