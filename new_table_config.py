@@ -63,6 +63,7 @@ HOLDINGS = {
 }
 
 METADATA = {
+	'symbol_id_pk'
 	# FD_META
 	'symbol': ColumnConfig(name_adj='symbol'),
 	'short_name': ColumnConfig(name_adj='short_name'),
@@ -123,5 +124,26 @@ SRC_HISTORY = {
 }
 
 TRG_HISTORY = {
-	
+	'date_pk',
+	'date'
+}
+
+DATE_DIM = {
+	'date_pk': ColumnConfig(name_adj='date_pk'),
+	'date': ColumnConfig(name_adj='date'),
+	'year': ColumnConfig(name_adj='year'),
+	'quarter': ColumnConfig(name_adj='quarter'),
+	'month': ColumnConfig(name_adj='month'),
+	'month_name': ColumnConfig(name_adj='month_name'),
+	'week_of_year': ColumnConfig(name_adj='week_of_year'),
+	'day_of_year': ColumnConfig(name_adj='day_of_year'),
+	'day': ColumnConfig(name_adj='day'),
+	'day_name': ColumnConfig(name_adj='day_name'),
+	'day_of_week': ColumnConfig(name_adj='day_of_week'),
+	'is_weekday': ColumnConfig(name_adj='is_weekday'),
+	'is_month_end': ColumnConfig(name_adj='is_month_end'),
+	'is_month_start': ColumnConfig(name_adj='is_month_start'),
+	'is_year_start': ColumnConfig(name_adj='is_year_start'),
+	'is_year_end': ColumnConfig(name_adj='is_year_end'),
+	'days_in_month': ColumnConfig(name_adj='days_in_month')
 }
