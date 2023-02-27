@@ -34,4 +34,5 @@ class DateDim:
         # table handling
         table_handler = self.date_dim_table_handler
         table_handler.check_columns(date_dim)
+        date_dim = table_handler.select_columns(date_dim) # config대로 정렬까지
         return date_dim
