@@ -13,7 +13,7 @@ import new_table_config
 from new_constants import AssetCategories
 from new_common import *
 
-class ETF():
+class ETF:
     def __init__(self):
         self.src_fd_meta_table_handler = TableHandler(table_config=new_table_config.SRC_FD_META)
         self.trg_fd_meta_table_handler = TableHandler(table_config=new_table_config.TRG_FD_META)
@@ -166,5 +166,6 @@ class ETF():
         # table handling
         table_handler = self.metadata_table_handler
         metadata = pd.concat([fd_meta, profile, aum, holdings], axis=1)
+        metadata = table_handler.rename_columns(metadata)
         metadata = table_handler.select_columns(metadata)
         return metadata
