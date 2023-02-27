@@ -41,8 +41,9 @@ class TableHandler:
         expected_columns = self.get_columns_to_select()
         unexpected_columns = set(df.columns) - set(expected_columns)
         missing_columns = set(expected_columns) - set(df.columns)
-        if unexpected_columns:
-            raise ValueError(f"Unexpected columns in data: {unexpected_columns}")
-        if missing_columns:
-            raise ValueError(f"Missing columns in data: {missing_columns}")
-
+        if unexpected_columns or missing_columns:
+            raise ValueError(
+                f"\n \
+                    Unexpected columns in data: {unexpected_columns}\n \
+                    Missing columns in data: {missing_columns}"
+            )
