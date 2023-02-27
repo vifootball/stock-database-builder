@@ -11,7 +11,7 @@ SRC_FD_META = {
 	'short_name': ColumnConfig(name_adj='short_name', select=True),
 	'long_name': ColumnConfig(name_adj='name', select=True),
 	'currency': ColumnConfig(name_adj='currency', select=False),
-	'summary': ColumnConfig(name_adj='summary', select=True),
+	'summary': ColumnConfig(name_adj='description', select=True),
 	'category': ColumnConfig(name_adj='asset_subcategory', select=True),
 	'family': ColumnConfig(name_adj='fund_family', select=True),
 	'exchange': ColumnConfig(name_adj='exchange', select=False),
@@ -23,7 +23,7 @@ TRG_FD_META = {
 	'symbol': ColumnConfig(name_adj='symbol', select=True),
 	'short_name': ColumnConfig(name_adj='short_name', select=True),
 	'name': ColumnConfig(name_adj='name', select=True),
-	'summary': ColumnConfig(name_adj='summary', select=True),
+	'description': ColumnConfig(name_adj='description', select=True),
 	'category': ColumnConfig(name_adj='category', select=True),
 	'asset_category': ColumnConfig(name_adj='asset_category', select=True),
 	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory', select=True),
@@ -62,13 +62,30 @@ HOLDINGS = {
 	'bondHoldings.duration': ColumnConfig(name_adj='duration', select=True) # 채권에만 존재
 }
 
-METADATA = {
-	'symbol_id_pk'
-	# FD_META
+METADATA_COMMON = {
 	'symbol': ColumnConfig(name_adj='symbol'),
+	'name': ColumnConfig(name_adj='name'),
+	'short_name': ColumnConfig(name_adj='short_name'),
+	'category': ColumnConfig(name_adj='category')
+}
+
+CURRENCY = {
+	'symbol': ColumnConfig(name_adj='symbol', select=True),
+	'name': ColumnConfig(name_adj='short_name', select=True),
+	'full_name': ColumnConfig(name_adj='name', select=True),
+	'base': ColumnConfig(name_adj='base', select=False),
+	'category': ColumnConfig(name_adj='category', select=True),
+	'base_name': ColumnConfig(name_adj='base_name', select=False),
+	'second': ColumnConfig(name_adj='second', select=False),
+	'second_name': ColumnConfig(name_adj='second_name', select=False)
+}
+
+METADATA = {
+	# FD_META
+	'symbol': ColumnConfig(name_adj='symbol_pk'),
 	'short_name': ColumnConfig(name_adj='short_name'),
 	'name': ColumnConfig(name_adj='name'),
-	'summary': ColumnConfig(name_adj='summary'),
+	'description': ColumnConfig(name_adj='description'),
 	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
 	'asset_category': ColumnConfig(name_adj='asset_category'),
 	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
@@ -92,26 +109,8 @@ METADATA = {
 	'duration': ColumnConfig(name_adj='duration') # 채권에만 존재
 }
 
-METADATA_COMMON = {
-	'symbol': ColumnConfig(name_adj='symbol'),
-	'name': ColumnConfig(name_adj='name'),
-	'short_name': ColumnConfig(name_adj='short_name'),
-	'category': ColumnConfig(name_adj='category')
-}
-
-CURRENCY = {
-	'symbol': ColumnConfig(name_adj='symbol', select=True),
-	'name': ColumnConfig(name_adj='short_name', select=True),
-	'full_name': ColumnConfig(name_adj='name', select=True),
-	'base': ColumnConfig(name_adj='base', select=False),
-	'category': ColumnConfig(name_adj='category', select=True),
-	'base_name': ColumnConfig(name_adj='base_name', select=False),
-	'second': ColumnConfig(name_adj='second', select=False),
-	'second_name': ColumnConfig(name_adj='second_name', select=False)
-}
-
 SRC_HISTORY = {
-	'symbol': ColumnConfig(name_adj='symbol', select=True),
+	'symbol': ColumnConfig(name_adj='symbol_fk', select=True),
 	'Date': ColumnConfig(name_adj='date', select=True),
 	'Open': ColumnConfig(name_adj='open', select=True),
 	'High': ColumnConfig(name_adj='high', select=True),
@@ -124,8 +123,40 @@ SRC_HISTORY = {
 }
 
 TRG_HISTORY = {
-	'date_pk',
-	'date'
+	'transaction_pk': ColumnConfig(name_adj='transaction_pk'),
+	'date_fk': ColumnConfig(name_adj='date_fk'),
+	'date': ColumnConfig(name_adj='date'),
+	'symbol_fk': ColumnConfig(name_adj='symbol_fk'),
+	'open': ColumnConfig(name_adj='open'),
+	'high': ColumnConfig(name_adj='high'),
+	'low': ColumnConfig(name_adj='low'),
+	'close': ColumnConfig(name_adj='close'),
+	'volume': ColumnConfig(name_adj='volume'),
+	'dividend': ColumnConfig(name_adj='dividend'),
+	'stock_split': ColumnConfig(name_adj='stock_split'),
+	'price': ColumnConfig(name_adj='price'),
+	'price_all_time_high': ColumnConfig(name_adj='price_all_time_high'),
+	'drawdown_current': ColumnConfig(name_adj='drawdown_current'),
+	'drawdown_max': ColumnConfig(name_adj='drawdown_max'),
+	'volume_of_share': ColumnConfig(name_adj='volume_of_share'),
+	'volume_of_share_3m_avg': ColumnConfig(name_adj='volume_of_share_3m_avg'),
+	'volume_of_dollars': ColumnConfig(name_adj='volume_of_dollar'),
+	'volume_of_dollars_3m_avg': ColumnConfig(name_adj='volume_of_dollar_3m_avg'),
+	'dividend_paid_or_not': ColumnConfig(name_adj='dividend_paid_or_not'),
+	'dividend_paid_count_ttm': ColumnConfig(name_adj='dividend_paid_count_ttm'),
+	'dividend_ttm': ColumnConfig(name_adj='dividend_ttm'),
+	'dividend_rate': ColumnConfig(name_adj='dividend_rate'),
+	'dividend_rate_ttm': ColumnConfig(name_adj='dividend_rate_ttm'),
+	'is_normal_date': ColumnConfig(name_adj='is_normal_date'),
+	'price_change': ColumnConfig(name_adj='price_change'),
+	'price_change_rate': ColumnConfig(name_adj='price_change_rate'),
+	'price_change_sign': ColumnConfig(name_adj='price_change_sign'),
+	'price_7d_ago': ColumnConfig(name_adj='price_7d_ago'),
+	'weekly_price_change': ColumnConfig(name_adj='weekly_price_change'),
+	'weekly_price_change_rate': ColumnConfig(name_adj='weekly_price_change_rate'),
+	'price_30d_ago': ColumnConfig(name_adj='price_30d_ago'),
+	'monthly_price_change': ColumnConfig(name_adj='monthly_price_change'),
+	'monthly_price_change_rate': ColumnConfig(name_adj='monthly_price_change_rate'),
 }
 
 DATE_DIM = {
