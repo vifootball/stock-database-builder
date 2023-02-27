@@ -23,13 +23,12 @@ class History:
             if days_from_last_traded < pd.Timedelta('50 days'):
                 # table handling
                 history['symbol'] = symbol.upper()
+                history['Date'] = history['Date'].dt.strftime('%Y-%m-%d')
                 table_handler = self.src_history_table_handler
                 history = table_handler.rename_columns(history)
-                history = table_handler.select_columns(history)
-                history['date'] = history['date'].dt.strftime('%Y-%m-%d')
+                history = table_handler.select_columns(history)                 
         else:
             history = None
-
         return history
 
     def get_history_from_fred(self, symbol: str) -> Union[pd.DataFrame, None]:
@@ -42,17 +41,16 @@ class History:
                 f'{symbol}': 'close',
                 'DATE': 'date'
             }, inplace=True)
-            history['symbol'] = symbol.upper()
-            history['date'] = history['date'].dt.strftime('%Y-%m-%d')
+            history['symbol_fk'] = symbol.upper()
+            history['date'] = history['date'].dt.strftime('%Y-%m-%d')            
 
             # table handling
             table_handler = self.src_history_table_handler
             header = pd.DataFrame(columns=table_handler.get_columns_to_select())
             history = pd.concat([header, history], axis=0)
-    
+            table_handler.check_columns(history)
         except:
             history = None
-
         return history
 
     def transform_history(self, history: pd.DataFrame) -> pd.DataFrame:
@@ -72,7 +70,8 @@ class History:
             history = fill_na_values(history)
             # 4
             history = calculate_metrics_on_all_dates(history)
-        
+
         # table handling
-        # TODO
+        self.trg_history_table_handler.check_columns(history)
+        history = self.trg_history_table_handler.select_columns(history)
         return history
