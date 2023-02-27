@@ -40,6 +40,8 @@ class Currency():
         currency = self.currency_table_handler.select_columns(currency)
         header = pd.DataFrame(columns = self.metadata_table_handler.get_columns_to_select())
         metadata = pd.concat([header, currency], axis=0)
+        self.currency_table_handler.check_columns(metadata)
+        metadata = self.metadata_table_handler.select_columns(metadata)
         
         return metadata
 

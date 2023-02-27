@@ -44,6 +44,8 @@ class Indices:
         table_handler = self.metadata_table_handler
         header = pd.DataFrame(columns = table_handler.get_columns_to_select())
         metadata = pd.concat([header, metadata], axis=0)
+        table_handler.check_columns(metadata)
+        metadata = table_handler.select_columns(metadata)
         return metadata
 
     def get_symbols_from_yahoo_main(self) -> list: # 웹스크래핑으로 가져오는 정보라 변할 수 있기 때문에 한번 불러와서 상수로 저장
@@ -61,6 +63,8 @@ class Indices:
         metadata = metadata[self.metadata_common_table_handler.get_columns_to_select()]
         header = pd.DataFrame(columns = self.metadata_table_handler.get_columns_to_select())
         metadata = pd.concat([header, metadata], axis=0)
+        self.metadata_table_handler.check_columns(metadata)
+        metadata = self.metadata_table_handler.select_columns(metadata)
         return metadata
 
     def get_symbols_from_fd(self) -> list:
@@ -84,6 +88,8 @@ class Indices:
         metadata = metadata[self.metadata_common_table_handler.get_columns_to_select()]
         header = pd.DataFrame(columns = self.metadata_table_handler.get_columns_to_select())
         metadata = pd.concat([header, metadata], axis=0)
+        self.metadata_table_handler.check_columns(metadata)
+        metadata = self.metadata_table_handler.select_columns(metadata)
         return metadata
 
     def get_symbols_from_investpy(self) -> list:
@@ -101,6 +107,8 @@ class Indices:
         # metadata = metadata[self.metadata_common_table_handler.get_columns_to_select()]
         header = pd.DataFrame(columns = self.metadata_table_handler.get_columns_to_select())
         metadata = pd.concat([header, metadata], axis=0)
+        self.metadata_table_handler.check_columns(metadata)
+        metadata = self.metadata_table_handler.select_columns(metadata)
         # table handling
         return metadata
 
