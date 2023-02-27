@@ -1,6 +1,8 @@
+.DS_Store
 download/
 archive/
 test.py
+test.csv
 test.ipynb
 temp
 temp.csv
