@@ -1,8 +1,9 @@
+import numpy as np
 import pandas as pd
 
 def percentage_to_float(value):
     if pd.isna(value):
-        return value
+        return np.nan
     else:
         return float(value.replace('%',''))/100
 
@@ -16,9 +17,11 @@ def str_to_int(value):
         suffix = value[-1]
         if suffix.isdigit():
             return int(value.replace(',', '').replace('.', ''))
-        else:
+        elif suffix.lower() in multipliers.keys():
             suffix = suffix.lower()
             return int(float(value[:-1]) * multipliers[suffix])
-
+        else: # n/a 라고 뜨는 경우가 있음
+            return np.nan
+        
 # print(str_to_int(112))
 # print(str_to_int('11.2213123T'))

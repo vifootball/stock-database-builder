@@ -32,10 +32,10 @@ class Indices:
             html_table = html.select("table")
             table = pd.read_html(str(html_table))
             df = table[0][['Symbol','Name']].rename(columns={
-                'Symbol': 'symbol',
+                'Symbol': 'symbol_pk',
                 'Name': 'name'
             })
-            df['long_name'] = df['name'].copy()
+            df['short_name'] = df['name'].copy()
             df['category'] = 'index'
             metadata.append(df)
         metadata = pd.concat(metadata).reset_index(drop=True)
@@ -55,7 +55,7 @@ class Indices:
     def get_metadata_from_fd(self) -> pd.DataFrame:
         # get raw data
         metadata = fd.select_indices(market='kr_market') # 미국은 5만개라서 한국만 수집
-        metadata = pd.DataFrame(metadata).T.reset_index().rename(columns={'index': 'symbol'})
+        metadata = pd.DataFrame(metadata).T.reset_index().rename(columns={'index': 'symbol_pk'})
         metadata['name'] = metadata['short_name'].copy()
         metadata['category'] = 'index'
 
@@ -69,7 +69,7 @@ class Indices:
 
     def get_symbols_from_fd(self) -> list:
         metadata = self.get_metadata_from_fd()
-        symbols = metadata['symbol'].to_list()
+        symbols = metadata['symbol_pk'].to_list()
         return symbols
 
     def get_metadata_from_investpy(self) -> pd.DataFrame:
@@ -80,6 +80,7 @@ class Indices:
         metadata['symbol'] = '^' + metadata['symbol']
         metadata['category'] = 'index'
         metadata = metadata.rename(columns={
+            'symbol': 'symbol_pk',
             'full_name': 'name',
             'name': 'short_name'
         })
@@ -94,17 +95,16 @@ class Indices:
 
     def get_symbols_from_investpy(self) -> list:
         metadata = self.get_metadata_from_investpy()
-        symbols = metadata['symbol'].to_list()
+        symbols = metadata['symbol_pk'].to_list()
         return symbols
 
     def get_metadata_from_fred(self) -> pd.DataFrame:
         metadata = new_constants.Symbols.FRED
         metadata = pd.DataFrame.from_dict(metadata, orient='index', columns=['name'])
-        metadata = metadata.reset_index().rename(columns={'index': 'symbol'})
+        metadata = metadata.reset_index().rename(columns={'index': 'symbol_pk'})
         metadata['short_name'] = metadata['name'].copy()
         metadata['category'] = 'index'
 
-        # metadata = metadata[self.metadata_common_table_handler.get_columns_to_select()]
         header = pd.DataFrame(columns = self.metadata_table_handler.get_columns_to_select())
         metadata = pd.concat([header, metadata], axis=0)
         self.metadata_table_handler.check_columns(metadata)

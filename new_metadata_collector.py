@@ -26,6 +26,7 @@ class ETF:
         fd_meta = fd.select_etfs(category=None)
         fd_meta = pd.DataFrame(fd_meta).T.reset_index().rename(columns={"index": "symbol"})
         symbols = list(fd_meta["symbol"])
+        symbols = [symbol for symbol in symbols if symbol.isalpha()]
         return symbols
 
     def get_fd_meta(self, symbol: str) -> pd.DataFrame:
@@ -126,6 +127,8 @@ class ETF:
             df = {'symbol': symbol, 'aum': aum, 'shares_out': shares_out}
             df = {'aum': aum, 'shares_out': shares_out}
             df = pd.DataFrame.from_dict(df, orient='index').T.reset_index(drop=True)
+            print(f'[symbol]')
+            print(df)
             return df
         
         except:

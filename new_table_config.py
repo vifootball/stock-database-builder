@@ -39,7 +39,7 @@ PROFILE = {
 	'YTD Daily Total Return': ColumnConfig(name_adj='ytd_datily_total_return', select=False),
 	'Beta (5Y Monthly)': ColumnConfig(name_adj='beta_5y_monthly', select=False),
 	'Expense Ratio (net)': ColumnConfig(name_adj='expense_ratio', select=True),
-	'Inception Date': ColumnConfig(name_adj='inception_date', select=False),
+	'Inception Date': ColumnConfig(name_adj='inception_date', select=True),
 }
 
 AUM = {
@@ -63,14 +63,14 @@ HOLDINGS = {
 }
 
 METADATA_COMMON = {
-	'symbol': ColumnConfig(name_adj='symbol'),
+	'symbol': ColumnConfig(name_adj='symbol_pk'),
 	'name': ColumnConfig(name_adj='name'),
 	'short_name': ColumnConfig(name_adj='short_name'),
 	'category': ColumnConfig(name_adj='category')
 }
 
 CURRENCY = {
-	'symbol': ColumnConfig(name_adj='symbol', select=True),
+	'symbol': ColumnConfig(name_adj='symbol_pk', select=True),
 	'name': ColumnConfig(name_adj='short_name', select=True),
 	'full_name': ColumnConfig(name_adj='name', select=True),
 	'base': ColumnConfig(name_adj='base', select=False),
@@ -85,8 +85,8 @@ METADATA = {
 	'symbol': ColumnConfig(name_adj='symbol_pk'),
 	'short_name': ColumnConfig(name_adj='short_name'),
 	'name': ColumnConfig(name_adj='name'),
+	'category': ColumnConfig(name_adj='category'),
 	'description': ColumnConfig(name_adj='description'),
-	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
 	'asset_category': ColumnConfig(name_adj='asset_category'),
 	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
 	'fund_family': ColumnConfig(name_adj='fund_family'),
@@ -96,6 +96,7 @@ METADATA = {
 	'nav': ColumnConfig(name_adj='nav', select=False),
 	'yield': ColumnConfig(name_adj='yield', select=False),
 	'expense_ratio': ColumnConfig(name_adj='expense_ratio'),
+	'inception_date': ColumnConfig(name_adj='inception_date'),
 	# AUM
 	'aum': ColumnConfig(name_adj='aum'),
 	'shares_out': ColumnConfig(name_adj='shares_out'),

@@ -27,6 +27,8 @@ class History:
                 table_handler = self.src_history_table_handler
                 history = table_handler.rename_columns(history)
                 history = table_handler.select_columns(history)                 
+            else:
+                history = None
         else:
             history = None
         return history
@@ -62,14 +64,18 @@ class History:
         if history is None:
             return None
         else:
-            # 1
-            history = calculate_metrics_on_trading_dates(history)
-            # 2
-            history = fill_missing_date_index(history)
-            # 3
-            history = fill_na_values(history)
-            # 4
-            history = calculate_metrics_on_all_dates(history)
+            try:
+                # 1
+                history = calculate_metrics_on_trading_dates(history)
+                # 2
+                history = fill_missing_date_index(history)
+                # 3
+                history = fill_na_values(history)
+                # 4
+                history = calculate_metrics_on_all_dates(history)
+            except:
+                print(f'error in transform_history: check the Symbol {history["symbol_fk"].iloc[0]}')
+                return None
 
         # table handling
         self.trg_history_table_handler.check_columns(history)

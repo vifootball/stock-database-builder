@@ -1,4 +1,4 @@
-class AssetCategories():
+class AssetCategories:
     EQUITY = [
         "Large Blend", "Large Value", "Technology", "Miscellaneous Region", "Large Growth",
         "Foreign Large Blend", "Diversified Emerging Mkts", "Small Blend", "Mid-Cap Blend","Health", "Natural Resources",
