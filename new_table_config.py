@@ -1,9 +1,9 @@
 # 'symbol' = COLUMN(name_adj='symbol', select=True, dtype='str')
 class ColumnConfig:
-	def __init__(self, name_adj, select=True):
+	def __init__(self, name_adj, select=True, bq_dtype='STRING'):
 		self.name_adj = name_adj
 		self.select = select
-		# self.bq_dtype = dtype <- default auto 
+		self.bq_dtype = bq_dtype
 		# self.is_index = is_index
 
 SRC_FD_META = {
@@ -82,32 +82,32 @@ CURRENCY = {
 
 METADATA = {
 	# FD_META
-	'symbol': ColumnConfig(name_adj='symbol_pk'),
-	'short_name': ColumnConfig(name_adj='short_name'),
-	'name': ColumnConfig(name_adj='name'),
-	'category': ColumnConfig(name_adj='category'),
-	'description': ColumnConfig(name_adj='description'),
-	'asset_category': ColumnConfig(name_adj='asset_category'),
-	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory'),
-	'fund_family': ColumnConfig(name_adj='fund_family'),
-	'total_assets': ColumnConfig(name_adj='total_assets'),
+	'symbol': ColumnConfig(name_adj='symbol_pk', bq_dtype='STRING'),
+	'short_name': ColumnConfig(name_adj='short_name', bq_dtype='STRING'),
+	'name': ColumnConfig(name_adj='name', bq_dtype='STRING'),
+	'category': ColumnConfig(name_adj='category', bq_dtype='STRING'),
+	'description': ColumnConfig(name_adj='description', bq_dtype='STRING'),
+	'asset_category': ColumnConfig(name_adj='asset_category', bq_dtype='STRING'),
+	'asset_subcategory': ColumnConfig(name_adj='asset_subcategory', bq_dtype='STRING'),
+	'fund_family': ColumnConfig(name_adj='fund_family', bq_dtype='STRING'),
+	'total_assets': ColumnConfig(name_adj='total_assets', bq_dtype='FLOAT64'),
 	# PROFILE
-	'net_assets': ColumnConfig(name_adj='net_assets'),
+	'net_assets': ColumnConfig(name_adj='net_assets', bq_dtype='FLOAT64'),
 	'nav': ColumnConfig(name_adj='nav', select=False),
 	'yield': ColumnConfig(name_adj='yield', select=False),
-	'expense_ratio': ColumnConfig(name_adj='expense_ratio'),
-	'inception_date': ColumnConfig(name_adj='inception_date'),
+	'expense_ratio': ColumnConfig(name_adj='expense_ratio', bq_dtype='FLOAT64'),
+	'inception_date': ColumnConfig(name_adj='inception_date', bq_dtype='STRING'),
 	# AUM
-	'aum': ColumnConfig(name_adj='aum'),
-	'shares_out': ColumnConfig(name_adj='shares_out'),
+	'aum': ColumnConfig(name_adj='aum', bq_dtype='FLOAT64'),
+	'shares_out': ColumnConfig(name_adj='shares_out', bq_dtype='FLOAT64'),
 	# HOLDINGS
-	'stock_position': ColumnConfig(name_adj='stock_position'),
-	'bond_position': ColumnConfig(name_adj='bond_position'),
-	'holdings': ColumnConfig(name_adj='holdings'),
-	'bond_ratings': ColumnConfig(name_adj='bond_ratings'),
-	'sector_weightings': ColumnConfig(name_adj='sector_weightings'),
-	'maturity': ColumnConfig(name_adj='maturity'), # 일부 채권에만 존재
-	'duration': ColumnConfig(name_adj='duration') # 채권에만 존재
+	'stock_position': ColumnConfig(name_adj='stock_position', bq_dtype='FLOAT64'),
+	'bond_position': ColumnConfig(name_adj='bond_position', bq_dtype='FLOAT64'),
+	'holdings': ColumnConfig(name_adj='holdings', bq_dtype='STRING'),
+	'bond_ratings': ColumnConfig(name_adj='bond_ratings', bq_dtype='STRING'),
+	'sector_weightings': ColumnConfig(name_adj='sector_weightings', bq_dtype='STRING'),
+	'maturity': ColumnConfig(name_adj='maturity', bq_dtype='FLOAT64'), # 일부 채권에만 존재
+	'duration': ColumnConfig(name_adj='duration', bq_dtype='FLOAT64') # 채권에만 존재
 }
 
 SRC_HISTORY = {
@@ -124,58 +124,58 @@ SRC_HISTORY = {
 }
 
 TRG_HISTORY = {
-	'transaction_pk': ColumnConfig(name_adj='transaction_pk'),
-	'date_fk': ColumnConfig(name_adj='date_fk'),
-	'date': ColumnConfig(name_adj='date'),
-	'symbol_fk': ColumnConfig(name_adj='symbol_fk'),
-	'open': ColumnConfig(name_adj='open'),
-	'high': ColumnConfig(name_adj='high'),
-	'low': ColumnConfig(name_adj='low'),
-	'close': ColumnConfig(name_adj='close'),
-	'volume': ColumnConfig(name_adj='volume'),
-	'dividend': ColumnConfig(name_adj='dividend'),
-	'stock_split': ColumnConfig(name_adj='stock_split'),
-	'price': ColumnConfig(name_adj='price'),
-	'price_all_time_high': ColumnConfig(name_adj='price_all_time_high'),
-	'drawdown_current': ColumnConfig(name_adj='drawdown_current'),
-	'drawdown_max': ColumnConfig(name_adj='drawdown_max'),
-	'volume_of_share': ColumnConfig(name_adj='volume_of_share'),
-	'volume_of_share_3m_avg': ColumnConfig(name_adj='volume_of_share_3m_avg'),
-	'volume_of_dollars': ColumnConfig(name_adj='volume_of_dollar'),
-	'volume_of_dollars_3m_avg': ColumnConfig(name_adj='volume_of_dollar_3m_avg'),
-	'dividend_paid_or_not': ColumnConfig(name_adj='dividend_paid_or_not'),
-	'dividend_paid_count_ttm': ColumnConfig(name_adj='dividend_paid_count_ttm'),
-	'dividend_ttm': ColumnConfig(name_adj='dividend_ttm'),
-	'dividend_rate': ColumnConfig(name_adj='dividend_rate'),
-	'dividend_rate_ttm': ColumnConfig(name_adj='dividend_rate_ttm'),
-	'is_normal_date': ColumnConfig(name_adj='is_normal_date'),
-	'price_change': ColumnConfig(name_adj='price_change'),
-	'price_change_rate': ColumnConfig(name_adj='price_change_rate'),
-	'price_change_sign': ColumnConfig(name_adj='price_change_sign'),
-	'price_7d_ago': ColumnConfig(name_adj='price_7d_ago'),
-	'weekly_price_change': ColumnConfig(name_adj='weekly_price_change'),
-	'weekly_price_change_rate': ColumnConfig(name_adj='weekly_price_change_rate'),
-	'price_30d_ago': ColumnConfig(name_adj='price_30d_ago'),
-	'monthly_price_change': ColumnConfig(name_adj='monthly_price_change'),
-	'monthly_price_change_rate': ColumnConfig(name_adj='monthly_price_change_rate'),
+	'transaction_pk': ColumnConfig(name_adj='transaction_pk', bq_dtype='STRING'),
+	'date_fk': ColumnConfig(name_adj='date_fk', bq_dtype='INT64'),
+	'date': ColumnConfig(name_adj='date', bq_dtype='STRING'),
+	'symbol_fk': ColumnConfig(name_adj='symbol_fk', bq_dtype='STRING'),
+	'open': ColumnConfig(name_adj='open', bq_dtype='FLOAT64'),
+	'high': ColumnConfig(name_adj='high', bq_dtype='FLOAT64'),
+	'low': ColumnConfig(name_adj='low', bq_dtype='FLOAT64') ,
+	'close': ColumnConfig(name_adj='close', bq_dtype='FLOAT64'),
+	'volume': ColumnConfig(name_adj='volume', bq_dtype='FLOAT64'),
+	'dividend': ColumnConfig(name_adj='dividend', bq_dtype='FLOAT64'),
+	'stock_split': ColumnConfig(name_adj='stock_split', bq_dtype='FLOAT64'),
+	'price': ColumnConfig(name_adj='price', bq_dtype='FLOAT64'),
+	'price_all_time_high': ColumnConfig(name_adj='price_all_time_high', bq_dtype='FLOAT64'),
+	'drawdown_current': ColumnConfig(name_adj='drawdown_current', bq_dtype='FLOAT64'),
+	'drawdown_max': ColumnConfig(name_adj='drawdown_max', bq_dtype='FLOAT64'),
+	'volume_of_share': ColumnConfig(name_adj='volume_of_share', bq_dtype='FLOAT64'),
+	'volume_of_share_3m_avg': ColumnConfig(name_adj='volume_of_share_3m_avg', bq_dtype='FLOAT64'),
+	'volume_of_dollars': ColumnConfig(name_adj='volume_of_dollar', bq_dtype='FLOAT64'),
+	'volume_of_dollars_3m_avg': ColumnConfig(name_adj='volume_of_dollar_3m_avg', bq_dtype='FLOAT64'),
+	'dividend_paid_or_not': ColumnConfig(name_adj='dividend_paid_or_not', bq_dtype='FLOAT64'),
+	'dividend_paid_count_ttm': ColumnConfig(name_adj='dividend_paid_count_ttm', bq_dtype='FLOAT64'),
+	'dividend_ttm': ColumnConfig(name_adj='dividend_ttm', bq_dtype='FLOAT64'),
+	'dividend_rate': ColumnConfig(name_adj='dividend_rate', bq_dtype='FLOAT64'),
+	'dividend_rate_ttm': ColumnConfig(name_adj='dividend_rate_ttm', bq_dtype='FLOAT64'),
+	'is_normal_date': ColumnConfig(name_adj='is_normal_date', bq_dtype='FLOAT64'),
+	'price_change': ColumnConfig(name_adj='price_change', bq_dtype='FLOAT64'),
+	'price_change_rate': ColumnConfig(name_adj='price_change_rate', bq_dtype='FLOAT64'),
+	'price_change_sign': ColumnConfig(name_adj='price_change_sign', bq_dtype='FLOAT64'),
+	'price_7d_ago': ColumnConfig(name_adj='price_7d_ago', bq_dtype='FLOAT64'),
+	'weekly_price_change': ColumnConfig(name_adj='weekly_price_change', bq_dtype='FLOAT64'),
+	'weekly_price_change_rate': ColumnConfig(name_adj='weekly_price_change_rate', bq_dtype='FLOAT64'),
+	'price_30d_ago': ColumnConfig(name_adj='price_30d_ago', bq_dtype='FLOAT64'),
+	'monthly_price_change': ColumnConfig(name_adj='monthly_price_change', bq_dtype='FLOAT64'),
+	'monthly_price_change_rate': ColumnConfig(name_adj='monthly_price_change_rate', bq_dtype='FLOAT64'),
 }
 
 DATE_DIM = {
-	'date_pk': ColumnConfig(name_adj='date_pk'),
-	'date': ColumnConfig(name_adj='date'),
-	'year': ColumnConfig(name_adj='year'),
-	'quarter': ColumnConfig(name_adj='quarter'),
-	'month': ColumnConfig(name_adj='month'),
-	'month_name': ColumnConfig(name_adj='month_name'),
-	'week_of_year': ColumnConfig(name_adj='week_of_year'),
-	'day_of_year': ColumnConfig(name_adj='day_of_year'),
-	'day': ColumnConfig(name_adj='day'),
-	'day_name': ColumnConfig(name_adj='day_name'),
-	'day_of_week': ColumnConfig(name_adj='day_of_week'),
-	'is_weekday': ColumnConfig(name_adj='is_weekday'),
-	'is_month_end': ColumnConfig(name_adj='is_month_end'),
-	'is_month_start': ColumnConfig(name_adj='is_month_start'),
-	'is_year_start': ColumnConfig(name_adj='is_year_start'),
-	'is_year_end': ColumnConfig(name_adj='is_year_end'),
-	'days_in_month': ColumnConfig(name_adj='days_in_month')
+	'date_pk': ColumnConfig(name_adj='date_pk', bq_dtype="INT64"),
+	'date': ColumnConfig(name_adj='date', bq_dtype="STRING"),
+	'year': ColumnConfig(name_adj='year', bq_dtype="INT64"),
+	'quarter': ColumnConfig(name_adj='quarter', bq_dtype="INT64"),
+	'month': ColumnConfig(name_adj='month', bq_dtype="INT64"),
+	'month_name': ColumnConfig(name_adj='month_name', bq_dtype="STRING"),
+	'week_of_year': ColumnConfig(name_adj='week_of_year', bq_dtype="INT64"),
+	'day_of_year': ColumnConfig(name_adj='day_of_year', bq_dtype="INT64"),
+	'day': ColumnConfig(name_adj='day', bq_dtype="INT64"),
+	'day_name': ColumnConfig(name_adj='day_name', bq_dtype="STRING"),
+	'day_of_week': ColumnConfig(name_adj='day_of_week', bq_dtype="INT64"),
+	'is_weekday': ColumnConfig(name_adj='is_weekday', bq_dtype="INT64"),
+	'is_month_end': ColumnConfig(name_adj='is_month_end', bq_dtype="INT64"),
+	'is_month_start': ColumnConfig(name_adj='is_month_start', bq_dtype="INT64"),
+	'is_year_start': ColumnConfig(name_adj='is_year_start', bq_dtype="INT64"),
+	'is_year_end': ColumnConfig(name_adj='is_year_end', bq_dtype="INT64"),
+	'days_in_month': ColumnConfig(name_adj='days_in_month', bq_dtype="INT64")
 }

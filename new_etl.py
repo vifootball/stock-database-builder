@@ -3,22 +3,28 @@ import pandas as pd
 from tqdm import tqdm
 from new_utils import *
 import new_config
+import new_table_config
 from new_indices import Indices
 from new_currency import Currency
 from new_metadata_collector import ETF
 from new_history import History
 from new_date_dim import DateDim
+from new_bigquery import BigQuery
 
-# def etl_metadata():
-#     _etl_metadata_etf()
-#     _etl_metadata_indices()
-#     _etl_metadata_currencies()
+def etl_metadata():
+    _etl_metadata_etf()
+    _etl_metadata_currency()
+    _etl_metadata_indices()
 
-#     for metdata in metadata_dir:
-#         load_to_bigquery
+    bq = BigQuery()    
+    bq.copy_local_csv_files_to_bq_table(
+        local_dirpath=new_config.DIR_METADATA_CHUNK,
+        bq_table_id=new_config.BQ_TABLE_ID_DIM_ETF,
+        table_config=new_table_config.METADATA
+    )
 
 
-def etl_metadata_etf():
+def _etl_metadata_etf():
     etf = ETF()
     symbols = etf.get_symbols()
 
@@ -39,7 +45,7 @@ def etl_metadata_etf():
     metadata_chunk.to_csv(fpath, index=False)
     
 
-def etl_metadata_indices():
+def _etl_metadata_indices():
     indices = Indices()
     metadata_from_fd = indices.get_metadata_from_fd()
     metadata_from_investpy = indices.get_metadata_from_investpy()
@@ -57,7 +63,7 @@ def etl_metadata_indices():
     metadata.to_csv(fpath, index=False)
     
 
-def etl_metadata_currency():
+def _etl_metadata_currency():
     currency = Currency()
     metadata = currency.get_metadata()
 
@@ -66,6 +72,27 @@ def etl_metadata_currency():
     fname = 'metadata_currency.csv'
     fpath = os.path.join(dirpath, fname)
     metadata.to_csv(fpath, index=False)
+
+
+def etl_datedim():
+    # extract
+    datedim = DateDim()
+    df = datedim.get_date_dim()
+
+    # stage
+    dirpath = new_config.DIR_DATEDIM
+    os.makedirs(dirpath, exist_ok=True)
+    fname = 'date_dim.csv'
+    fpath = os.path.join(dirpath, fname)
+    df.to_csv(fpath, index=False)
+
+    # load
+    bq = BigQuery()
+    bq.copy_local_csv_files_to_bq_table(
+        local_dirpath=new_config.DIR_DATEDIM,
+        bq_table_id=new_config.BQ_TABLE_ID_DIM_DATE,
+        table_config=new_table_config.DATE_DIM
+    )
 
 
 def etl_history():
@@ -124,16 +151,13 @@ def etl_history():
     save_dfs_by_chunk(dirpath_history_currency, dirpath_history_chunk, prefix_chunk="concatenated_history_currency")
     save_dfs_by_chunk(dirpath_history_indices, dirpath_history_chunk, prefix_chunk="concatenated_history_indices")
 
-
-def etl_datedim():
-    datedim = DateDim()
-    df = datedim.get_date_dim()
-
-    dirpath = new_config.DIR_DATEDIM
-    os.makedirs(dirpath, exist_ok=True)
-    fname = 'date_dim.csv'
-    fpath = os.path.join(dirpath, fname)
-    df.to_csv(fpath, index=False)
+    # load
+    bq = BigQuery()
+    bq.copy_local_csv_files_to_bq_table(
+        local_dirpath=new_config.DIR_HISTORY_CHUNK,
+        bq_table_id=new_config.BQ_TABLE_ID_FACT_ETF,
+        table_config=new_table_config.TRG_HISTORY
+    )
 
 
 if __name__ == '__main__':
@@ -141,4 +165,4 @@ if __name__ == '__main__':
     # etl_metadata_currency()
     # etl_metadata_indices()
     # etl_datedim()
-    etl_history()
+    # etl_history()
