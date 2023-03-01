@@ -3,8 +3,10 @@ import os
 # bigquery
 BQ_PROJECT_ID = 'between-buy-and-sell'
 BQ_DATASET_ID = 'stock'
-BQ_TABLE_ID_SUMMARY = 'summary'
-BQ_TABLE_ID_HISTORY = 'history'
+
+BQ_TABLE_ID_DIM_DATE = 'dim_date'
+BQ_TABLE_ID_DIM_ETF = 'dim_etf'
+BQ_TABLE_ID_FACT_ETF = 'fact_etf'
 
 # directories
 DIR_BASE = os.path.dirname(os.path.abspath(__file__))
