@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from google.cloud import bigquery
+
 
 class TableHandler:
     def __init__(self, table_config):
@@ -47,3 +49,11 @@ class TableHandler:
                     Unexpected columns in data: {unexpected_columns}\n \
                     Missing columns in data: {missing_columns}"
             )
+    
+    def get_bq_schema(self):
+        schema = [
+            bigquery.SchemaField(col_config.name_adj, col_config.bq_dtype)
+            for col_config in self.table_config.values()
+            if col_config.select
+        ]
+        return schema
