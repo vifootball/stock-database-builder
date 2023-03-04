@@ -127,7 +127,7 @@ class ETF:
             df = {'symbol': symbol, 'aum': aum, 'shares_out': shares_out}
             df = {'aum': aum, 'shares_out': shares_out}
             df = pd.DataFrame.from_dict(df, orient='index').T.reset_index(drop=True)
-            print(f'[symbol]')
+            print(f'[{symbol}]')
             print(df)
             return df
         
