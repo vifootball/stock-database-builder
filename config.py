@@ -8,6 +8,10 @@ BQ_TABLE_ID_DIM_DATE = 'dim_date'
 BQ_TABLE_ID_DIM_ETF = 'dim_etf'
 BQ_TABLE_ID_FACT_ETF = 'fact_etf'
 
+BQ_TABLE_ID_SUMMARY_GRD = 'summary_grd'
+BQ_TABLE_ID_SUMMARY_GRD_PIV = 'summary_grd_piv'
+BQ_TABLE_ID_SUMMARY_CORR = 'symmary_corr'
+
 # directories
 DIR_BASE = os.path.dirname(os.path.abspath(__file__))
 DIR_DOWNLOAD = os.path.join(DIR_BASE, 'download')

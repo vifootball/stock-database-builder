@@ -179,3 +179,48 @@ DATE_DIM = {
 	'is_year_end': ColumnConfig(name_adj='is_year_end', bq_dtype="INT64"),
 	'days_in_month': ColumnConfig(name_adj='days_in_month', bq_dtype="INT64")
 }
+
+SUMMARY_GRD = {
+	'last_update': ColumnConfig(name_adj='last_update', bq_dtype='STRING'),
+	'summary_grade_pk': ColumnConfig(name_adj='summary_grade_pk', bq_dtype='STRING'),
+	'symbol_fk': ColumnConfig(name_adj='symbol_fk', bq_dtype='STRING'),
+	'unit_period': ColumnConfig(name_adj='unit_period', bq_dtype='STRING'),
+	'track_records_d': ColumnConfig(name_adj='track_records_d', bq_dtype='FLOAT64'),
+	'track_records_y': ColumnConfig(name_adj='track_records_y', bq_dtype='FLOAT64'),
+	'expense_ratio': ColumnConfig(name_adj='expense_ratio', bq_dtype='FLOAT64'),
+	'nav': ColumnConfig(name_adj='nav', bq_dtype='FLOAT64'),
+	'shares_out': ColumnConfig(name_adj='shares_out', bq_dtype='FLOAT64'),
+	'aum': ColumnConfig(name_adj='aum', bq_dtype='FLOAT64'),
+	'total_return': ColumnConfig(name_adj='total_return', bq_dtype='FLOAT64'),
+	'cagr': ColumnConfig(name_adj='cagr', bq_dtype='FLOAT64'),
+	'std_yearly_return': ColumnConfig(name_adj='std_yearly_return', bq_dtype='FLOAT64'),
+	'drawdown_max': ColumnConfig(name_adj='drawdown_max', bq_dtype='FLOAT64'),
+	'div_ttm': ColumnConfig(name_adj='div_ttm', bq_dtype='FLOAT64'),
+	'div_yield_ttm': ColumnConfig(name_adj='div_yield_ttm', bq_dtype='FLOAT64'),
+	'div_count_ttm': ColumnConfig(name_adj='div_count_ttm', bq_dtype='FLOAT64'),
+	'market_corr_daily': ColumnConfig(name_adj='market_corr_daily', bq_dtype='FLOAT64'),
+	'market_corr_weekly': ColumnConfig(name_adj='market_corr_weekly', bq_dtype='FLOAT64'),
+	'market_corr_monthly': ColumnConfig(name_adj='market_corr_monthly', bq_dtype='FLOAT64'),
+	'market_corr_yearly': ColumnConfig(name_adj='market_corr_yearly', bq_dtype='FlOAT64'),
+	'vol_dollar_3m_avg': ColumnConfig(name_adj='vol_dollar_3m_avg', bq_dtype='FLOAT64')
+}
+
+SUMMARY_GRD_PIV = {
+	'summary_grd_piv_pk': ColumnConfig(name_adj='summary_grd_piv_pk', bq_dtype='STRING'),
+	'symbol_fk': ColumnConfig(name_adj='symbol_fk', bq_dtype='STRING'),
+	'unit_period': ColumnConfig(name_adj='unit_period', bq_dtype='STRING'),
+	'var_name': ColumnConfig(name_adj='var_name', bq_dtype='STRING'),
+	'value': ColumnConfig(name_adj='value', bq_dtype='FLOAT64'),
+}
+
+SUMMARY_CORR = {
+	'symbol_fk': ColumnConfig(name_adj='symbol_fk', bq_dtype='STRING'),
+	'target_symbol_fk': ColumnConfig(name_adj='target_symbol_fk', bq_dtype='STRING'),
+	'start_date': ColumnConfig(name_adj='start_date', bq_dtype='STRING'),
+	'end_date': ColumnConfig(name_adj='end_date', bq_dtype='STRING'),
+	'corr_yearly': ColumnConfig(name_adj='corr_yearly', bq_dtype='FLOAT64'),
+	'unit_period': ColumnConfig(name_adj='unit_period', bq_dtype='STRING'),
+	'summary_corr_pk': ColumnConfig(name_adj='summary_corr_pk', bq_dtype='STRING'),
+	'rank_desc': ColumnConfig(name_adj='rank_desc', bq_dtype='FLOAT64'),
+	'rank_asc': ColumnConfig(name_adj='rank_asc', bq_dtype='FLOAT64')
+}

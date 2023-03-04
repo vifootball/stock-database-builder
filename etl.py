@@ -9,14 +9,14 @@ from currency import Currency
 from etf import ETF
 from history import History
 from date_dim import DateDim
-from bigquery_helper import BigQuery
+from bigquery_helper import BigQueryHelper
 
 def etl_metadata():
     _etl_metadata_etf()
     _etl_metadata_currency()
     _etl_metadata_indices()
 
-    bq = BigQuery()    
+    bq = BigQueryHelper()    
     bq.copy_local_csv_files_to_bq_table(
         local_dirpath=config.DIR_METADATA_CHUNK,
         bq_table_id=config.BQ_TABLE_ID_DIM_ETF,
@@ -87,7 +87,7 @@ def etl_datedim():
     df.to_csv(fpath, index=False)
 
     # load
-    bq = BigQuery()
+    bq = BigQueryHelper()
     bq.copy_local_csv_files_to_bq_table(
         local_dirpath=config.DIR_DATEDIM,
         bq_table_id=config.BQ_TABLE_ID_DIM_DATE,
@@ -152,18 +152,47 @@ def etl_history():
     save_dfs_by_chunk(dirpath_history_indices, dirpath_history_chunk, prefix_chunk="concatenated_history_indices")
 
     # load
-    bq = BigQuery()
+    bq = BigQueryHelper()
     bq.copy_local_csv_files_to_bq_table(
         local_dirpath=config.DIR_HISTORY_CHUNK,
         bq_table_id=config.BQ_TABLE_ID_FACT_ETF,
         table_config=table_config.TRG_HISTORY
     )
 
+def etl_summary_grade():
+    bq = BigQueryHelper()
+    bq.copy_local_csv_files_to_bq_table(
+        local_dirpath='./download/summary_grade/chunk/',
+        bq_table_id=config.BQ_TABLE_ID_SUMMARY_GRD,
+        table_config=table_config.SUMMARY_GRD
+    )
+
+def etl_summary_grade_piv():
+    bq = BigQueryHelper()
+    bq.copy_local_csv_files_to_bq_table(
+        local_dirpath='./download/summary_grade_piv/chunk/',
+        bq_table_id=config.BQ_TABLE_ID_SUMMARY_GRD_PIV,
+        table_config=table_config.SUMMARY_GRD_PIV
+    )
+
+def etl_summary_corr():
+    bq = BigQueryHelper()
+    bq.copy_local_csv_files_to_bq_table(
+        local_dirpath='./download/summary_corr/chunk/',
+        bq_table_id=config.BQ_TABLE_ID_SUMMARY_CORR,
+        table_config=table_config.SUMMARY_CORR
+    )
+
+
 
 if __name__ == '__main__':
-    # etl_metadata_etf()
+    # _etl_metadata_etf()
     # etl_metadata_currency()
     # etl_metadata_indices()
     # etl_datedim()
     # etl_history()
-    pass
+
+    # etl_summary_grade()
+    # etl_summary_grade_piv()
+    etl_summary_corr()
+    # pass
