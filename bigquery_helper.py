@@ -33,7 +33,11 @@ class BigQueryHelper:
             print()
 
     def get_exisiting_tables(self):
-        pass
+        client = self.client
+        tables = client.list_tables(self.bq_dataset_id)
+        print("Tables contained in '{}':".format(self.bq_dataset_id))
+        for table in tables:
+            print(f"{table.project}.{table.dataset_id}.{table.table_id}")
 
 if __name__ == '__main__':
     bq = BigQueryHelper()
