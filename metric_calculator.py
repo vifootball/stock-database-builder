@@ -86,6 +86,23 @@ def calc_monthly_price_change_rate(price_30d_ago, monthly_price_change):
         monthly_price_change_rate = np.nan
     return monthly_price_change_rate
 
+def calc_price_365d_ago(price):
+    price_365d_ago = price.shift(periods=365, freq='D')
+    price_365d_ago = price_365d_ago.loc[price_365d_ago.index <= price_365d_ago.index.max() - pd.to_timedelta('365days')]
+    price_365d_ago = price_365d_ago.ffill()
+    return price_365d_ago
+
+def calc_yearly_price_change(price, price_365d_ago):
+    yearly_price_change = (price - price_365d_ago).ffill()
+    return yearly_price_change
+    
+def calc_yearly_price_change_rate(price_365d_ago, yearly_price_change):
+    try:
+        yearly_price_change_rate = (yearly_price_change / price_365d_ago).round(6)
+    except ZeroDivisionError:
+        yearly_price_change_rate = np.nan
+    return yearly_price_change_rate
+
 #volume
 def calc_volume_of_dollar(price, volume_of_shares): # estimated by close price
     volume_of_dollar = (price * volume_of_shares)
@@ -201,10 +218,14 @@ def calculate_metrics_on_all_dates(history):
     history['weekly_price_change'] = calc_weekly_price_change(price=history['price'], price_7d_ago=history['price_7d_ago'])
     history['weekly_price_change_rate'] = calc_weekly_price_change_rate(price_7d_ago=history['price_7d_ago'], weekly_price_change=history['weekly_price_change'])
     
-    
+
     history['price_30d_ago'] = calc_price_30d_ago(price=history['price'])
     history['monthly_price_change'] = calc_monthly_price_change(price=history['price'], price_30d_ago=history['price_30d_ago'])
     history['monthly_price_change_rate'] = calc_monthly_price_change_rate(price_30d_ago=history['price_30d_ago'], monthly_price_change=history['monthly_price_change'])
+
+    history['price_365d_ago'] = calc_price_365d_ago(price=history['price'])
+    history['yearly_price_change'] = calc_yearly_price_change(price=history['price'], price_365d_ago=history['price_365d_ago'])
+    history['yearly_price_change_rate'] = calc_yearly_price_change_rate(price_365d_ago=history['price_365d_ago'], yearly_price_change=history['yearly_price_change'])
 
     history = history.reset_index()
     return history

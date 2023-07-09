@@ -116,7 +116,7 @@ def etl_history():
     os.makedirs(dirpath_history_currency, exist_ok=True)
     os.makedirs(dirpath_history_indices, exist_ok=True)
     
-    for symbol in tqdm(etf_symbols[1900:], mininterval=0.5):
+    for symbol in tqdm(etf_symbols[:], mininterval=0.5):
         print(symbol)
         df = history.transform_history(history.get_history_from_yf(symbol=symbol))
         if df is not None:
@@ -176,6 +176,10 @@ def etl_summary_grade_piv():
     )
 
 def etl_summary_corr():
+    dirpath_corr_etf = './download/summary_corr/etf/'
+    dirpath_corr_chunk = './download/summary_corr/chunk/'
+    save_dfs_by_chunk(dirpath_corr_etf, dirpath_corr_chunk, prefix_chunk="concatenated_summary_corr")
+
     bq = BigQueryHelper()
     bq.copy_local_csv_files_to_bq_table(
         local_dirpath='./download/summary_corr/chunk/',

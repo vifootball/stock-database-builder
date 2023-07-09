@@ -158,6 +158,9 @@ TRG_HISTORY = {
 	'price_30d_ago': ColumnConfig(name_adj='price_30d_ago', bq_dtype='FLOAT64'),
 	'monthly_price_change': ColumnConfig(name_adj='monthly_price_change', bq_dtype='FLOAT64'),
 	'monthly_price_change_rate': ColumnConfig(name_adj='monthly_price_change_rate', bq_dtype='FLOAT64'),
+	'price_365d_ago': ColumnConfig(name_adj='price_365d_ago', bq_dtype='FLOAT64'),
+	'yearly_price_change': ColumnConfig(name_adj='yearly_price_change', bq_dtype='FLOAT64'),
+	'yearly_price_change_rate': ColumnConfig(name_adj='yearly_price_change_rate', bq_dtype='FLOAT64')
 }
 
 DATE_DIM = {

@@ -30,7 +30,9 @@ def get_corr(history, target_history):
 
 local_dirpath = "./download/history/etf/"
 symbols = [x.split('.')[0].split('_')[1] for x in os.listdir(local_dirpath) if x.endswith('csv')]
-symbols = sorted(symbols)[730:750]
+symbols = sorted(symbols)[:]
+symbols = ['SPY']
+# SPY 다시 해야 함
 
 
 for symbol in tqdm(symbols):
@@ -44,7 +46,7 @@ for symbol in tqdm(symbols):
     end_date = history.loc[history['date'] == history['date'].max(), 'date'].squeeze()
     num_of_years = (end_date - start_date).days / 365.25
 
-    ### get corr all time
+    ## get corr all time
     corr_df = []
     target_symbols  = [x.split('.')[0].split('_')[1] for x in os.listdir(local_dirpath) if x.endswith('csv') if symbol not in x]
     for target_symbol in tqdm(target_symbols, mininterval=0.5):
