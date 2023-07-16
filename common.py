@@ -5,7 +5,7 @@ def percentage_to_float(value):
     if pd.isna(value):
         return np.nan
     else:
-        return float(value.replace('%',''))/100
+        return round(float(value.replace('%',''))/100, 8)
 
 def str_to_int(value):
     if pd.isna(value):
