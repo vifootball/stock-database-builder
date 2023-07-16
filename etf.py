@@ -76,17 +76,65 @@ def get_etf_master_yf(symbol):
         master_yf['net_assets'] = master_yf['net_assets'].apply(str_to_int)
     return master_yf
 
+def get_etf_aum(symbol: str): # 2-3번에 나눠돌려야함 429에러 발생
+    symbol = symbol.lower()
+    url = Request(f"https://stockanalysis.com/etf/{symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
+    
+    try:
+        time.sleep(1)
+        html = urlopen(url)
+        bs_obj = bs(html, "html.parser")
+        trs = bs_obj.find_all('tr')
+        for tr in (trs):
+            try:
+                if "Assets" in tr.find_all('td')[0].get_text():
+                    aum = tr.find_all('td')[1].get_text().replace("$", "")
+                    break
+            except:
+                continue
+        for tr in (trs):
+            try:
+                if "Shares Out" in tr.find_all('td')[0].get_text():
+                    shares_out = tr.find_all('td')[1].get_text()
+                    break
+            except:
+                continue
+        
+        df = {'symbol': symbol, 'aum': aum, 'shares_out': shares_out}
+        df = pd.DataFrame.from_dict(df, orient='index').T.reset_index(drop=True)
+        df['aum'] = df['aum'].apply(str_to_int)
+        df['shares_out'] = df['shares_out'].apply(str_to_int)
+        df['aum_date'] = pd.Timestamp.now().strftime("%Y%m%d")
+        print(f'{symbol.ljust(8)}: Success')
+        return df
+    
+    except:
+        print(f'{symbol.ljust(8)}: Fail') 
+        return None
+
+# def get_holdings():
+
+@ray.remote
+def collect_data(func, symbol, save_dir):
+    def wrapper(*args, **kwargs):
+        retrieved_data = func(*args, **kwargs)
+        if retrieved_data is not None:
+            os.makedirs(save_dir, exist_ok=True)
+            retrieved_data.to_csv(f'{save_dir}/{symbol}.csv', index=False)
+        return retrieved_data
+    return wrapper
+    
 
 
-
-# def get_etf_aum():
-    # 기준일자 컬럼 만들기
 
 if __name__ == "__main__":
     # symbols = get_symbols()
     # print(symbols)
     # masters_fd = get_etf_masters_fd()
     # print(masters_fd)
+
+
+    ### master_yf
     @ray.remote
     def collect_etf_master_yf(symbol):
         master_yf = get_etf_master_yf(symbol)
@@ -94,11 +142,24 @@ if __name__ == "__main__":
             os.makedirs('downloads/', exist_ok=True)
             master_yf.to_csv(f'downloads/{symbol}_master_yf.csv', index=False)
     symbols = get_symbols()[:10]
-    tasks = [collect_etf_master_yf.remote(symbol) for symbol in symbols[:10]]
+    tasks = [collect_etf_master_yf.remote(symbol) for symbol in symbols]
     ray.init(ignore_reinit_error=True)
     ray.get(tasks)
     masters_yf = concat_csv_files_in_dir('downloads').to_csv('test.csv', index=False)
 
+
+    ### aum
+    @ray.remote
+    def collect_etf_aum(symbol):
+        aum = get_etf_aum(symbol)
+        if aum is not None:
+            os.makedirs('downloads/etf_aums/', exist_ok=True)
+            aum.to_csv(f'downloads/{symbol}_aum.csv', index=False)
+    sumbols = get_symbols[:10]
+    tasks = [collect_etf_aum.remote(symbol) for symbol in symbols]
+    ray.init(ignore_reinit_error=True)
+    ray.get(tasks)
+    aums = concat_csv_files_in_dir('downloads/etf_aums/').to_csv('downloads/etf_aum.csv')
 
     # task = get_etf_master_yf.remote('qqq')
     # result = ray.get(task)
