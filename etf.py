@@ -1,7 +1,9 @@
 import os
+import re
 import time
 import ray
 import requests
+import random
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -18,7 +20,7 @@ from utils import *
 def get_symbols() -> list:
     etf = fd.ETFs()
     symbols = etf.select().index.to_list()
-    symbols = [symbol for symbol in symbols if symbol.isalpha()]
+    symbols = sorted([symbol for symbol in symbols if symbol.isalpha()])
     return symbols
 
 
@@ -37,17 +39,16 @@ def get_etf_masters_fd() -> pd.DataFrame:
     selected_cols = [
         'symbol', 'name', 'summary', 'category', 'subcategory', 'fund_family'
     ]
-    selected_cols = [
-        'symbol', 'name', 'summary', 'category', 'subcategory', 'fund_family'
-    ]
     etf = fd.ETFs()
     masters_fd = etf.select().reset_index().rename(columns=master_cols)[selected_cols]
     masters_fd = masters_fd.loc[masters_fd['symbol'].str.isalpha()].reset_index(drop=True)
+    masters_fd = masters_fd.sort_values(by='symbol')
     return masters_fd
 
-def get_etf_master_yf(symbol):
+def get_etf_master_yf(symbol: str):
     df = yf.Ticker(symbol.lower()).get_institutional_holders()
     if not isinstance(df, pd.DataFrame): # 없는 종목일 경우 None을 반환
+        print(f'{symbol.ljust(8)}: Failed to get data') 
         return None
     else:
         df = df.T
@@ -65,20 +66,23 @@ def get_etf_master_yf(symbol):
             'Expense Ratio (net)': 'expense_ratio',
             'Inception Date': 'inception_date' 
             }
+        header = pd.DataFrame(columns=master_cols.keys())
+        df = pd.concat([header, df])[master_cols.keys()]
+        df['fd_date'] = pd.Timestamp.now().strftime("%Y%m%d")
         selected_cols = [
             'symbol',
             'net_assets',
             'expense_ratio',
-            'inception_date'
+            'inception_date',
+            'fd_date'
         ]
-        header = pd.DataFrame(columns=master_cols.keys())
-        df = pd.concat([header, df])[master_cols.keys()]
         master_yf = df.rename(columns=master_cols)[selected_cols]
         master_yf['expense_ratio'] = master_yf['expense_ratio'].apply(percentage_to_float)
         master_yf['net_assets'] = master_yf['net_assets'].apply(str_to_int)
     return master_yf
 
 def get_etf_master_sa_1(symbol: str): # 2-3번에 나눠돌려야함 429에러 발생
+    # sa1 date 추가
     symbol = symbol.lower()
     url = Request(f"https://stockanalysis.com/etf/{symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
     
@@ -107,48 +111,56 @@ def get_etf_master_sa_1(symbol: str): # 2-3번에 나눠돌려야함 429에러 �
         df['aum'] = df['aum'].apply(str_to_int)
         df['shares_out'] = df['shares_out'].apply(str_to_int)
         df['aum_date'] = pd.Timestamp.now().strftime("%Y%m%d")
-        print(f'{symbol.ljust(8)}: Success')
+        # print(f'{symbol.ljust(8)}: Success')
         return df
     
     except:
-        print(f'{symbol.ljust(8)}: Fail') 
+        print(f'{symbol.ljust(8)}: Failed to get data') 
         return None
 
 def get_etf_master_sa_2(symbol: str):
-    symbol = symbol.lower()
+    # sa2 date 추가
+    symbol = symbol.upper()
     try:
+        time.sleep(1)
         url = Request(f"https://stockanalysis.com/etf/{symbol}/holdings/", headers={'User-Agent': 'Mozilla/5.0'})
         html = urlopen(url)
         bs_obj = bs(html, "html.parser")
     except:
-        print(f'{symbol.ljust(8)}: Fail to get bsObj') 
+        print(f'{symbol.ljust(8)}: Failed to get bsObj') 
         return None
 
     try:
         divs = bs_obj.find_all('div', class_=['bp:text-xl'])
         df = {}
         df['symbol'] = symbol
-        df['holdings_count'] = divs[0].get_text()
+        df['holdings_count'] = divs[0].get_text().replace(',','')
         df['top10_percentage'] = divs[2].get_text()
         df['asset_class'] = divs[3].get_text()
-        df['region'] = divs[4].get_text()
+        if divs[5].get_text() == "n/a" or bool(re.match(r'^[\d,.]+$', divs[5].get_text())):
+            df['sector'] = None
+            df['region'] = divs[4].get_text()
+        else:
+            df['sector'] = divs[4].get_text()
+            df['region'] = divs[5].get_text()
         df = pd.json_normalize(df)
 
         df['top10_percentage'] = df['top10_percentage'].apply(percentage_to_float)
 
         selected_cols = [
-            'symbol', 'holdings_count', 'top10_percentage', 'asset_class', 'region'
+            'symbol', 'holdings_count', 'top10_percentage', 'asset_class', 'sector', 'region'
         ]
         df = df[selected_cols]
+        print(f'{symbol.ljust(8)}: Success')
         return df
     
     except:
-        print(f'{symbol.ljust(8)}: Fail to parse bsObj') 
+        print(f'{symbol.ljust(8)}: Failed to parse bsObj') 
         return None
 
 # def get_holdings():
 
-# def get_sectors():
+# def get_sectors():f
 
 # @ray.remote
 # def collect_data(func, symbol, save_dir):
@@ -166,43 +178,61 @@ def get_etf_master_sa_2(symbol: str):
 if __name__ == "__main__":
     # symbols = get_symbols()
     # print(symbols)
-    # masters_fd = get_etf_masters_fd()
-    # print(masters_fd)
+
+    # get_etf_masters_fd().to_csv('downloads/masters_etf_fd.csv', index=False)
 
 
-    ### master_yf
+    # master_yf = get_etf_master_yf(symbol='gdx')
+    # print(master_yf)
+
+    # ## master_yf
     # @ray.remote
     # def collect_etf_master_yf(symbol):
+    #     time.sleep(2)
     #     master_yf = get_etf_master_yf(symbol)
     #     if master_yf is not None:
-    #         os.makedirs('downloads/', exist_ok=True)
-    #         master_yf.to_csv(f'downloads/{symbol}_master_yf.csv', index=False)
-    # symbols = get_symbols()[:10]
+    #         os.makedirs('downloads/masters_etf_yf', exist_ok=True)
+    #         master_yf.to_csv(f'downloads/masters_etf_yf/{symbol}_master_yf.csv', index=False)
+    # # symbols = get_symbols()[:10]
+    # symbols = get_symbols()[2190:]
     # tasks = [collect_etf_master_yf.remote(symbol) for symbol in symbols]
     # ray.init(ignore_reinit_error=True)
     # ray.get(tasks)
-    # masters_yf = concat_csv_files_in_dir('downloads').to_csv('test.csv', index=False)
+    # concat_csv_files_in_dir('downloads/masters_etf_yf').to_csv('downloads/masters_etf_yf.csv', index=False)
 
-    print(get_etf_master_sa_2('spy'))
+    # print(get_etf_master_sa_2('spy'))
 
-    ### aum
+
+    # master_sa_1 = get_etf_master_sa_1(symbol='xlb')
+    # print(master_sa_1)
+
+    ## master_sa_1
     # @ray.remote
-    # def collect_etf_aum(symbol):
-    #     aum = get_etf_aum(symbol)
-    #     if aum is not None:
-    #         os.makedirs('downloads/etf_aums/', exist_ok=True)
-    #         aum.to_csv(f'downloads/etf_aums/{symbol}_aum.csv', index=False)
-    # symbols = get_symbols[:10]
-    # tasks = [collect_etf_aum.remote(symbol) for symbol in symbols]
+    # def collect_etf_master_sa_1(symbol):
+    #     time.sleep(2)
+    #     master = get_etf_master_sa_1(symbol)
+    #     if master is not None:
+    #         os.makedirs('downloads/masters_etf_sa_1/', exist_ok=True)
+    #         master.to_csv(f'downloads/masters_etf_sa_1/{symbol}_masters_etf_sa_1.csv', index=False)
+    # symbols = get_symbols()[2600:]
+    # tasks = [collect_etf_master_sa_1.remote(symbol) for symbol in symbols]
     # ray.init(ignore_reinit_error=True)
     # ray.get(tasks)
-    # aums = concat_csv_files_in_dir('downloads/etf_aums/').to_csv('downloads/etf_aum.csv')
+    # concat_csv_files_in_dir('downloads/masters_etf_sa_1/').to_csv('downloads/masters_etf_sa_1.csv', index=False)
 
-    # task = get_etf_master_yf.remote('qqq')
-    # result = ray.get(task)
-    # print(result)
-    # symbols = get_symbols[:10]
-    # tasks = [get_etf_master_yf.remote(ticker) for ticker in symbols[:5]]
+    ## master_sa_2
+    @ray.remote
+    def collect_etf_master_sa_2(symbol):
+        time.sleep(round(random.uniform(4.0, 12.0), 3))
+        master = get_etf_master_sa_2(symbol)
+        if master is not None:
+            os.makedirs('downloads/masters_etf_sa_2/', exist_ok=True)
+            master.to_csv(f'downloads/masters_etf_sa_2/{symbol}_masters_etf_sa_2.csv', index=False)
+    symbols = get_symbols()[:50]
+    tasks = [collect_etf_master_sa_2.remote(symbol) for symbol in symbols]
+    ray.init(ignore_reinit_error=True)
+    ray.get(tasks)
+    concat_csv_files_in_dir('downloads/masters_etf_sa_2/').to_csv('downloads/masters_etf_sa_2.csv', index=False)
 
     
 
