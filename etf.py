@@ -83,7 +83,7 @@ def get_etf_master_yf(symbol: str):
 
 def get_etf_master_sa_1(symbol: str): # 2-3번에 나눠돌려야함 429에러 발생
     # sa1 date 추가
-    symbol = symbol.lower()
+    symbol = symbol.upper()
     url = Request(f"https://stockanalysis.com/etf/{symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
     
     try:
@@ -158,8 +158,39 @@ def get_etf_master_sa_2(symbol: str):
         print(f'{symbol.ljust(8)}: Failed to parse bsObj') 
         return None
 
-# def get_holdings():
-
+def get_etf_holdings(symbol: str) -> pd.DataFrame:
+    symbol = symbol.upper()
+    try:
+        time.sleep(1)
+        holdings = yahooquery.Ticker(symbol).fund_holding_info[symbol]
+        holdings = pd.json_normalize(holdings)
+    except:    
+        print(f'{symbol.ljust(8)}: Failed to get data') 
+        return None
+    
+    # print(holdings)
+    if holdings['holdings'][0]:
+        holdings = holdings['holdings'][0]
+        holdings = pd.DataFrame(holdings)
+        holdings['ticker'] = symbol
+        holdings['holdings_date'] = pd.Timestamp.now().strftime("%Y%m%d")
+        cols = {
+            'ticker': 'symbol',
+            'holdings_date': 'holdings_date',
+            'symbol': 'holding_symbol',
+            'holdingName': 'holding_name',
+            'holdingPercent': 'holding_percent'
+        }
+        selected_cols = [
+            'symbol', 'holdings_date', 'holding_symbol', 'holding_name', 'holding_percent'
+        ]
+        holdings = holdings.rename(columns=cols)[cols.values()][selected_cols]
+        print(f'{symbol.ljust(8)}: Success')
+        return(holdings)
+    
+    else:
+        print(f'{symbol.ljust(8)}: Failed to parse data') 
+        return None
 # def get_sectors():f
 
 # @ray.remote
@@ -220,20 +251,33 @@ if __name__ == "__main__":
     # ray.get(tasks)
     # concat_csv_files_in_dir('downloads/masters_etf_sa_1/').to_csv('downloads/masters_etf_sa_1.csv', index=False)
 
-    ## master_sa_2
+    # ## master_sa_2
     @ray.remote
     def collect_etf_master_sa_2(symbol):
-        time.sleep(round(random.uniform(4.0, 12.0), 3))
+        time.sleep(round(random.uniform(6.0, 12.0), 3))
         master = get_etf_master_sa_2(symbol)
         if master is not None:
             os.makedirs('downloads/masters_etf_sa_2/', exist_ok=True)
             master.to_csv(f'downloads/masters_etf_sa_2/{symbol}_masters_etf_sa_2.csv', index=False)
-    symbols = get_symbols()[:50]
+    symbols = get_symbols()[480:600]
     tasks = [collect_etf_master_sa_2.remote(symbol) for symbol in symbols]
     ray.init(ignore_reinit_error=True)
     ray.get(tasks)
     concat_csv_files_in_dir('downloads/masters_etf_sa_2/').to_csv('downloads/masters_etf_sa_2.csv', index=False)
 
+    # holdings
+    # @ray.remote
+    # def collect_etf_holdings(symbol):
+    #     time.sleep(round(random.uniform(6.0, 12.0), 3))
+    #     holdings = get_etf_holdings(symbol)
+    #     if holdings is not None:
+    #         os.makedirs('downloads/holdings/', exist_ok=True)
+    #         holdings.to_csv(f'downloads/holdings/{symbol}_holdings.csv', index=False)
+    # symbols = get_symbols()[1500:]
+    # tasks = [collect_etf_holdings.remote(symbol) for symbol in symbols]
+    # ray.init(ignore_reinit_error=True)
+    # ray.get(tasks)
+    # concat_csv_files_in_dir('downloads/holdings/').to_csv('downloads/holdings.csv', index=False)
     
 
 
