@@ -4,6 +4,8 @@ import pandas as pd
 def percentage_to_float(value):
     if pd.isna(value):
         return np.nan
+    elif value in ["n/a"]:
+        return np.nan
     else:
         return round(float(value.replace('%',''))/100, 8)
 
