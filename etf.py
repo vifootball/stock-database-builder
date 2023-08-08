@@ -158,6 +158,53 @@ def get_etf_master_sa_2(symbol: str):
         print(f'{symbol.ljust(8)}: Failed to parse bsObj') 
         return None
 
+def get_etf_master_sa_3(symbol: str):
+    symbol = symbol.upper()
+    try:
+        time.sleep(1)
+        url = Request(f"https://stockanalysis.com/etf/{symbol}/", headers={'User-Agent': 'Mozilla/5.0'})
+        html = urlopen(url)
+        bs_obj = bs(html, "html.parser")
+    except:
+        print(f'{symbol.ljust(8)}: Failed to get bsObj') 
+        return None
+    try:
+        profile_dict = {}
+        profile_dict['symbol'] = symbol
+        profile_dict['category'] = None
+        profile_dict['index_tracked'] = None
+        profile_dict['stock_exchange'] = None
+        profile_dict['description'] = None
+        profile_dict['sa_3_date'] = pd.Timestamp.now().strftime("%Y%m%d")
+
+        description = bs_obj.find('p', {'data-test': 'overview-profile-description'}).get_text()
+        profile_dict['description'] = description
+
+        profile_values = bs_obj.find('div', {'data-test': 'overview-profile-values'})
+        for i in profile_values:
+            profile_value = i.get_text()
+            if "Category" in profile_value:
+                profile_value = profile_value.replace('Category', '').strip()
+                profile_dict['category'] = profile_value
+            elif "Index Tracked" in profile_value:
+                profile_value = profile_value.replace('Index Tracked', '').strip()
+                profile_dict['index_tracked'] = profile_value
+            elif "Stock Exchange" in profile_value:
+                profile_value = profile_value.replace('Stock Exchange', '').strip()
+                profile_dict['stock_exchange'] = profile_value
+        profile_dict = pd.json_normalize([profile_dict])
+        selected_cols = [
+            'symbol', 'category', 'index_tracked', 'stock_exchange', 'description', 'sa_3_date'
+        ]
+        profile_dict = profile_dict[selected_cols]
+        print(f'{symbol.ljust(8)}: Success')
+        return profile_dict
+    
+    except:
+        print(f'{symbol.ljust(8)}: Failed to parse bsObj') 
+        return None
+
+
 def get_etf_holdings(symbol: str) -> pd.DataFrame:
     symbol = symbol.upper()
     try:
@@ -191,18 +238,6 @@ def get_etf_holdings(symbol: str) -> pd.DataFrame:
     else:
         print(f'{symbol.ljust(8)}: Failed to parse data') 
         return None
-# def get_sectors():f
-
-# @ray.remote
-# def collect_data(func, symbol, save_dir):
-#     def wrapper(*args, **kwargs):
-#         retrieved_data = func(*args, **kwargs)
-#         if retrieved_data is not None:
-#             os.makedirs(save_dir, exist_ok=True)
-#             retrieved_data.to_csv(f'{save_dir}/{symbol}.csv', index=False)
-#         return retrieved_data
-#     return wrapper
-    
 
 
 
@@ -252,18 +287,38 @@ if __name__ == "__main__":
     # concat_csv_files_in_dir('downloads/masters_etf_sa_1/').to_csv('downloads/masters_etf_sa_1.csv', index=False)
 
     # ## master_sa_2
+    # @ray.remote
+    # def collect_etf_master_sa_2(symbol):
+    #     time.sleep(round(random.uniform(10.1, 15.0), 3))
+    #     time.sleep(round(random.uniform(60.1, 100.0), 3))
+
+    #     master = get_etf_master_sa_2(symbol)
+    #     if master is not None:
+    #         os.makedirs('downloads/masters_etf_sa_2/', exist_ok=True)
+    #         master.to_csv(f'downloads/masters_etf_sa_2/{symbol}_masters_etf_sa_2.csv', index=False)
+    # symbols = get_symbols()[2000:]
+    # tasks = [collect_etf_master_sa_2.remote(symbol) for symbol in symbols]
+    # ray.init(ignore_reinit_error=True)
+    # ray.get(tasks)
+    # concat_csv_files_in_dir('downloads/masters_etf_sa_2/').to_csv('downloads/masters_etf_sa_2.csv', index=False)
+
+
+    # print(get_etf_master_sa_3('qqq'))
+    # ## master_sa_3
     @ray.remote
-    def collect_etf_master_sa_2(symbol):
-        time.sleep(round(random.uniform(6.0, 12.0), 3))
-        master = get_etf_master_sa_2(symbol)
+    def collect_etf_master_sa_3(symbol):
+        time.sleep(round(random.uniform(1.1, 5.0), 3))
+        # time.sleep(round(random.uniform(60.1, 100.0), 3))
+
+        master = get_etf_master_sa_3(symbol)
         if master is not None:
-            os.makedirs('downloads/masters_etf_sa_2/', exist_ok=True)
-            master.to_csv(f'downloads/masters_etf_sa_2/{symbol}_masters_etf_sa_2.csv', index=False)
-    symbols = get_symbols()[480:600]
-    tasks = [collect_etf_master_sa_2.remote(symbol) for symbol in symbols]
+            os.makedirs('downloads/masters_etf_sa_3/', exist_ok=True)
+            master.to_csv(f'downloads/masters_etf_sa_3/{symbol}_masters_etf_sa_3.csv', index=False)
+    symbols = get_symbols()[:10]
+    tasks = [collect_etf_master_sa_3.remote(symbol) for symbol in symbols]
     ray.init(ignore_reinit_error=True)
     ray.get(tasks)
-    concat_csv_files_in_dir('downloads/masters_etf_sa_2/').to_csv('downloads/masters_etf_sa_2.csv', index=False)
+    concat_csv_files_in_dir('downloads/masters_etf_sa_3/').to_csv('downloads/masters_etf_sa_3.csv', index=False)
 
     # holdings
     # @ray.remote
