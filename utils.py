@@ -13,6 +13,20 @@ def concat_csv_files_in_dir(get_dirpath):
     df = pd.concat(df, ignore_index=True)
     return df
 
+
+def edit_csv_files_in_dir(get_dirpath):
+    # 임시활용
+    
+    fpath_generator = (os.path.join(get_dirpath, csv_fname) for csv_fname in os.listdir(get_dirpath) if csv_fname.endswith('csv'))
+    for csv_fpath in tqdm(fpath_generator, mininterval=0.5, total=len(os.listdir(get_dirpath))):
+        csv_file = pd.read_csv(csv_fpath)
+        
+        # Define Edit Task 
+        # csv_file = csv_file.rename(columns={'aum_date': 'sa_1_date'})
+
+        csv_file.to_csv(csv_fpath, index=False)
+
+
 def save_dfs_by_chunk(get_dirpath, put_dirpath, prefix_chunk): # n행씩 분할저장.. # 마지막거는 어케하지..?
     os.makedirs(put_dirpath, exist_ok=True)
     df_list = []
