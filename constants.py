@@ -1,8 +1,8 @@
 # df.to_dict(orient='records')
 
 class Indices:
-    # https://finance.yahoo.com/world-indices
     YAHOO_WORLD_INDICES = [
+        # https://finance.yahoo.com/world-indices
         {'symbol': 'GSPC', 'name': 'S&P 500'},
         {'symbol': '^DJI', 'name': 'Dow Jones Industrial Average'},
         {'symbol': '^IXIC', 'name': 'NASDAQ Composite'},
@@ -38,6 +38,47 @@ class Indices:
         {'symbol': '^TA125.TA', 'name': 'TA-125'},
         {'symbol': '^CASE30', 'name': 'EGX 30 Price Return Index'},
         {'symbol': '^JN0U.JO', 'name': 'Top 40 USD Net TRI Index'}
+    ]
+
+    YAHOO_COMMODITIES = [
+        # https://finance.yahoo.com/commodities
+        {'symbol': 'ES=F', 'name': 'E-Mini S&P 500'}.
+        {'symbol': 'YM=F', 'name': 'Mini Dow Jones Indus.-$5'}.
+        {'symbol': 'NQ=F', 'name': 'Nasdaq 100'}.
+        {'symbol': 'RTY=F', 'name': 'E-mini Russell 2000 Index Futur'}.
+        {'symbol': 'ZB=F', 'name': 'U.S. Treasury Bond Futures'}.
+        {'symbol': 'ZN=F', 'name': '10-Year T-Note Futures'}.
+        {'symbol': 'ZF=F', 'name': 'Five-Year US Treasury Note Futu'}.
+        {'symbol': 'ZT=F', 'name': '2-Year T-Note Futures'}.
+        {'symbol': 'GC=F', 'name': 'Gold'}.
+        {'symbol': 'MGC=F', 'name': 'Micro Gold Futures'}.
+        {'symbol': 'SI=F', 'name': 'Silver'}.
+        {'symbol': 'SIL=F', 'name': 'Micro Silver Futures'}.
+        {'symbol': 'PL=F', 'name': 'Platinum'}.
+        {'symbol': 'HG=F', 'name': 'Copper'},
+        {'symbol': 'PA=F', 'name': 'Palladium'},
+        {'symbol': 'CL=F', 'name': 'Crude Oil'},
+        {'symbol': 'HO=F', 'name': 'Heating Oil'},
+        {'symbol': 'NG=F', 'name': 'Natural Gas'},
+        {'symbol': 'RB=F', 'name': 'RBOB Gasoline'},
+        {'symbol': 'BZ=F', 'name': 'Brent Crude Oil Last Day Financ'},
+        {'symbol': 'B0=F', 'name': 'Mont Belvieu LDH Propane (OPIS)'},
+        {'symbol': 'ZC=F', 'name': 'Corn Futures'},
+        {'symbol': 'ZO=F', 'name': 'Oat Futures'},
+        {'symbol': 'KE=F', 'name': 'KC HRW Wheat Futures'},
+        {'symbol': 'ZR=F', 'name': 'Rough Rice Futures'},
+        {'symbol': 'ZM=F', 'name': 'S&P Composite 1500 ESG Tilted I'},
+        {'symbol': 'ZL=F', 'name': 'Soybean Oil Futures'},
+        {'symbol': 'ZS=F', 'name': 'Soybean Futures'},
+        {'symbol': 'GF=F', 'name': 'WisdomTree International High D'},
+        {'symbol': 'HE=F', 'name': 'Lean Hogs Future'},
+        {'symbol': 'LE=F', 'name': 'Live Cattle Futures,'},
+        {'symbol': 'CC=F', 'name': 'Cocoa'},
+        {'symbol': 'KC=F', 'name': 'Coffee'},
+        {'symbol': 'CT=F', 'name': 'Cotton'},
+        {'symbol': 'LBS=F', 'name': 'Random Length Lumber Futures'},
+        {'symbol': 'OJ=F', 'name': 'Orange Juice'},
+        {'symbol': 'SB=F', 'name': 'Sugar'}
     ]
 
 
