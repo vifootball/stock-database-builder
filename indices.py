@@ -81,6 +81,9 @@ def concat_indices_masters():
         indices_masters_fred
     ]).reset_index(drop=True)
     indices_masters = indices_masters.drop_duplicates(subset='symbol')
+    
+    header = pd.DataFrame(columns=header_cols)
+    indices_masters = pd.concat([header, indices_masters])
     indices_masters.to_csv('./downloads/masters_indices.csv', index=False)
 
 
