@@ -68,10 +68,31 @@ def get_indices_masters_fred() -> pd.DataFrame:
     indices = indices[['type', 'symbol', 'name']]
     return indices
 
+def concat_indices_masters():
+    # 중복제거 필요
+    indices_masters_investpy = pd.read_csv('./downloads/masters_indices/masters_indices_investpy.csv')
+    indices_masters_fd = pd.read_csv('./downloads/masters_indices/masters_indices_fd.csv')
+    indices_masters_yahoo = pd.read_csv('./downloads/masters_indices/masters_indices_yahoo.csv')
+    indices_masters_fred = pd.read_csv('./downloads/masters_indices/masters_indices_fred.csv')
+    indices_masters = pd.concat([
+        indices_masters_investpy,
+        indices_masters_fd,
+        indices_masters_yahoo,
+        indices_masters_fred
+    ]).reset_index(drop=True)
+    indices_masters = indices_masters.drop_duplicates(subset='symbol')
+    indices_masters.to_csv('./downloads/masters_indices.csv', index=False)
+
+
 
 if __name__ == "__main__":
-    print(get_indices_masters_fred())
+    os.makedirs('./downloads/masters_indices', exist_ok=True)
+    # get_indices_masters_investpy().to_csv('./downloads/masters_indices/masters_indices_investpy.csv', index=False)
+    # get_indices_masters_fd().to_csv('./downloads/masters_indices/masters_indices_fd.csv', index=False)
+    # get_indices_masters_yahoo().to_csv('./downloads/masters_indices/masters_indices_yahoo.csv', index=False)
+    # get_indices_masters_fred().to_csv('./downloads/masters_indices/masters_indices_fred.csv', index=False)
 
+    concat_indices_masters()
 
 
 # class Indices:
