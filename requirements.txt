@@ -1,0 +1,6 @@
+# final update: 2023.08.27
+
+yfinance==0.2.12
+yahooquery==2.3.2
+financedatabase==2.1.0
+investpy==1.0.8
