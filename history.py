@@ -31,7 +31,7 @@ def get_history_from_yf(symbol: str) -> Union[pd.DataFrame, None]:
                 'Stock Splits': 'stock_split',
                 'Capital Gains': 'capital_gain'
             })
-            history = history[['symbol', 'date', 'open', 'high', 'low', 'close', 'volume', 'stock_split']]
+            history = history[['symbol', 'date', 'open', 'high', 'low', 'close', 'volume', 'dividend', 'stock_split']]
     
         else:
             history = None
@@ -59,8 +59,28 @@ def get_history_from_fred(symbol: str) -> Union[pd.DataFrame, None]:
     return history
 
 
-def transform_history():
-    pass
+def transform_history(history: pd.DataFrame) -> Union[pd.DataFrame, None]:
+    # 1. 거래일 데이터만으로 지표 게산
+    # 2. 빈 날짜 채워주기
+    # 3. 컬럼 별 적절한 방법으로 결측치 보간하기
+    # 4. 모든 날짜범위에서 지표 계산
+    
+    if history is None:
+        return None
+    else:
+        try:
+            # 1
+            history = calculate_metrics_on_trading_dates(history)
+            # 2
+            history = fill_missing_date_index(history)
+            # 3
+            history = fill_na_values(history)
+            # 4
+            history = calculate_metrics_on_all_dates(history)
+        except:
+            print(f'error in transform_history: check the Symbol {history["symbol"].iloc[0]}')
+            return None
+    return history
 
 
 class History:

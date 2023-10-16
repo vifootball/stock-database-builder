@@ -174,7 +174,7 @@ def calculate_metrics_on_trading_dates(history):
     history['dividend_rate_ttm'] = calc_dividend_rate_ttm(history['price'], history['dividend_ttm'])
 
     # etc
-    history['is_normal_date'] = 1
+    history['normal_day_tf'] = 1
 
     history = history.reset_index()
     return history
@@ -190,7 +190,7 @@ def fill_missing_date_index(history):
     return history
 
 def fill_na_values(history):
-    history['symbol_fk'] = history['symbol_fk'].ffill()
+    history['symbol'] = history['symbol'].ffill()
     history['price'] = history['price'].ffill()
     history['price_all_time_high'] = history['price_all_time_high'].ffill()
     history['drawdown_current'] = history['drawdown_current'].ffill()
@@ -200,13 +200,13 @@ def fill_na_values(history):
     history['dividend_ttm'] = history['dividend_ttm'].ffill()
     history['dividend_rate_ttm'] = history['dividend_rate_ttm'].ffill()
 
-    history['is_normal_date'] = history['is_normal_date'].fillna(0)
+    history['normal_day_tf'] = history['normal_day_tf'].fillna(0)
     return history
 
 def calculate_metrics_on_all_dates(history):
     history['date'] = pd.to_datetime(history['date'])
-    history['date_fk'] = history['date'].dt.strftime('%Y%m%d')
-    history['transaction_pk'] = history['symbol_fk'] + '-' + history['date_fk'].astype(str)
+    history['date_id'] = history['date'].dt.strftime('%Y%m%d')
+    history['transaction_id'] = history['symbol'] + '-' + history['date_id'].astype(str)
     history = history.set_index('date')
 
     # price

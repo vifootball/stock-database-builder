@@ -39,7 +39,8 @@ def get_currency_masters() -> pd.DataFrame:
     return currency
 
 if __name__ == '__main__':
-    print(get_currency_masters())
+    os.makedirs('./downloads', exist_ok=True)
+    get_currency_masters().to_csv('./downloads/masters_currency.csv', index=False)
 
 
 # class Currency():
