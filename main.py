@@ -11,9 +11,20 @@ if __name__ == '__main__':
     # print(etf_symbols)
 
     currency_master = pd.read_csv(os.path.join('downloads', 'masters_currency.csv'))
-    currency_sumbols = currency_master['symbol'].to_list()
-    print(currency_master)
+    currency_symbols = currency_master['symbol'].to_list()
+    # print(currency_master)
 
+    indices_master_investpy = pd.read_csv(os.path.join('downloads', 'masters_indices', 'masters_indices_yahoo.csv'))
+    indices_symbols_investpy = indices_master_investpy['symbol'].to_list()
+    print(indices_symbols_investpy)
+    
+    indices_master_yahoo = pd.read_csv(os.path.join('downloads', 'masters_indices', 'masters_indices_investpy.csv'))
+    indices_symbols_yahoo = indices_master_yahoo['symbol'].to_list()
+    print(indices_symbols_yahoo)
+
+    indices_master_fred = pd.read_csv(os.path.join('downloads', 'masters_indices', 'masters_indices_fred.csv'))
+    indices_symbols_fred = indices_master_fred['symbol'].to_list()
+    print(indices_symbols_fred)
 
     # 위에 ray 함수 몰아서 정의
     # 밑에 ray task 몰아서 정으;ㅣ
@@ -27,7 +38,7 @@ if __name__ == '__main__':
             history.to_csv(f'downloads/history/etf/{symbol}_history.csv', index=False)
     symbols = etf_symbols[:50]
     print(symbols)
-    tasks = [collect_etf_history_from_yf.remote(symbol) for symbol in symbols]
+    # tasks = [collect_etf_history_from_yf.remote(symbol) for symbol in symbols]
     # ray.init(ignore_reinit_error=True)
     # ray.get(tasks)
 
@@ -38,11 +49,40 @@ if __name__ == '__main__':
         if history is not None:
             os.makedirs('downloads/history/currency', exist_ok=True)
             history.to_csv(f'downloads/history/currency/{symbol}_history.csv', index=False)
-    symbols = currency_sumbols[:30]
+    symbols = currency_symbols[:30]
     print(symbols)
-    tasks = [collect_currency_history_from_yf.remote(symbol) for symbol in symbols]
+    tasks_collect_currency_history = [collect_currency_history_from_yf.remote(symbol) for symbol in symbols]
+    # ray.init(ignore_reinit_error=True)
+    # ray.get(tasks_collect_currency_history)
+
+    @ray.remote
+    def collect_indices_history_from_yf(symbol):
+        time.sleep(0.5)
+        history = get_history_from_yf(symbol)
+        if history is not None:
+            os.makedirs('downloads/history/indices', exist_ok=True)
+            history.to_csv(f'downloads/history/indices/{symbol}_history.csv', index=False)
+    # symbols = indices_symbols[:50]
+    # tasks_collect_indices_history_from_yf = [collect_indices_history_from_yf.remote(symbol) for symbol in symbols]
+    # ray.init(ignore_reinit_error=True)
+    # ray.get(tasks_collect_indiexs_history_from_yf)
+
+    @ray.remote
+    def collect_indices_history_from_fred(symbol):
+        time.sleep(0.5)
+        history = get_history_from_fred(symbol)
+        if history is not None:
+            os.makedirs('downloads/history/indices/{symbol}_history.csv', index=False)
+            history.to_csv(f'download_history/indices/{symbol}_history.csv', index=False)
+
+
+    tasks_collect_etf_history_from_yf = [collect_etf_history_from_yf.remote(symbol) for symbol in etf_symbols[:10]]
+    tasks_collect_currency_history_from_yf = [collect_currency_history_from_yf.remote(symbol) for symbol in currency_symbols[:10]]
+    tasks_collect_indices_investpy_history_from_yf = [collect_indices_history_from_yf.remote(symbol) for symbol in indices_symbols_investpy[:10]]
+    tasks_collect_indices_yahoo_history_from_yf = [collect_indices_history_from_yf.remote(symbol) for symbol in indices_symbols_yahoo[:10]]
+    tasks_collect_indices_history_from_fred = [collect_indices_history_from_fred.remote(symbol) for symbol in indices_symbols_fred[:10]]
     ray.init(ignore_reinit_error=True)
-    ray.get(tasks)
+    ray.get(tasks_collect_etf_history_from_yf)
 
 
 #    @ray.remote
