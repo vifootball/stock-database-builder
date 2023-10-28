@@ -5,50 +5,99 @@ from utils import *
 from table import TableHandler
 import table_config
 
-def get_summary_grade(metadata, history, history_market):
-    start_date = history.loc[history['date'] == history['date'].min(), 'date'].squeeze()
-    end_date = history.loc[history['date'] == history['date'].max(), 'date'].squeeze()
-    num_of_years = (end_date - start_date).days / 365.25
-        
+def get_summary_grade(masterdata, history_symbol, history_market):
+
+    history_symbol['date'] = pd.to_datetime(history_symbol['date'])
+    history_market['date'] = pd.to_datetime(history_market['date'])
+
+    first_date = history_symbol.loc[history_symbol['date'] == history_symbol['date'].min(), 'date'].squeeze()
+    last_date = history_symbol.loc[history_symbol['date'] == history_symbol['date'].max(), 'date'].squeeze()
+
     df = {}
-    # df['unit_period'] = 'all_time'
-    df['last_update'] = end_date.strftime('%Y-%m-%d')
-    df['symbol_fk'] = metadata['symbol_pk'].squeeze()
-    df['track_records_d'] = (dt.datetime.today() - pd.to_datetime(metadata['inception_date'])).dt.days.squeeze()
-    df['track_records_y'] = df['track_records_d'] / 365
-    df['expense_ratio'] = metadata['expense_ratio'].squeeze()
-    df['nav'] = history.loc[history['date'] == end_date]['price'].squeeze()
-    df['shares_out'] = metadata['shares_out'].squeeze()
+    df['symbol'] = symbol
+    df['last_update'] = last_date.strftime("%Y-%m-%d")
+    df['fund_age_day'] = (dt.datetime.today() - pd.to_datetime(masterdata['inception_date'])).dt.days.squeeze()
+    df['fund_age_year'] = df['fund_age_day'] / 365.25
+    df['expense_ratio'] = masterdata['expense_ratio'].squeeze()
+    df['nav'] = history_symbol.loc[history_symbol['date'] == last_date]['price'].squeeze()
+    df['shares_out'] = masterdata['shares_out'].squeeze()
     df['aum'] = (df['nav'] * df['shares_out']).squeeze()
-    df['total_return' ] = (history['price'].loc[history['date'] == end_date].squeeze() / history['price'].loc[history['date'] == start_date].squeeze()) - 1
-    df['cagr'] = (1 + df['total_return']) ** (1 / num_of_years) - 1
-    df['std_yearly_return'] = history.set_index('date')['price'].resample('Y').last().pct_change().std()
-    df['drawdown_max'] = ((history['price'] / history['price'].cummax()) - 1).min()
-    df['div_ttm'] = history['dividend_ttm'].loc[history['date'] == end_date].squeeze()
-    df['div_yield_ttm'] = history['dividend_rate_ttm'].loc[history['date'] == end_date].squeeze()
-    df['div_count_ttm'] = history['dividend_paid_count_ttm'].loc[history['date'] == end_date].squeeze()
+    df['total_return' ] = (history_symbol['price'].loc[history_symbol['date'] == last_date].squeeze() / history_symbol['price'].loc[history_symbol['date'] == first_date].squeeze()) - 1
+    df['cagr'] = (1 + df['total_return']) ** (1 / df['fund_age_year']) - 1
+    df['std_yearly_return'] = history_symbol.set_index('date')['price'].resample('Y').last().pct_change().std() # 올해는 최근일 기준
+    df['drawdown_max'] = ((history_symbol['price'] / history_symbol['price'].cummax()) - 1).min()
+    df['div_ttm'] = history_symbol['dividend_ttm'].loc[history_symbol['date'] == last_date].squeeze()
+    df['div_yield_ttm'] = history_symbol['dividend_rate_ttm'].loc[history_symbol['date'] == last_date].squeeze()
+    df['div_paid_cnt_ttm'] = history_symbol['dividend_paid_count_ttm'].loc[history_symbol['date'] == last_date].squeeze()
 
-    df['market_corr_daily'] = history.set_index('date')['price'].pct_change().corr(history_market.set_index('date')['price'].pct_change())
-    df['market_corr_weekly'] = history.set_index('date')['price'].resample('W-FRI').last().pct_change().corr(history_market.set_index('date')['price'].resample('W-FRI').last().pct_change())
-    df['market_corr_monthly'] = history.set_index('date')['price'].resample('M').last().pct_change().corr(history_market.set_index('date')['price'].resample('M').last().pct_change())
-    df['market_corr_yearly'] = history.set_index('date')['price'].resample('Y').last().pct_change().corr(history_market.set_index('date')['price'].resample('Y').last().pct_change())
-    df['vol_dollar_3m_avg'] = history['volume_of_dollar_3m_avg'].ffill().loc[history['date'] == end_date].squeeze()
+    df['mkt_corr_daily'] = history_symbol.set_index('date')['price'].pct_change().corr(history_market.set_index('date')['price'].pct_change())
+    df['mkt_corr_weekly'] = history_symbol.set_index('date')['price'].resample('W-FRI').last().pct_change().corr(history_market.set_index('date')['price'].resample('W-FRI').last().pct_change())
+    df['mkt_corr_monthly'] = history_symbol.set_index('date')['price'].resample('M').last().pct_change().corr(history_market.set_index('date')['price'].resample('M').last().pct_change())
+    df['mkt_corr_yearly'] = history_symbol.set_index('date')['price'].resample('Y').last().pct_change().corr(history_market.set_index('date')['price'].resample('Y').last().pct_change())
+    df['volume_dollar_3m_avg'] = history_symbol['volume_of_dollar_3m_avg'].ffill().loc[history_symbol['date'] == last_date].squeeze()
 
-    df = pd.DataFrame(df, index=[0])
+    df=pd.DataFrame(df, index=[0])
     return df
 
-def get_summary_grade_pivotted(summary_grade):
-    cols = [
-        'symbol_fk', 'unit_period', 
-        'track_records_y', 'expense_ratio', 'aum', 'total_return',
-        'cagr', 'std_yearly_return', 'drawdown_max', 'div_yield_ttm', 'div_count_ttm',
-        'market_corr_yearly', 'vol_dollar_3m_avg'
-        
+def pivot_summary_grade(summary_grade):
+    measures = [
+        'symbol', #'unit_period', 
+        'fund_age_day', 'fund_age_year', 'expense_ratio', 'nav', 'aum',
+        'total_return', 'cagr', 'std_yearly_return', 'drawdown_max', 
+        'div_ttm', 'div_yield_ttm', 'div_paid_cnt_ttm',
+        'mkt_corr_daily', 'mkt_corr_weekly', 'mkt_corr_monthly', 'mkt_corr_yearly',
+        'volume_dollar_3m_avg'
     ]
-    id_vars = ['symbol_fk', 'unit_period']
-    summary_grade_piv = pd.melt(summary_grade[cols], id_vars=id_vars, var_name='var_name').sort_values(by=id_vars).reset_index(drop=True)
-    summary_grade_piv['summary_grd_piv_pk'] = summary_grade_piv['symbol_fk'] + '-' + summary_grade_piv['unit_period']
+    dims = ['symbol', 'unit_period']
+    dims = ['symbol']
+    summary_grade_piv = pd.melt(summary_grade[measures], id_vars=dims, var_name='var_name').sort_values(by=dims).reset_index(drop=True)
+    # summary_grade_piv['summary_grd_piv_pk'] = summary_grade_piv['symbol'] + '-' + summary_grade_piv['unit_period']
     return summary_grade_piv
+
+# def get_summary_grade(metadata, history, history_market):
+#     start_date = history.loc[history['date'] == history['date'].min(), 'date'].squeeze()
+#     end_date = history.loc[history['date'] == history['date'].max(), 'date'].squeeze()
+#     num_of_years = (end_date - start_date).days / 365.25
+        
+#     df = {}
+#     # df['unit_period'] = 'all_time'
+#     df['last_update'] = end_date.strftime('%Y-%m-%d')
+#     df['symbol_fk'] = metadata['symbol_pk'].squeeze()
+#     df['track_records_d'] = (dt.datetime.today() - pd.to_datetime(metadata['inception_date'])).dt.days.squeeze()
+#     df['track_records_y'] = df['track_records_d'] / 365
+#     df['expense_ratio'] = metadata['expense_ratio'].squeeze()
+#     df['nav'] = history.loc[history['date'] == end_date]['price'].squeeze()
+#     df['shares_out'] = metadata['shares_out'].squeeze()
+#     df['aum'] = (df['nav'] * df['shares_out']).squeeze()
+#     df['total_return' ] = (history['price'].loc[history['date'] == end_date].squeeze() / history['price'].loc[history['date'] == start_date].squeeze()) - 1
+#     df['cagr'] = (1 + df['total_return']) ** (1 / num_of_years) - 1
+#     df['std_yearly_return'] = history.set_index('date')['price'].resample('Y').last().pct_change().std()
+#     df['drawdown_max'] = ((history['price'] / history['price'].cummax()) - 1).min()
+#     df['div_ttm'] = history['dividend_ttm'].loc[history['date'] == end_date].squeeze()
+#     df['div_yield_ttm'] = history['dividend_rate_ttm'].loc[history['date'] == end_date].squeeze()
+#     df['div_count_ttm'] = history['dividend_paid_count_ttm'].loc[history['date'] == end_date].squeeze()
+
+#     df['market_corr_daily'] = history.set_index('date')['price'].pct_change().corr(history_market.set_index('date')['price'].pct_change())
+#     df['market_corr_weekly'] = history.set_index('date')['price'].resample('W-FRI').last().pct_change().corr(history_market.set_index('date')['price'].resample('W-FRI').last().pct_change())
+#     df['market_corr_monthly'] = history.set_index('date')['price'].resample('M').last().pct_change().corr(history_market.set_index('date')['price'].resample('M').last().pct_change())
+#     df['market_corr_yearly'] = history.set_index('date')['price'].resample('Y').last().pct_change().corr(history_market.set_index('date')['price'].resample('Y').last().pct_change())
+#     df['vol_dollar_3m_avg'] = history['volume_of_dollar_3m_avg'].ffill().loc[history['date'] == end_date].squeeze()
+
+#     df = pd.DataFrame(df, index=[0])
+#     return df
+
+# def get_summary_grade_pivotted(summary_grade):
+#     cols = [
+#         'symbol_fk', 'unit_period', 
+#         'track_records_y', 'expense_ratio', 'aum', 'total_return',
+#         'cagr', 'std_yearly_return', 'drawdown_max', 'div_yield_ttm', 'div_count_ttm',
+#         'market_corr_yearly', 'vol_dollar_3m_avg'
+        
+#     ]
+#     id_vars = ['symbol_fk', 'unit_period']
+#     summary_grade_piv = pd.melt(summary_grade[cols], id_vars=id_vars, var_name='var_name').sort_values(by=id_vars).reset_index(drop=True)
+#     summary_grade_piv['summary_grd_piv_pk'] = summary_grade_piv['symbol_fk'] + '-' + summary_grade_piv['unit_period']
+#     return summary_grade_piv
 
 
 # get summary grade
