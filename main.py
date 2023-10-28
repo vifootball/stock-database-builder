@@ -73,8 +73,8 @@ if __name__ == '__main__':
     # tasks_collect_etf_history_from_yf = [collect_etf_history_from_yf.remote(order, symbol) for order, symbol in etf_symbols[:]]
     # ray.get(tasks_collect_etf_history_from_yf)
     
-    # tasks_collect_currency_history_from_yf = [collect_currency_history_from_yf.remote(order, symbol) for order, symbol in currency_symbols[:]]
-    # ray.get(tasks_collect_currency_history_from_yf)
+    tasks_collect_currency_history_from_yf = [collect_currency_history_from_yf.remote(order, symbol) for order, symbol in currency_symbols[:]]
+    ray.get(tasks_collect_currency_history_from_yf)
 
     tasks_collect_indices_investpy_history_from_yf = [collect_indices_history_from_yf.remote(order, symbol) for order, symbol in indices_symbols_investpy[:]]
     ray.get(tasks_collect_indices_investpy_history_from_yf)
