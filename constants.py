@@ -1,5 +1,10 @@
 # df.to_dict(orient='records')
 
+class Etfs:
+    EXCLUDE = [
+        'DTE'
+    ]
+
 class Indices:
     YAHOO_WORLD_INDICES = [
         # https://finance.yahoo.com/world-indices
