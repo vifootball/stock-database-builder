@@ -4,6 +4,7 @@ from tqdm import tqdm
 from utils import *
 from table import TableHandler
 import table_config
+pd.options.mode.chained_assignment = None
 
 def get_summary_grade(masterdata, history_symbol, history_market):
 
@@ -41,18 +42,80 @@ def get_summary_grade(masterdata, history_symbol, history_market):
 
 def pivot_summary_grade(summary_grade):
     measures = [
-        'symbol', #'unit_period', 
+        'symbol', 
+        'unit_period', 
         'fund_age_day', 'fund_age_year', 'expense_ratio', 'nav', 'aum',
         'total_return', 'cagr', 'std_yearly_return', 'drawdown_max', 
         'div_ttm', 'div_yield_ttm', 'div_paid_cnt_ttm',
         'mkt_corr_daily', 'mkt_corr_weekly', 'mkt_corr_monthly', 'mkt_corr_yearly',
         'volume_dollar_3m_avg'
     ]
+
+    # dims = ['symbol']
     dims = ['symbol', 'unit_period']
-    dims = ['symbol']
     summary_grade_piv = pd.melt(summary_grade[measures], id_vars=dims, var_name='var_name').sort_values(by=dims).reset_index(drop=True)
     # summary_grade_piv['summary_grd_piv_pk'] = summary_grade_piv['symbol'] + '-' + summary_grade_piv['unit_period']
     return summary_grade_piv
+
+if __name__ == '__main__':
+ 
+    # get summary grade
+    # symbols = [x.split('.')[0].split('_')[0] for x in os.listdir("./downloads/history/etf") if x.endswith('csv')][:10]
+    symbols = [x.split('_')[0] for x in os.listdir("./downloads/history/etf") if x.endswith('csv')][:]
+    # print(symbols)
+    history_market = pd.read_csv(f'./downloads/history/etf/SPY_history.csv')
+    masters =  pd.read_csv("./downloads/masters_etf.csv")
+
+    for symbol in tqdm(symbols[:], mininterval=0.5):
+        # load
+        print(symbol)
+        history_symbol = pd.read_csv(f'./downloads/history/etf/{symbol}_history.csv')
+        master = masters[masters['symbol']==symbol]
+
+        first_date = pd.to_datetime(history_symbol.loc[history_symbol['date'] == history_symbol['date'].min(), 'date'].squeeze())
+        last_date = pd.to_datetime(history_symbol.loc[history_symbol['date'] == history_symbol['date'].max(), 'date'].squeeze())
+        
+        five_year_ago = last_date - pd.DateOffset(years=5)
+        ten_year_ago = last_date - pd.DateOffset(years=10)
+        fifteen_year_ago = last_date - pd.DateOffset(years=15)
+
+        summaries = []
+        summary_all_time = get_summary_grade(masterdata=master, history_symbol=history_symbol, history_market=history_market)
+        summary_all_time['unit_period'] = 'all_time'
+        summary_all_time['summary_grade_pk'] = summary_all_time['symbol'] + '-' + summary_all_time['unit_period']
+        summaries.append(summary_all_time)
+
+        if summary_all_time['fund_age_year'].squeeze() > 5:
+            summary_5_year = get_summary_grade(masterdata=master, history_symbol=history_symbol.loc[history_symbol['date'] > five_year_ago], history_market=history_market)
+            summary_5_year['unit_period'] = 'recent_5_year'
+            summary_5_year['summary_grade_pk'] = summary_5_year['symbol'] + '-' + summary_5_year['unit_period']
+            summaries.append(summary_5_year)
+        if summary_all_time['fund_age_year'].squeeze() > 10:
+            summary_10_year = get_summary_grade(masterdata=master, history_symbol=history_symbol.loc[history_symbol['date'] > ten_year_ago], history_market=history_market)
+            summary_10_year['unit_period'] = 'recent_10_year'
+            summary_10_year['summary_grade_pk'] = summary_10_year['symbol'] + '-' + summary_10_year['unit_period']
+            summaries.append(summary_10_year)
+        if summary_all_time['fund_age_year'].squeeze() > 15:
+            summary_15_year = get_summary_grade(masterdata=master, history_symbol=history_symbol.loc[history_symbol['date'] > fifteen_year_ago], history_market=history_market)
+            summary_15_year['unit_period'] = 'recent_15_year'
+            summary_15_year['summary_grade_pk'] = summary_15_year['symbol'] + '-' + summary_15_year['unit_period']
+            summaries.append(summary_15_year)
+
+        summaries = pd.concat(summaries).reset_index(drop=True)
+        os.makedirs(f'./downloads/summary_grade/etf', exist_ok=True)
+        summaries.to_csv(f'./downloads/summary_grade/etf/{symbol}_summary_grade.csv', index=False)
+
+    # concat summary grades
+    summaries_chunk = concat_csv_files_in_dir(get_dirpath = f'./downloads/summary_grade/etf')
+    os.makedirs(f'./downloads/summary_grade/chunk', exist_ok=True)
+    summaries_chunk.to_csv(f'./downloads/summary_grade/chunk/summary_grade_etf_chunk.csv', index=False)
+
+    # pivot summary grades
+    summaries_chunk = pd.read_csv(f'./downloads/summary_grade/chunk/summary_grade_etf_chunk.csv')
+    summary_grade_piv = pivot_summary_grade(summaries_chunk)
+    # summary_grade_piv = TableHandler(table_config=table_config.SUMMARY_GRD_PIV).select_columns(summary_grade_piv)
+    os.makedirs(f'./downloads/summary_grade_piv/chunk', exist_ok=True)
+    summary_grade_piv.to_csv(f'./downloads/summary_grade_piv/chunk/summary_grade_piv.csv', index=False)
 
 # def get_summary_grade(metadata, history, history_market):
 #     start_date = history.loc[history['date'] == history['date'].min(), 'date'].squeeze()
@@ -100,63 +163,63 @@ def pivot_summary_grade(summary_grade):
 #     return summary_grade_piv
 
 
-# get summary grade
-local_dirpath = "./download/history/etf"
-symbols = [x.split('.')[0].split('_')[1] for x in os.listdir(local_dirpath) if x.endswith('csv')]
-# symbol = symbols[0]
-history_market = pd.read_csv(f'./download/history/etf/history_spy.csv')
-history_market['date'] = pd.to_datetime(history_market['date'])
+# # get summary grade
+# local_dirpath = "./download/history/etf"
+# symbols = [x.split('.')[0].split('_')[1] for x in os.listdir(local_dirpath) if x.endswith('csv')]
 
-for symbol in tqdm(symbols[:], mininterval=0.5):
-    # load
-    history = pd.read_csv(f'./download/history/etf/history_{symbol}.csv')
-    history['date'] = pd.to_datetime(history['date'])
-    metadata = pd.read_csv(f'./download/metadata/etf/metadata_etf_{symbol}.csv')
+# history_market = pd.read_csv(f'./download/history/etf/history_spy.csv')
+# history_market['date'] = pd.to_datetime(history_market['date'])
 
-    start_date = history.loc[history['date'] == history['date'].min(), 'date'].squeeze()
-    end_date = history.loc[history['date'] == history['date'].max(), 'date'].squeeze()
-    num_of_years = (end_date - start_date).days / 365.25
+# for symbol in tqdm(symbols[:], mininterval=0.5):
+#     # load
+#     history = pd.read_csv(f'./download/history/etf/history_{symbol}.csv')
+#     history['date'] = pd.to_datetime(history['date'])
+#     metadata = pd.read_csv(f'./download/metadata/etf/metadata_etf_{symbol}.csv')
 
-    five_year_ago = end_date - pd.DateOffset(years=5)
-    ten_year_ago = end_date - pd.DateOffset(years=10)
-    fifteen_year_ago = end_date - pd.DateOffset(years=15)
+#     start_date = history.loc[history['date'] == history['date'].min(), 'date'].squeeze()
+#     end_date = history.loc[history['date'] == history['date'].max(), 'date'].squeeze()
+#     num_of_years = (end_date - start_date).days / 365.25
 
-
-    summaries = []
-    summary_all_time = get_summary_grade(metadata=metadata, history=history, history_market=history_market)
-    summary_all_time['unit_period'] = 'all_time'
-    summary_all_time['summary_grade_pk'] = summary_all_time['symbol_fk'] + '-' + summary_all_time['unit_period']
-    summaries.append(summary_all_time)
-    if num_of_years > 5:
-        summary_5_year = get_summary_grade(metadata=metadata, history=history.loc[history['date'] > five_year_ago], history_market=history_market)
-        summary_5_year['unit_period'] = 'recent_5_year'
-        summary_5_year['summary_grade_pk'] = summary_5_year['symbol_fk'] + '-' + summary_5_year['unit_period']
-        summaries.append(summary_5_year)
-    if num_of_years > 10:
-        summary_10_year = get_summary_grade(metadata=metadata, history=history.loc[history['date'] > ten_year_ago], history_market=history_market)
-        summary_10_year['unit_period'] = 'recent_10_year'
-        summary_10_year['summary_grade_pk'] = summary_10_year['symbol_fk'] + '-' + summary_10_year['unit_period']
-        summaries.append(summary_10_year)
-    if num_of_years > 15:
-        summary_15_year = get_summary_grade(metadata=metadata, history=history.loc[history['date'] > fifteen_year_ago], history_market=history_market)
-        summary_15_year['unit_period'] = 'recent_15_year'
-        summary_15_year['summary_grade_pk'] = summary_15_year['symbol_fk'] + '-' + summary_15_year['unit_period']
-        summaries.append(summary_15_year)
-
-    summaries = pd.concat(summaries).reset_index(drop=True)
-    os.makedirs(f'./download/summary_grade/etf', exist_ok=True)
-    summaries.to_csv(f'./download/summary_grade/etf/summary_grade_{symbol}.csv', index=False)
+#     five_year_ago = end_date - pd.DateOffset(years=5)
+#     ten_year_ago = end_date - pd.DateOffset(years=10)
+#     fifteen_year_ago = end_date - pd.DateOffset(years=15)
 
 
-summaries_chunk = concat_csv_files_in_dir(get_dirpath = f'./download/summary_grade/etf')
-summaries_chunk = TableHandler(table_config=table_config.SUMMARY_GRD).select_columns(summaries_chunk)
-os.makedirs(f'./download/summary_grade/chunk', exist_ok=True)
-summaries_chunk.to_csv(f'./download/summary_grade/chunk/summary_grade_etf_chunk.csv', index=False)
+#     summaries = []
+#     summary_all_time = get_summary_grade(metadata=metadata, history=history, history_market=history_market)
+#     summary_all_time['unit_period'] = 'all_time'
+#     summary_all_time['summary_grade_pk'] = summary_all_time['symbol_fk'] + '-' + summary_all_time['unit_period']
+#     summaries.append(summary_all_time)
+#     if num_of_years > 5:
+#         summary_5_year = get_summary_grade(metadata=metadata, history=history.loc[history['date'] > five_year_ago], history_market=history_market)
+#         summary_5_year['unit_period'] = 'recent_5_year'
+#         summary_5_year['summary_grade_pk'] = summary_5_year['symbol_fk'] + '-' + summary_5_year['unit_period']
+#         summaries.append(summary_5_year)
+#     if num_of_years > 10:
+#         summary_10_year = get_summary_grade(metadata=metadata, history=history.loc[history['date'] > ten_year_ago], history_market=history_market)
+#         summary_10_year['unit_period'] = 'recent_10_year'
+#         summary_10_year['summary_grade_pk'] = summary_10_year['symbol_fk'] + '-' + summary_10_year['unit_period']
+#         summaries.append(summary_10_year)
+#     if num_of_years > 15:
+#         summary_15_year = get_summary_grade(metadata=metadata, history=history.loc[history['date'] > fifteen_year_ago], history_market=history_market)
+#         summary_15_year['unit_period'] = 'recent_15_year'
+#         summary_15_year['summary_grade_pk'] = summary_15_year['symbol_fk'] + '-' + summary_15_year['unit_period']
+#         summaries.append(summary_15_year)
+
+#     summaries = pd.concat(summaries).reset_index(drop=True)
+#     os.makedirs(f'./download/summary_grade/etf', exist_ok=True)
+#     summaries.to_csv(f'./download/summary_grade/etf/summary_grade_{symbol}.csv', index=False)
 
 
-# get summary grade pivotted
-summaries_chunk = pd.read_csv(f'./download/summary_grade/chunk/summary_grade_etf_chunk.csv')
-summary_grade_piv = get_summary_grade_pivotted(summaries_chunk)
-summary_grade_piv = TableHandler(table_config=table_config.SUMMARY_GRD_PIV).select_columns(summary_grade_piv)
-os.makedirs(f'./download/summary_grade_piv/chunk', exist_ok=True)
-summary_grade_piv.to_csv(f'./download/summary_grade_piv/chunk/summary_grade_piv.csv', index=False)
+# summaries_chunk = concat_csv_files_in_dir(get_dirpath = f'./download/summary_grade/etf')
+# summaries_chunk = TableHandler(table_config=table_config.SUMMARY_GRD).select_columns(summaries_chunk)
+# os.makedirs(f'./download/summary_grade/chunk', exist_ok=True)
+# summaries_chunk.to_csv(f'./download/summary_grade/chunk/summary_grade_etf_chunk.csv', index=False)
+
+
+# # get summary grade pivotted
+# summaries_chunk = pd.read_csv(f'./download/summary_grade/chunk/summary_grade_etf_chunk.csv')
+# summary_grade_piv = get_summary_grade_pivotted(summaries_chunk)
+# summary_grade_piv = TableHandler(table_config=table_config.SUMMARY_GRD_PIV).select_columns(summary_grade_piv)
+# os.makedirs(f'./download/summary_grade_piv/chunk', exist_ok=True)
+# summary_grade_piv.to_csv(f'./download/summary_grade_piv/chunk/summary_grade_piv.csv', index=False)
