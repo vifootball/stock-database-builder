@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 # 시작일부터 오늘까지의 date dimension 테이블을 생성
 def get_date_dim(start_date: str = '1800-01-01') -> pd.DataFrame: # start_date must be 'yyyy-MM-dd' format
@@ -40,5 +41,8 @@ def get_date_dim(start_date: str = '1800-01-01') -> pd.DataFrame: # start_date m
 if __name__ == '__main__':
     df = get_date_dim()
     print(get_date_dim())
-    df.to_csv('date_dim.csv', index=False)
-
+    
+    dirpath = './downloads/bigquery_tables/'
+    fname = 'master_date.csv'
+    os.makedirs(dirpath, exist_ok=True)
+    df.to_csv(os.path.join(dirpath, fname), index=False)
