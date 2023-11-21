@@ -33,11 +33,13 @@ def save_dfs_by_chunk(get_dirpath, put_dirpath, prefix_chunk): # n행씩 분할�
     total_len = 0
     chunk_num = 1
 
-    df_generator =  (pd.read_csv(os.path.join(get_dirpath, fname)) for fname in os.listdir(get_dirpath) if fname.endswith('csv'))
-    for df in df_generator:
-        df_list.append(df)
+    df_generator = (fname for fname in os.listdir(get_dirpath) if fname.endswith('csv'))
+    for fname in df_generator:
         total_len += len(df)
-        print(f'Concatenateing Dfs in {get_dirpath} | Chunk No.{chunk_num} | Total Length: {total_len}')
+        print(f'Concatenating Dfs in {get_dirpath} | Chunk No.{chunk_num} | Total Length: {total_len: <8} | File Name: {fname}')
+        df = pd.read_csv(os.path.join(get_dirpath, fname))
+        df_list.append(df)
+        
         
         if total_len > 1000_000:
             df_concatenated = pd.concat(df_list)
