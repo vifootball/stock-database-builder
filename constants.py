@@ -1,8 +1,13 @@
 # df.to_dict(orient='records')
 
 class Etfs:
+    # 마스터에는 있으나 실제로 검색해보니 ETF가 아닌 애들: History를 수집하지 않는다
+    # Sorting 한 상태 유지하기
     EXCLUDE = [
-        'DTE'
+        'ABCS', 'BGU', 'BHF', 'BHFAL', 'BHFAN', 'BHFAO', 'BHFAO', 'BHFAP', 'BKKCF', 'BNPC', 
+        'DTE', 'DTP',
+        'LGLBF',
+        'PTMN'
     ]
 
 class Indices:
