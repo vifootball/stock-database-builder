@@ -5,7 +5,11 @@ class Etfs:
     # Sorting 한 상태 유지하기
     EXCLUDE = [
         'ABCS', 'BGU', 'BHF', 'BHFAL', 'BHFAN', 'BHFAO', 'BHFAO', 'BHFAP', 'BKKCF', 'BNPC', 
-        'DTE', 'DTP',
+        'BRIL', 'BSCD', 'BSCB', 'BSJC', 'BSJD', 'BTAH',
+        'COWL', 'CRBA', 'CRBI', 'CZI',
+        'DBCN', 'DBGCF', 'DTE', 'DTP',
+        'EATX', 'EFN', 'EMER' ,'EMGX', 'EMVX', 'ENBA', 'EQIN', 'EWAC', 'EWEF', 'EWSM',
+        'FCGS', 'FCGL', 'FHC', 'FLG', 'FLYX', 'FOC', 'FUI', 'FXRU', 'FZB',
         'LGLBF',
         'PTMN'
     ]
