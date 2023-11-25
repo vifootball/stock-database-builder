@@ -59,7 +59,7 @@ def pivot_summary_grade(summary_grade):
     return summary_grade_piv
 
 
-def run_summary_main():
+def run_summary_grade_main():
     # get summary grade
     symbols = [x.split('_')[0] for x in os.listdir("./downloads/history/etf") if x.endswith('csv')][:]
     # print(symbols)
@@ -68,7 +68,7 @@ def run_summary_main():
 
     for symbol in tqdm(symbols[:], mininterval=0.5):
         # load
-        print(symbol)
+        # print(symbol)
         history_symbol = pd.read_csv(f'./downloads/history/etf/{symbol}_history.csv')
         master = masters[masters['symbol']==symbol]
 
@@ -117,7 +117,7 @@ def run_summary_main():
 
 
 if __name__ == '__main__':
-    run_summary_main()
+    run_summary_grade_main()
  
 
 

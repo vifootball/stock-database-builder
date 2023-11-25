@@ -97,47 +97,53 @@ if __name__ == '__main__':
     # get_exisiting_tables(project_id=bq_project_id, dataset_id=bq_dataset_id)
     get_size_of_existing_tables(project_id=bq_project_id, dataset_id=bq_dataset_id)
 
-    # MASTER_DATE
-    print()
-    copy_local_csv_file_to_bq_table(
-        local_fpath='./downloads/bigquery_tables/master_date.csv',
-        bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name="master_date",
-        schema=schema.MASTER_DATE
-    )
+    # # MASTER_DATE
+    # print()
+    # copy_local_csv_file_to_bq_table(
+    #     local_fpath='./downloads/bigquery_tables/master_date.csv',
+    #     bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name="master_date",
+    #     schema=schema.MASTER_DATE
+    # )
 
-    # MASTER_SYMBOL
-    master_symbols = concat_csv_files_in_dir(get_dirpath='./downloads/master_symbols/')
-    master_symbols.to_csv('./downloads/bigquery_tables/master_symbols.csv', index=False) # 하나씩 올리면 빈 열을 STR로 인식해야하는데 FLOAT로 인식함
-    # print(master_symbols.info())
-    print()
-    copy_local_csv_file_to_bq_table(
-        local_fpath='./downloads/bigquery_tables/master_symbols.csv',
-        bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='master_symbol',
-        schema=schema.MASTER_SYMBOL
-    )
+    # # MASTER_SYMBOL
+    # master_symbols = concat_csv_files_in_dir(get_dirpath='./downloads/master_symbols/')
+    # master_symbols.to_csv('./downloads/bigquery_tables/master_symbols.csv', index=False) # 하나씩 올리면 빈 열을 STR로 인식해야하는데 FLOAT로 인식함
+    # # print(master_symbols.info())
+    # print()
+    # copy_local_csv_file_to_bq_table(
+    #     local_fpath='./downloads/bigquery_tables/master_symbols.csv',
+    #     bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='master_symbol',
+    #     schema=schema.MASTER_SYMBOL
+    # )
 
-    # HOLDINGS
-    copy_local_csv_file_to_bq_table(
-        local_fpath='./downloads/bigquery_tables/holdings.csv',
-        bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='holdings',
-        schema=schema.HOLDINGS
-    )
+    # # HOLDINGS
+    # copy_local_csv_file_to_bq_table(
+    #     local_fpath='./downloads/bigquery_tables/holdings.csv',
+    #     bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='holdings',
+    #     schema=schema.HOLDINGS
+    # )
 
-    # DM_GRADE
-    copy_local_csv_file_to_bq_table(
-        local_fpath='./downloads/bigquery_tables/summary_grades.csv',
-        bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='dm_grade',
-        schema=schema.DM_GRADE
-    )
+    # # DM_GRADE
+    # copy_local_csv_file_to_bq_table(
+    #     local_fpath='./downloads/bigquery_tables/summary_grades.csv',
+    #     bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='dm_grade',
+    #     schema=schema.DM_GRADE
+    # )
 
-    # DM_GRADE_PIVOT
-    copy_local_csv_file_to_bq_table(
-        local_fpath='./downloads/bigquery_tables/summary_grades_piv.csv',
-        bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='dm_grade_pivot',
-        schema=schema.DM_GRADE_PIVOT
-    )
+    # # DM_GRADE_PIVOT
+    # copy_local_csv_file_to_bq_table(
+    #     local_fpath='./downloads/bigquery_tables/summary_grades_piv.csv',
+    #     bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='dm_grade_pivot',
+    #     schema=schema.DM_GRADE_PIVOT
+    # )
 
     # DM_CORR
+    # copy_local_csv_files_to_bq_table(
+    #     local_dirpath='./downloads/bigquery_tables/summary_corr_chunks/',
+    #     bq_project_id=bq_project_id, bq_dataset_id=bq_dataset_id, bq_table_name='dm_correlation',
+    #     schema=schema.DM_CORRELATION
+    # )
+
 
     # HISTORY
 

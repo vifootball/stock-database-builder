@@ -5,6 +5,7 @@ from tqdm import tqdm
 import ray
 import time
 from datetime import datetime
+from constants import *
 # from table import TableHandler
 # import table_config
 
@@ -128,15 +129,24 @@ def collect_corr(symbol, target_symbols):
 
 if __name__ == '__main__':
     symbols = [x.split('_')[0] for x in os.listdir("./downloads/history/etf") if x.endswith('csv')]
-    symbols = sorted(symbols)[2484:]
-    print(symbols)
+    symbols = [x for x in symbols if x not in Etfs.EXCLUDE]
+    # symbols = sorted(symbols)[2484:]
+    # print(symbols)
 
     target_symbols = [x.split('_')[0] for x in os.listdir("./downloads/history/etf") if x.endswith('csv')]
     target_symbols = sorted(target_symbols)
 
-    ray.init(ignore_reinit_error=True,  num_cpus=8)
-    ray_task = [collect_corr.remote(symbol, target_symbols) for symbol in symbols]
-    ray.get(ray_task) # n_cpus단위로 수행, 마지막 작업이 끝날때까지 대기.. 인줄 알았는데 알아서 받아서 하는듯? ncpus*3 이상의 태스크를 돌려보면 알 듯 #해보니 4번씩 있어야하는데 5번있는 pid 존재했음 -> 알아서 바로 받아서 함
+    # ray.init(ignore_reinit_error=True,  num_cpus=8)
+    # ray_task = [collect_corr.remote(symbol, target_symbols) for symbol in symbols]
+    # ray.get(ray_task) # n_cpus단위로 수행, 마지막 작업이 끝날때까지 대기.. 인줄 알았는데 알아서 받아서 하는듯? ncpus*3 이상의 태스크를 돌려보면 알 듯 #해보니 4번씩 있어야하는데 5번있는 pid 존재했음 -> 알아서 바로 받아서 함
+    
+    save_dfs_by_chunk(
+        get_dirpath="./downloads/summary_corr/etf/",
+        put_dirpath="./downloads/bigquery_tables/summary_corr_chunks/",
+        prefix_chunk="summary_corr_chunk"
+    )
+
+
     # ray.wait(ray_task)  # 내 작업 끝나면 바로 다음 작업 시작
 
     # for symbol in tqdm(symbols[:], mininterval=0.5):
