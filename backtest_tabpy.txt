@@ -1,0 +1,89 @@
+SCRIPT_REAL(
+"
+
+# 모듈
+import pandas as pd
+import numpy as np
+import datetime as dt
+
+
+# 초기 설정값들
+backtested_monthly_dfs = []
+monthly_df_order = 0
+
+recent_total_price = None
+total_investment = 0
+
+initial_investment = _arg1[0]
+periodic_investment = _arg2[0]
+date = _arg3
+symbol_1_price = _arg4
+symbol_2_price = _arg5
+symbol_1_ratio = _arg6[0]
+symbol_2_ratio = _arg7[0]
+
+
+# 데이터프레임 생성
+df = pd.DataFrame({
+        'date': date,
+        'symbol_1_price': symbol_1_price,
+        'symbol_2_price': symbol_2_price
+})
+
+
+# 월별로 데이터프레임 자르기
+monthly_dfs = []
+yymms = pd.to_datetime(df['date']).dt.strftime('%y-%m').unique()
+for yymm in yymms:
+    monthly_df = df[
+        pd.to_datetime(df['date']).dt.strftime('%y-%m') == yymm
+    ]
+    monthly_df = monthly_df.reset_index(drop=True)
+    monthly_dfs.append(monthly_df)
+
+
+# 백테스트 하기
+for monthly_df in monthly_dfs[:]:
+    if monthly_df_order == 0:
+        total_investment = initial_investment
+        monthly_df['total_investment'] = total_investment
+        
+
+        # 해당 월의 종목별 주식 수 (고정)
+        monthly_df['symbol_1_share'] = (initial_investment * symbol_1_ratio) / monthly_df['symbol_1_price'].iloc[0]
+        monthly_df['symbol_2_share'] = (initial_investment * symbol_2_ratio) / monthly_df['symbol_2_price'].iloc[0]
+        
+    else:
+        total_investment += periodic_investment
+        monthly_df['total_investment'] = total_investment
+
+        # 해당 월의 종목별 주식 수 (고정)
+        monthly_df['symbol_1_share'] = ((recent_total_price + periodic_investment) * symbol_1_ratio) / monthly_df['symbol_1_price'].iloc[0]
+        monthly_df['symbol_2_share'] = ((recent_total_price + periodic_investment) * symbol_2_ratio) / monthly_df['symbol_2_price'].iloc[0]
+
+    # 해당 월의 포트폴리오 가치 (매일 변함)
+    monthly_df['total_price'] = monthly_df['symbol_1_price'] * monthly_df['symbol_1_share'] + monthly_df['symbol_2_price'] * monthly_df['symbol_2_share']
+
+    # 누적 수익률
+    monthly_df['total_return'] = (monthly_df['total_price'] - monthly_df['total_investment']) / monthly_df['total_investment']
+    
+    # 해당 월의 종목 별 비중 (매일 변함)
+    monthly_df['symbol_1_proportion'] = (monthly_df['symbol_1_share'] * monthly_df['symbol_1_price']) / monthly_df['total_price']
+    monthly_df['symbol_2_proportion'] = (monthly_df['symbol_2_share'] * monthly_df['symbol_2_price']) / monthly_df['total_price']
+
+
+    backtested_monthly_dfs.append(monthly_df)
+    recent_total_price = monthly_df['total_price'].to_list()[-1]
+    monthly_df_order += 1
+
+
+# 벡테스트 결과 합치기
+backtested_portfolio = pd.concat(backtested_monthly_dfs).reset_index(drop=True)
+backtested_portfolio = backtested_portfolio.to_dict(orient='list')
+result = backtested_portfolio['total_price']
+return result
+",
+AVG([P_INITIAL_INVESTMENT]), AVG([P_PERIODIC_INVESTMENT]),
+ATTR([C_DATE_STR]), [C_PRICE_SYMBOL_1], [C_PRICE_SYMBOL_2],
+AVG([P_SYMBOL_1_PROPORTION]), AVG([P_SYMBOL_2_PROPORTION])
+)
