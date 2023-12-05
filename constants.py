@@ -6,11 +6,16 @@ class Etfs:
     EXCLUDE = [
         'ABCS', 'BGU', 'BHF', 'BHFAL', 'BHFAN', 'BHFAO', 'BHFAO', 'BHFAP', 'BKKCF', 'BNPC', 
         'BRIL', 'BSCD', 'BSCB', 'BSJC', 'BSJD', 'BTAH',
-        'COWL', 'CRBA', 'CRBI', 'CZI',
+        'CNFRL', 'COWL', 'CRBA', 'CRBI', 'CZI',
         'DBCN', 'DBGCF', 'DTE', 'DTP',
         'EATX', 'EFN', 'EMER' ,'EMGX', 'EMVX', 'ENBA', 'EQIN', 'EWAC', 'EWEF', 'EWSM',
         'FCGS', 'FCGL', 'FHC', 'FLG', 'FLYX', 'FOC', 'FUI', 'FXRU', 'FZB',
-        'LGLBF',
+        'GRPC',
+        'HBTA', 'HTGC', 'HMTM', 'HVOL',
+        'IHEMF', 'INDZ',
+        'JYF',
+        'KRNIF',
+        'LGLBF', 'LWPE',
         'PTMN'
     ]
 
