@@ -10,6 +10,9 @@ from summary_grade import *
 from bigquery_schema import Schema
 from bigquery_helper import *
 
+# path setting for Cron: 다음 명령어로 체크 print(os.path.abspath('.'))
+os.chdir('/Users/chungdongwook/dongwook-src/stock-database-builder')
+
 # load symbols
 # Ray에서 동시 실행 시 에러가 나는 것을 방지하기 위해 enumerate로 감싸주고 순차적으로 데이터를 수집하도록 함
 
