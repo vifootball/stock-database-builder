@@ -9,6 +9,7 @@ from utils import *
 from summary_grade import *
 from bigquery_schema import Schema
 from bigquery_helper import *
+from datetime import datetime
 
 # path setting for Cron: 다음 명령어로 체크 print(os.path.abspath('.'))
 os.chdir('/Users/chungdongwook/dongwook-src/stock-database-builder')
@@ -151,4 +152,6 @@ if __name__ == '__main__':
         schema=schema.MASTER_DATE
     )
 
-#     print("Done")
+end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-4]
+print()
+print(f"Done: {end_time}")
