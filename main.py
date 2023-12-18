@@ -99,6 +99,8 @@ if __name__ == '__main__':
     tasks_collect_indices_history_from_fred = [collect_indices_history_from_fred.remote(order,symbol) for order, symbol in indices_symbols_fred[:]]
     ray.get(tasks_collect_indices_history_from_fred)
 
+    ray.shutdown()
+
     ### Make History Chunk
     save_dfs_by_chunk(
         get_dirpath="./downloads/history/currency/",
