@@ -19,8 +19,8 @@ periodic_investment = _arg2[0]
 date = _arg3
 symbol_1_price = _arg4
 symbol_2_price = _arg5
-symbol_1_ratio = _arg6[0]
-symbol_2_ratio = _arg7[0]
+symbol_1_ratio = _arg6[0] / (_arg6[0] + _arg7[0])
+symbol_2_ratio = _arg7[0] / (_arg6[0] + _arg7[0])
 
 
 # 데이터프레임 생성
@@ -71,6 +71,10 @@ for monthly_df in monthly_dfs[:]:
     monthly_df['symbol_1_proportion'] = (monthly_df['symbol_1_share'] * monthly_df['symbol_1_price']) / monthly_df['total_price']
     monthly_df['symbol_2_proportion'] = (monthly_df['symbol_2_share'] * monthly_df['symbol_2_price']) / monthly_df['total_price']
 
+    # MDD
+    monthly_df['cummax'] = monthly_df['total_price'].cummax()
+    monthly_df['drawdown'] = (monthly_df['total_price'] / monthly_df['cummax']) - 1
+
 
     backtested_monthly_dfs.append(monthly_df)
     recent_total_price = monthly_df['total_price'].to_list()[-1]
@@ -83,7 +87,7 @@ backtested_portfolio = backtested_portfolio.to_dict(orient='list')
 result = backtested_portfolio['total_price']
 return result
 ",
-AVG([P_INITIAL_INVESTMENT]), AVG([P_PERIODIC_INVESTMENT]),
-ATTR([C_DATE_STR]), [C_PRICE_SYMBOL_1], [C_PRICE_SYMBOL_2],
-AVG([P_SYMBOL_1_PROPORTION]), AVG([P_SYMBOL_2_PROPORTION])
+AVG([P_BT_INITIAL_INVESTMENT]), AVG([P_BT_PERIODIC_INVESTMENT]),
+ATTR([C_DATE_STR]), [C_BT_PRICE_SYMBOL_1], [C_BT_PRICE_SYMBOL_2],
+AVG([P_BT_WEIGHT_1]), AVG([P_BT_WEIGHT_2])
 )
