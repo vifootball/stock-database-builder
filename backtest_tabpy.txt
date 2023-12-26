@@ -18,17 +18,43 @@ initial_investment = _arg1[0]
 periodic_investment = _arg2[0]
 rebalancing_frequency = _arg3[0]
 date = _arg4
+
 symbol_1_price = _arg5
 symbol_2_price = _arg6
-symbol_1_ratio = _arg7[0] / (_arg7[0] + _arg8[0])
-symbol_2_ratio = _arg8[0] / (_arg7[0] + _arg8[0])
+symbol_3_price = _arg7
+symbol_4_price = _arg8
+symbol_5_price = _arg9
+symbol_6_price = _arg10
+symbol_7_price = _arg11
+symbol_8_price = _arg12
+symbol_9_price = _arg13
+symbol_10_price = _arg14
+
+symbol_1_ratio = _arg15[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_2_ratio = _arg16[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_3_ratio = _arg17[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_4_ratio = _arg18[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_5_ratio = _arg19[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_6_ratio = _arg20[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_7_ratio = _arg21[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_8_ratio = _arg22[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_9_ratio = _arg23[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
+symbol_10_ratio = _arg24[0] / (_arg15[0]+_arg16[0]+_arg17[0]+_arg18[0]+_arg19[0]+_arg20[0]+_arg21[0]+_arg22[0]+_arg23[0]+_arg24[0])
 
 
 # 데이터프레임 생성
 df = pd.DataFrame({
         'date': date,
         'symbol_1_price': symbol_1_price,
-        'symbol_2_price': symbol_2_price
+        'symbol_2_price': symbol_2_price,
+        'symbol_3_price': symbol_3_price,
+        'symbol_4_price': symbol_4_price,
+        'symbol_5_price': symbol_5_price,
+        'symbol_6_price': symbol_6_price,
+        'symbol_7_price': symbol_7_price,
+        'symbol_8_price': symbol_8_price,
+        'symbol_9_price': symbol_9_price,
+        'symbol_10_price': symbol_10_price,
 })
 
 
@@ -82,6 +108,14 @@ for unit_period_df in unit_period_dfs[:]:
         # 해당 월의 종목별 주식 수 (고정)
         unit_period_df['symbol_1_share'] = (initial_investment * symbol_1_ratio) / unit_period_df['symbol_1_price'].iloc[0]
         unit_period_df['symbol_2_share'] = (initial_investment * symbol_2_ratio) / unit_period_df['symbol_2_price'].iloc[0]
+        unit_period_df['symbol_3_share'] = (initial_investment * symbol_3_ratio) / unit_period_df['symbol_3_price'].iloc[0]
+        unit_period_df['symbol_4_share'] = (initial_investment * symbol_4_ratio) / unit_period_df['symbol_4_price'].iloc[0]
+        unit_period_df['symbol_5_share'] = (initial_investment * symbol_5_ratio) / unit_period_df['symbol_5_price'].iloc[0]
+        unit_period_df['symbol_6_share'] = (initial_investment * symbol_6_ratio) / unit_period_df['symbol_6_price'].iloc[0]
+        unit_period_df['symbol_7_share'] = (initial_investment * symbol_7_ratio) / unit_period_df['symbol_7_price'].iloc[0]
+        unit_period_df['symbol_8_share'] = (initial_investment * symbol_8_ratio) / unit_period_df['symbol_8_price'].iloc[0]
+        unit_period_df['symbol_9_share'] = (initial_investment * symbol_9_ratio) / unit_period_df['symbol_9_price'].iloc[0]
+        unit_period_df['symbol_10_share'] = (initial_investment * symbol_10_ratio) / unit_period_df['symbol_10_price'].iloc[0]
     
     # 이후 기간
     else:
@@ -90,15 +124,43 @@ for unit_period_df in unit_period_dfs[:]:
 
         recent_total_price = ( #지난 기간 주식수 * 이번 첫날 가격
             previous_df['symbol_1_share'].iloc[-1] * unit_period_df['symbol_1_price'].iloc[0] + 
-            previous_df['symbol_2_share'].iloc[-1] * unit_period_df['symbol_2_price'].iloc[0]
+            previous_df['symbol_2_share'].iloc[-1] * unit_period_df['symbol_2_price'].iloc[0] + 
+            previous_df['symbol_3_share'].iloc[-1] * unit_period_df['symbol_3_price'].iloc[0] + 
+            previous_df['symbol_4_share'].iloc[-1] * unit_period_df['symbol_4_price'].iloc[0] + 
+            previous_df['symbol_5_share'].iloc[-1] * unit_period_df['symbol_5_price'].iloc[0] + 
+            previous_df['symbol_6_share'].iloc[-1] * unit_period_df['symbol_6_price'].iloc[0] + 
+            previous_df['symbol_7_share'].iloc[-1] * unit_period_df['symbol_7_price'].iloc[0] + 
+            previous_df['symbol_8_share'].iloc[-1] * unit_period_df['symbol_8_price'].iloc[0] + 
+            previous_df['symbol_9_share'].iloc[-1] * unit_period_df['symbol_9_price'].iloc[0] + 
+            previous_df['symbol_10_share'].iloc[-1] * unit_period_df['symbol_10_price'].iloc[0]
         )
         
         # 해당 월의 종목별 주식 수 (고정)
         unit_period_df['symbol_1_share'] = ((recent_total_price + periodic_investment) * symbol_1_ratio) / unit_period_df['symbol_1_price'].iloc[0]
         unit_period_df['symbol_2_share'] = ((recent_total_price + periodic_investment) * symbol_2_ratio) / unit_period_df['symbol_2_price'].iloc[0]
+        unit_period_df['symbol_3_share'] = ((recent_total_price + periodic_investment) * symbol_3_ratio) / unit_period_df['symbol_3_price'].iloc[0]
+        unit_period_df['symbol_4_share'] = ((recent_total_price + periodic_investment) * symbol_4_ratio) / unit_period_df['symbol_4_price'].iloc[0]
+        unit_period_df['symbol_5_share'] = ((recent_total_price + periodic_investment) * symbol_5_ratio) / unit_period_df['symbol_5_price'].iloc[0]
+        unit_period_df['symbol_6_share'] = ((recent_total_price + periodic_investment) * symbol_6_ratio) / unit_period_df['symbol_6_price'].iloc[0]
+        unit_period_df['symbol_7_share'] = ((recent_total_price + periodic_investment) * symbol_7_ratio) / unit_period_df['symbol_7_price'].iloc[0]
+        unit_period_df['symbol_8_share'] = ((recent_total_price + periodic_investment) * symbol_8_ratio) / unit_period_df['symbol_8_price'].iloc[0]
+        unit_period_df['symbol_9_share'] = ((recent_total_price + periodic_investment) * symbol_9_ratio) / unit_period_df['symbol_9_price'].iloc[0]
+        unit_period_df['symbol_10_share'] = ((recent_total_price + periodic_investment) * symbol_10_ratio) / unit_period_df['symbol_10_price'].iloc[0]
 
     # 해당 월의 포트폴리오 가치 (매일 변함)
-    unit_period_df['total_price'] = unit_period_df['symbol_1_price'] * unit_period_df['symbol_1_share'] + unit_period_df['symbol_2_price'] * unit_period_df['symbol_2_share']
+    unit_period_df['total_price'] = (
+        unit_period_df['symbol_1_price'] * unit_period_df['symbol_1_share'] +
+        unit_period_df['symbol_2_price'] * unit_period_df['symbol_2_share'] +
+        unit_period_df['symbol_3_price'] * unit_period_df['symbol_3_share'] +
+        unit_period_df['symbol_4_price'] * unit_period_df['symbol_4_share'] +
+        unit_period_df['symbol_5_price'] * unit_period_df['symbol_5_share'] +
+        unit_period_df['symbol_6_price'] * unit_period_df['symbol_6_share'] +
+        unit_period_df['symbol_7_price'] * unit_period_df['symbol_7_share'] +
+        unit_period_df['symbol_8_price'] * unit_period_df['symbol_8_share'] +
+        unit_period_df['symbol_9_price'] * unit_period_df['symbol_9_share'] +
+        unit_period_df['symbol_10_price'] * unit_period_df['symbol_10_share']
+    )
+
 
     # 누적 수익률
     unit_period_df['total_return'] = (unit_period_df['total_price'] - unit_period_df['total_investment']) / unit_period_df['total_investment']
@@ -106,6 +168,14 @@ for unit_period_df in unit_period_dfs[:]:
     # 해당 월의 종목 별 비중 (매일 변함)
     unit_period_df['symbol_1_proportion'] = (unit_period_df['symbol_1_share'] * unit_period_df['symbol_1_price']) / unit_period_df['total_price']
     unit_period_df['symbol_2_proportion'] = (unit_period_df['symbol_2_share'] * unit_period_df['symbol_2_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_3_proportion'] = (unit_period_df['symbol_3_share'] * unit_period_df['symbol_3_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_4_proportion'] = (unit_period_df['symbol_4_share'] * unit_period_df['symbol_4_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_5_proportion'] = (unit_period_df['symbol_5_share'] * unit_period_df['symbol_5_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_6_proportion'] = (unit_period_df['symbol_6_share'] * unit_period_df['symbol_6_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_7_proportion'] = (unit_period_df['symbol_7_share'] * unit_period_df['symbol_7_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_8_proportion'] = (unit_period_df['symbol_8_share'] * unit_period_df['symbol_8_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_9_proportion'] = (unit_period_df['symbol_9_share'] * unit_period_df['symbol_9_price']) / unit_period_df['total_price']
+    unit_period_df['symbol_10_proportion'] = (unit_period_df['symbol_10_share'] * unit_period_df['symbol_10_price']) / unit_period_df['total_price']
 
     backtested_dfs.append(unit_period_df)
     previous_df = unit_period_df # 다음 반복문에서 사용
@@ -122,7 +192,7 @@ backtested_portfolio['drawdown'] = (backtested_portfolio['total_price'] / backte
 
 # 딕셔너리로 만들기
 backtested_portfolio = backtested_portfolio.to_dict(orient='list')
-result = backtested_portfolio['drawdown']
+result = backtested_portfolio['total_price']
 #result = np.array([1,2,3])
 return result
 ",
@@ -133,6 +203,22 @@ AVG([P_BT_REBAL_FREQ]),
 ATTR([C_DATE_STR]),
 [C_BT_PRICE_SYMBOL_1],
 [C_BT_PRICE_SYMBOL_2],
-AVG([P_BT_WEIGHT_1]), 
-AVG([P_BT_WEIGHT_2])
+[C_BT_PRICE_SYMBOL_3],
+[C_BT_PRICE_SYMBOL_4],
+[C_BT_PRICE_SYMBOL_5],
+[C_BT_PRICE_SYMBOL_6],
+[C_BT_PRICE_SYMBOL_7],
+[C_BT_PRICE_SYMBOL_8],
+[C_BT_PRICE_SYMBOL_9],
+[C_BT_PRICE_SYMBOL_10],
+AVG([P_BT_WEIGHT_1_P1]), 
+AVG([P_BT_WEIGHT_2_P1]),
+AVG([P_BT_WEIGHT_3_P1]),
+AVG([P_BT_WEIGHT_4_P1]),
+AVG([P_BT_WEIGHT_5_P1]),
+AVG([P_BT_WEIGHT_6_P1]),
+AVG([P_BT_WEIGHT_7_P1]),
+AVG([P_BT_WEIGHT_8_P1]),
+AVG([P_BT_WEIGHT_9_P1]),
+AVG([P_BT_WEIGHT_10_P1])
 )
