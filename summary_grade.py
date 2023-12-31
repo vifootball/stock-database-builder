@@ -24,7 +24,7 @@ def get_summary_grade(masterdata, history_symbol, history_market):
     df['shares_out'] = masterdata['shares_out'].squeeze()
     df['aum'] = (df['nav'] * df['shares_out']).squeeze()
     df['total_return' ] = (history_symbol['price'].loc[history_symbol['date'] == last_date].squeeze() / history_symbol['price'].loc[history_symbol['date'] == first_date].squeeze()) - 1
-    df['cagr'] = (1 + df['total_return']) ** (1 / df['fund_age_year']) - 1
+    df['cagr'] = (1 + df['total_return']) ** (1 / ((last_date - first_date).days / 365.25) ) - 1
     df['std_yearly_return'] = history_symbol.set_index('date')['price'].resample('Y').last().pct_change().std() # 올해는 최근일 기준
     df['drawdown_max'] = ((history_symbol['price'] / history_symbol['price'].cummax()) - 1).min()
     df['div_ttm'] = history_symbol['dividend_ttm'].loc[history_symbol['date'] == last_date].squeeze()
