@@ -16,7 +16,8 @@ class Etfs:
         'JYF',
         'KRNIF',
         'LGLBF', 'LWPE',
-        'PTMN', 'PSEC'
+        'PTMN', 'PSEC',
+        'RGA'
     ]
 
 class Indices:
