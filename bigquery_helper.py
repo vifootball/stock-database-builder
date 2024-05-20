@@ -95,7 +95,7 @@ if __name__ == '__main__':
     
     print()
     # get_exisiting_tables(project_id=bq_project_id, dataset_id=bq_dataset_id)
-    get_size_of_existing_tables(project_id=bq_project_id, dataset_id=bq_dataset_id)
+    get_size_of_existing_tables(project_id=bq_project_id, dataset_id=bq_dataset_id) 
 
     # # MASTER_DATE
     # print()

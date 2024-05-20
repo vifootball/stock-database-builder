@@ -1,4 +1,4 @@
-# 'symbol' = COLUMN(name_adj='symbol', select=True, dtype='str')
+ # 'symbol' = COLUMN(name_adj='symbol', select=True, dtype='str')
 class ColumnConfig:
 	def __init__(self, name_adj, select=True, bq_dtype='STRING'):
 		self.name_adj = name_adj
